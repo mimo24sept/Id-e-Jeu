@@ -536,7 +536,7 @@ h3 {
 
 .shop-grid {
   display: grid;
-  grid-template-columns: minmax(230px, 0.78fr) minmax(360px, 1.36fr);
+  grid-template-columns: minmax(220px, 0.72fr) minmax(360px, 1.32fr) minmax(230px, 0.82fr);
   gap: 14px;
   padding: 14px;
 }
@@ -622,6 +622,66 @@ h3 {
 
 .market-grid {
   grid-template-columns: repeat(3, minmax(128px, 1fr));
+}
+
+.shop-run-info {
+  display: grid;
+  gap: 10px;
+}
+
+.run-character {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 3px solid var(--accent);
+  background: var(--surface-2);
+  box-shadow: 5px 5px 0 var(--accent);
+}
+
+.run-character strong {
+  overflow: visible;
+  color: var(--accent);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.07em;
+  line-height: 0.92;
+  text-overflow: clip;
+  text-transform: uppercase;
+  white-space: normal;
+}
+
+.run-character p {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.shop-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.stat-box {
+  min-width: 0;
+  padding: 7px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+}
+
+.stat-box span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.stat-box strong {
+  margin-top: 1px;
+  font-size: 0.84rem;
 }
 
 .weapon-compare {

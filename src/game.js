@@ -23,6 +23,7 @@ const ui = {
   shop: document.querySelector("#shop"),
   shopHand: document.querySelector("#shopHand"),
   shopSlots: document.querySelector("#shopSlots"),
+  shopRunInfo: document.querySelector("#shopRunInfo"),
   weaponCompare: document.querySelector("#weaponCompare"),
   packChoiceTitle: document.querySelector("#packChoiceTitle"),
   packOffer: document.querySelector("#packOffer"),
@@ -444,8 +445,8 @@ const WEAPON_SCALING_TYPES = [
 
 const MAX_WEAPONS = 2;
 const WORLD = {
-  width: 4800,
-  height: 3000,
+  width: 3000,
+  height: 1900,
 };
 
 const keys = new Set();
@@ -961,6 +962,8 @@ function calculateStats() {
     regen: Math.max(0, suits.hearts * 0.18 + hand.power * 0.05 + effects.regen),
     extraCardSlots: effects.cardSlots,
     critChance: Math.min(0.75, effects.critChance),
+    mapWidth: WORLD.width,
+    mapHeight: WORLD.height,
   };
 
   if (state?.godMode) {
@@ -1870,6 +1873,43 @@ function weaponCompareStats(candidate, current) {
   `;
 }
 
+function statBox(label, value) {
+  return `
+    <div class="stat-box">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `;
+}
+
+function renderShopRunInfo() {
+  if (!ui.shopRunInfo) return;
+  const character = state.character;
+  const characterName = character?.name || "Aucun";
+  const characterDesc = character?.desc || "Pas de modificateur de personnage.";
+  ui.shopRunInfo.innerHTML = `
+    <article class="run-character">
+      <span class="label">Personnage</span>
+      <strong>${characterName}</strong>
+      <p>${characterDesc}</p>
+    </article>
+    <div class="shop-stat-grid">
+      ${statBox("PV", `${Math.ceil(state.player.hp)} / ${state.stats.maxHp}`)}
+      ${statBox("Regen", state.stats.regen.toFixed(1))}
+      ${statBox("Dégâts", `+${state.stats.flatDamage} · x${state.stats.damageMultiplier.toFixed(2)}`)}
+      ${statBox("Cadence", `x${state.stats.attackSpeedMultiplier.toFixed(2)}`)}
+      ${statBox("Crit", `${Math.round(state.stats.critChance * 100)}%`)}
+      ${statBox("Vitesse", Math.round(state.stats.moveSpeed))}
+      ${statBox("Or", `x${state.stats.moneyMultiplier.toFixed(2)}`)}
+      ${statBox("Main", `${state.hand.length}/${effectiveHandSlots()}`)}
+      ${statBox("Poker", state.stats.handName)}
+      ${statBox("Bonus poker", `+${Math.round(state.stats.handDamageBonus * 100)}%`)}
+      ${statBox("Armes", `${state.weapons.length}/${MAX_WEAPONS}`)}
+      ${statBox("Map", `${state.stats.mapWidth}x${state.stats.mapHeight}`)}
+    </div>
+  `;
+}
+
 function positionWeaponCompare(anchor) {
   if (!anchor || !ui.weaponCompare) return;
   const anchorRect = anchor.getBoundingClientRect();
@@ -2079,6 +2119,7 @@ function renderUI() {
 
   ui.shopSlots.innerHTML = state.shopSlots.map(renderShopSlot).join("");
   renderWeaponCompare();
+  renderShopRunInfo();
 
   ui.packChoiceTitle.textContent = state.packContext
     ? hasFreeHandSlot()

@@ -20,6 +20,7 @@ Ouvre `index.html` dans un navigateur moderne.
 - Les vagues sont infinies, durent un temps défini, et font apparaître des ennemis en continu pendant ce timer.
 - Toutes les 10 vagues, un boss majeur apparaît et les monstres prennent un gros palier de scaling.
 - La carte est un rectangle borné plus compact, avec une bordure visible; le joueur et les spawns ennemis restent dans ses limites.
+- Des caisses peuvent apparaitre sur la carte pendant les vagues; les ramasser donne un pack de 4 cartes a ouvrir a la fin de la vague.
 - La progression vise des shops plus actifs: vagues plus courtes, revenu naturel plus généreux, et assez d'or pour acheter plusieurs cartes avec quelques relances sans build économie.
 - L'interface utilise une direction brutaliste: gros contours, ombres franches, moins de texte, et rareté d'arme affichée directement par la couleur de l'encadré.
 - La couleur d'accent de l'UI suit la couleur dominante de la main: Coeur rouge, Carreau orange, Pique gris, Trèfle bleu.

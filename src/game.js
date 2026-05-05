@@ -450,6 +450,8 @@ const WORLD = {
   width: 2100,
   height: 1300,
 };
+const CRATE_RADIUS = 18;
+const MAX_CRATES_ON_MAP = 3;
 
 const keys = new Set();
 let state;
@@ -1015,6 +1017,9 @@ function createState(options = {}) {
     projectiles: [],
     pulses: [],
     floatingText: [],
+    crates: [],
+    crateSpawnTimer: 0,
+    pendingCratePacks: 0,
     weapons: [createWeapon({ archetypeId: "rifle", gradeId: "green" })],
     waveDuration: 0,
     waveTimeLeft: 0,
@@ -1166,6 +1171,9 @@ function beginWave() {
   state.pendingCurse = null;
   state.pendingWeapon = null;
   state.previewWeaponId = null;
+  state.crates = [];
+  state.crateSpawnTimer = random(2.5, 4.5);
+  state.pendingCratePacks = 0;
   state.wave += state.wave === 0 ? 1 : 0;
   state.waveDuration = Math.min(18 + state.wave * 2, 58);
   state.waveTimeLeft = state.waveDuration;
@@ -1180,12 +1188,14 @@ function completeWave() {
   state.money += 18 + state.wave * 6;
   state.wave += 1;
   state.shopRerolls = 0;
+  state.crates = [];
   state.packOffer = [];
   state.packContext = null;
   state.pendingCurse = null;
   state.pendingWeapon = null;
   state.previewWeaponId = null;
   state.shopSlots = rollShopSlots();
+  openNextCratePack();
   renderUI();
   ui.shop.classList.remove("is-hidden");
 }
@@ -1255,6 +1265,41 @@ function spawnBoss() {
     value: 70 + wave * 8,
     tier: enemyTier(wave),
     boss: true,
+  });
+}
+
+function nextCrateDelay() {
+  return random(6.5, 10.5);
+}
+
+function spawnCrate() {
+  const bounds = worldBounds();
+  let cratePoint = null;
+
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const point = clampToWorld(
+      state.player.x + random(-620, 620),
+      state.player.y + random(-390, 390),
+      CRATE_RADIUS,
+    );
+    if (distance(point, state.player) > 170) {
+      cratePoint = point;
+      break;
+    }
+  }
+
+  if (!cratePoint) {
+    cratePoint = {
+      x: random(bounds.left + CRATE_RADIUS, bounds.right - CRATE_RADIUS),
+      y: random(bounds.top + CRATE_RADIUS, bounds.bottom - CRATE_RADIUS),
+    };
+  }
+
+  state.crates.push({
+    id: uniqueId("crate"),
+    x: cratePoint.x,
+    y: cratePoint.y,
+    radius: CRATE_RADIUS,
   });
 }
 
@@ -1381,6 +1426,35 @@ function updateSpawns(dt) {
     }
     state.spawnTimer = Math.max(0.18, 0.86 - state.wave * 0.025);
   }
+}
+
+function updateCrates(dt) {
+  if (state.betweenWaves || state.waveTimeLeft <= 0) return;
+
+  state.crateSpawnTimer -= dt;
+  if (state.crateSpawnTimer <= 0) {
+    if (state.crates.length < MAX_CRATES_ON_MAP) {
+      spawnCrate();
+    }
+    state.crateSpawnTimer = nextCrateDelay();
+  }
+
+  const remainingCrates = [];
+  for (const crate of state.crates) {
+    if (distance(crate, state.player) < crate.radius + state.player.radius) {
+      state.pendingCratePacks += 1;
+      state.floatingText.push({
+        x: crate.x,
+        y: crate.y - crate.radius,
+        text: "PACK +1",
+        life: 0.9,
+        color: "#f0d24b",
+      });
+    } else {
+      remainingCrates.push(crate);
+    }
+  }
+  state.crates = remainingCrates;
 }
 
 function damagePlayer(amount) {
@@ -1570,6 +1644,7 @@ function update(dt) {
   if (state.player.hp > state.stats.maxHp) state.player.hp = state.stats.maxHp;
   updatePlayer(dt);
   updateSpawns(dt);
+  updateCrates(dt);
   updateEnemies(dt);
   updateWeapons(dt);
   updateProjectiles(dt);
@@ -1709,6 +1784,33 @@ function drawPlayer() {
   ctx.restore();
 }
 
+function drawCrate(crate) {
+  const p = screenPoint(crate.x, crate.y);
+  const size = crate.radius * 2;
+  const x = p.x - crate.radius;
+  const y = p.y - crate.radius;
+
+  ctx.save();
+  ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetY = 5;
+  ctx.fillStyle = "#f0d24b";
+  ctx.fillRect(x, y, size, size);
+  ctx.shadowColor = "transparent";
+  ctx.strokeStyle = "#080808";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(x, y, size, size);
+  ctx.fillStyle = "#101010";
+  ctx.fillRect(x + 5, y + size * 0.44, size - 10, 5);
+  ctx.fillRect(x + size * 0.44, y + 5, 5, size - 10);
+  ctx.fillStyle = "#101010";
+  ctx.font = "900 12px Inter, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("4", p.x, p.y);
+  ctx.restore();
+}
+
 function renderGame() {
   ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   ctx.save();
@@ -1738,6 +1840,10 @@ function renderGame() {
   for (const bullet of state.enemyBullets) {
     const p = screenPoint(bullet.x, bullet.y);
     drawCircle(p.x, p.y, bullet.radius, "#e46363", "rgba(255,255,255,0.25)");
+  }
+
+  for (const crate of state.crates) {
+    drawCrate(crate);
   }
 
   for (const enemy of state.enemies) {
@@ -1811,6 +1917,10 @@ function hasFreeHandSlot() {
   return state.hand.length < effectiveHandSlots();
 }
 
+function cratePacksWaiting() {
+  return state.pendingCratePacks + (state.packContext?.type === "cratePack" ? 1 : 0);
+}
+
 function updateGodCountdown() {
   if (!state?.godMode || !ui.godCountdown) return;
   const secondsLeft = Math.max(0, Math.ceil((state.godCloseEndsAt - performance.now()) / 1000));
@@ -1837,6 +1947,8 @@ function triggerGodMode() {
   state.enemyBullets = [];
   state.projectiles = [];
   state.pulses = [];
+  state.crates = [];
+  state.pendingCratePacks = 0;
   state.pendingCurse = null;
   state.pendingWeapon = null;
   state.packOffer = [];
@@ -1990,6 +2102,7 @@ function renderShopRunInfo() {
       ${statBox("Poker", state.stats.handName)}
       ${statBox("Bonus poker", `+${Math.round(state.stats.handDamageBonus * 100)}%`)}
       ${statBox("Armes", `${state.weapons.length}/${MAX_WEAPONS}`)}
+      ${statBox("Caisses", cratePacksWaiting())}
       ${statBox("Map", `${state.stats.mapWidth}x${state.stats.mapHeight}`)}
     </div>
   `;
@@ -2151,9 +2264,15 @@ function renderUI() {
   ui.goldMultiplier.textContent = `x${state.stats.moneyMultiplier.toFixed(2)}`;
   ui.shopGold.textContent = `$${state.money}`;
   ui.shopGoldMultiplier.textContent = `OR x${state.stats.moneyMultiplier.toFixed(2)}`;
+  const crateHudCount = state.pendingCratePacks + state.crates.length;
   ui.enemyCount.textContent = state.betweenWaves
     ? "Shop"
     : `${Math.ceil(state.waveTimeLeft)}s · ${state.enemies.length}`;
+  if (state.betweenWaves && cratePacksWaiting() > 0) {
+    ui.enemyCount.textContent = `Shop | ${cratePacksWaiting()} caisse`;
+  } else if (!state.betweenWaves && crateHudCount > 0) {
+    ui.enemyCount.textContent = `${Math.ceil(state.waveTimeLeft)}s | ${state.enemies.length} | C${crateHudCount}`;
+  }
   ui.rerollShop.textContent = `Relancer - $${rerollCost()}`;
   ui.rerollShop.disabled = !state.betweenWaves || state.money < rerollCost() || state.pendingCurse || state.pendingWeapon || state.packOffer.length > 0;
   ui.startWave.disabled = Boolean(state.pendingCurse || state.pendingWeapon || state.packOffer.length > 0);
@@ -2288,6 +2407,22 @@ function addCardToHand(card) {
   return true;
 }
 
+function openNextCratePack() {
+  if (state.pendingCratePacks <= 0) return false;
+  state.pendingCratePacks -= 1;
+  state.pendingCurse = null;
+  state.pendingWeapon = null;
+  state.packContext = {
+    id: uniqueId("crate-pack"),
+    type: "cratePack",
+    name: "Caisse recuperee",
+    size: 4,
+    price: 0,
+  };
+  state.packOffer = drawUniqueCards(4, { exclude: usedCardKeys() });
+  return state.packOffer.length > 0;
+}
+
 function chooseCard(index) {
   if (state.pendingWeapon) return;
   const card = state.packOffer[index];
@@ -2295,6 +2430,7 @@ function chooseCard(index) {
   if (!addCardToHand(card)) return;
   state.packOffer = [];
   state.packContext = null;
+  openNextCratePack();
   state.stats = calculateStats();
   state.player.hp = Math.min(state.stats.maxHp, state.player.hp + 12);
   renderUI();

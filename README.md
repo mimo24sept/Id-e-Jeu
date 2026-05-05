@@ -10,6 +10,7 @@ Ouvre `index.html` dans un navigateur moderne.
 
 - Au lancement: saisis un pseudo, connecte-toi, puis lance une partie avec ce joueur.
 - Le système de sélection de personnage est prêt: quand des personnages seront définis, 3 choix aléatoires seront proposés au début d'une run.
+- Personnages définis actuellement: L'ombre, Vampire, Expert comptable, Ange Blanc, Gâchette folle, Bazooka, GigaCHAD et Time Breaker.
 - `WASD` ou flèches: déplacer le personnage
 - Les armes ciblent automatiquement l'ennemi le plus proche
 - Entre deux vagues: vendre des cartes, acheter dans les 6 offres aléatoires, relancer la boutique, ouvrir les packs trouvés, acheter des armes, puis lancer la vague suivante
@@ -17,6 +18,7 @@ Ouvre `index.html` dans un navigateur moderne.
 ## Système actuel
 
 - Les vagues sont infinies, durent un temps défini, et font apparaître des ennemis en continu pendant ce timer.
+- La carte est un grand rectangle borné, avec une bordure visible; le joueur et les spawns ennemis restent dans ses limites.
 - La progression vise des shops plus actifs: vagues plus courtes, revenu naturel plus généreux, et assez d'or pour acheter plusieurs cartes avec quelques relances sans build économie.
 - L'interface utilise une direction brutaliste: gros contours, ombres franches, moins de texte, et rareté d'arme affichée directement par la couleur de l'encadré.
 - La couleur d'accent de l'UI suit la couleur dominante de la main: Coeur rouge, Carreau orange, Pique gris, Trèfle bleu.

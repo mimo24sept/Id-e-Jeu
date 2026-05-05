@@ -71,10 +71,98 @@ const RANKS = [
   { label: "A", value: 14 },
 ];
 
-// Character definitions will be added once their designs are decided.
-// Shape:
-// { id, name, title, desc, cardEffectMultipliers: { spades, diamonds, clubs, hearts }, effects }
-const CHARACTER_DEFS = [];
+const CHARACTER_DEFS = [
+  {
+    id: "shadow",
+    name: "L'ombre",
+    title: "Noir miroir",
+    desc: "Pique et Trèfle x2. Coeur et Carreau x0.5.",
+    cardEffectMultipliers: {
+      spades: 2,
+      clubs: 2,
+      hearts: 0.5,
+      diamonds: 0.5,
+    },
+  },
+  {
+    id: "vampire",
+    name: "Vampire",
+    title: "Sang riche",
+    desc: "Coeur et Carreau x2. Pique et Trèfle x0.5.",
+    cardEffectMultipliers: {
+      hearts: 2,
+      diamonds: 2,
+      spades: 0.5,
+      clubs: 0.5,
+    },
+  },
+  {
+    id: "expert-comptable",
+    name: "Expert comptable",
+    title: "Audit brutal",
+    desc: "Carreau x3. Pique, Trèfle et Coeur x0.33.",
+    cardEffectMultipliers: {
+      diamonds: 3,
+      spades: 1 / 3,
+      clubs: 1 / 3,
+      hearts: 1 / 3,
+    },
+  },
+  {
+    id: "ange-blanc",
+    name: "Ange Blanc",
+    title: "Grâce clinique",
+    desc: "Coeur x3. Pique, Trèfle et Carreau x0.33.",
+    cardEffectMultipliers: {
+      hearts: 3,
+      spades: 1 / 3,
+      clubs: 1 / 3,
+      diamonds: 1 / 3,
+    },
+  },
+  {
+    id: "gachette-folle",
+    name: "Gâchette folle",
+    title: "Cadence sale",
+    desc: "Trèfle x3. Pique, Coeur et Carreau x0.33.",
+    cardEffectMultipliers: {
+      clubs: 3,
+      spades: 1 / 3,
+      hearts: 1 / 3,
+      diamonds: 1 / 3,
+    },
+  },
+  {
+    id: "bazooka",
+    name: "Bazooka",
+    title: "Dégâts purs",
+    desc: "Pique x3. Trèfle, Coeur et Carreau x0.33.",
+    cardEffectMultipliers: {
+      spades: 3,
+      clubs: 1 / 3,
+      hearts: 1 / 3,
+      diamonds: 1 / 3,
+    },
+  },
+  {
+    id: "gigachad",
+    name: "GigaCHAD",
+    title: "Late bloomer",
+    desc: "Toutes les couleurs x0.5 jusqu'à la vague 10, puis x4.",
+    getCardEffectMultiplier(state) {
+      return state.wave >= 10 ? 4 : 0.5;
+    },
+  },
+  {
+    id: "time-breaker",
+    name: "Time Breaker",
+    title: "Scaling pur",
+    desc: "Toutes les couleurs commencent à x0.1 et gagnent +0.1 par vague.",
+    getCardEffectMultiplier(state) {
+      return Math.max(0.1, state.wave * 0.1);
+    },
+  },
+];
 
 const CURSES = [
   {
@@ -355,6 +443,10 @@ const WEAPON_SCALING_TYPES = [
 ];
 
 const MAX_WEAPONS = 2;
+const WORLD = {
+  width: 4800,
+  height: 3000,
+};
 
 const keys = new Set();
 let state;
@@ -387,6 +479,23 @@ function distance(a, b) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function worldBounds() {
+  return {
+    left: -WORLD.width / 2,
+    right: WORLD.width / 2,
+    top: -WORLD.height / 2,
+    bottom: WORLD.height / 2,
+  };
+}
+
+function clampToWorld(x, y, radius = 0) {
+  const bounds = worldBounds();
+  return {
+    x: clamp(x, bounds.left + radius, bounds.right - radius),
+    y: clamp(y, bounds.top + radius, bounds.bottom - radius),
+  };
 }
 
 function uniqueId(prefix) {
@@ -641,6 +750,8 @@ function scaleEffects(effects, multiplier = 1) {
 }
 
 function characterCardMultiplier(character, suit) {
+  const dynamicMultiplier = character?.getCardEffectMultiplier?.(state, suit);
+  if (dynamicMultiplier !== undefined) return dynamicMultiplier;
   return character?.cardEffectMultipliers?.[suit] ?? 1;
 }
 
@@ -1066,11 +1177,17 @@ function spawnEnemy() {
   const shooter = wave >= 2 && Math.random() < Math.min(0.14 + wave * 0.018, 0.42);
   const brute = wave >= 4 && Math.random() < Math.min(0.09 + wave * 0.014, 0.34);
   const hp = brute ? 42 + wave * 10 : shooter ? 24 + wave * 6 : 16 + wave * 4.5;
+  const radius = brute ? 21 : shooter ? 16 : 15;
+  const spawnPoint = clampToWorld(
+    state.player.x + Math.cos(angle) * spawnDistance,
+    state.player.y + Math.sin(angle) * spawnDistance,
+    radius,
+  );
 
   state.enemies.push({
-    x: state.player.x + Math.cos(angle) * spawnDistance,
-    y: state.player.y + Math.sin(angle) * spawnDistance,
-    radius: brute ? 21 : shooter ? 16 : 15,
+    x: spawnPoint.x,
+    y: spawnPoint.y,
+    radius,
     hp,
     maxHp: hp,
     speed: brute ? 78 + wave * 2.4 : shooter ? 92 + wave * 2.4 : 118 + wave * 3.4,
@@ -1170,8 +1287,13 @@ function updatePlayer(dt) {
   if (keys.has("d") || keys.has("arrowright")) dx += 1;
 
   const length = Math.hypot(dx, dy) || 1;
-  state.player.x += (dx / length) * state.stats.moveSpeed * dt;
-  state.player.y += (dy / length) * state.stats.moveSpeed * dt;
+  const nextPosition = clampToWorld(
+    state.player.x + (dx / length) * state.stats.moveSpeed * dt,
+    state.player.y + (dy / length) * state.stats.moveSpeed * dt,
+    state.player.radius,
+  );
+  state.player.x = nextPosition.x;
+  state.player.y = nextPosition.y;
   state.player.invuln = Math.max(0, state.player.invuln - dt);
   state.player.hp = Math.min(state.stats.maxHp, state.player.hp + state.stats.regen * dt);
 }
@@ -1394,23 +1516,42 @@ function screenPoint(worldX, worldY) {
 
 function drawGrid() {
   const grid = 72;
-  const offsetX = ((-state.player.x % grid) + grid) % grid;
-  const offsetY = ((-state.player.y % grid) + grid) % grid;
+  const bounds = worldBounds();
+  const topLeft = screenPoint(bounds.left, bounds.top);
+  const bottomRight = screenPoint(bounds.right, bounds.bottom);
+  const startX = Math.max(0, topLeft.x);
+  const endX = Math.min(window.innerWidth, bottomRight.x);
+  const startY = Math.max(0, topLeft.y);
+  const endY = Math.min(window.innerHeight, bottomRight.y);
+  const firstWorldX = Math.ceil(bounds.left / grid) * grid;
+  const firstWorldY = Math.ceil(bounds.top / grid) * grid;
 
   ctx.strokeStyle = "rgba(255,255,255,0.045)";
   ctx.lineWidth = 1;
-  for (let x = offsetX; x < window.innerWidth; x += grid) {
+  for (let worldX = firstWorldX; worldX <= bounds.right; worldX += grid) {
+    const x = screenPoint(worldX, 0).x;
+    if (x < 0 || x > window.innerWidth) continue;
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, window.innerHeight);
+    ctx.moveTo(x, startY);
+    ctx.lineTo(x, endY);
     ctx.stroke();
   }
-  for (let y = offsetY; y < window.innerHeight; y += grid) {
+  for (let worldY = firstWorldY; worldY <= bounds.bottom; worldY += grid) {
+    const y = screenPoint(0, worldY).y;
+    if (y < 0 || y > window.innerHeight) continue;
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(window.innerWidth, y);
+    ctx.moveTo(startX, y);
+    ctx.lineTo(endX, y);
     ctx.stroke();
   }
+
+  ctx.strokeStyle = "rgba(255,255,255,0.82)";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+
+  ctx.strokeStyle = "rgba(13,103,255,0.86)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(topLeft.x + 8, topLeft.y + 8, bottomRight.x - topLeft.x - 16, bottomRight.y - topLeft.y - 16);
 }
 
 function drawGridBackdrop() {
@@ -2191,6 +2332,7 @@ function randomCharacterChoices() {
 }
 
 function characterBonusText(character) {
+  if (character.desc) return character.desc;
   const multipliers = character.cardEffectMultipliers || {};
   const lines = Object.entries(SUITS)
     .map(([suit, data]) => {

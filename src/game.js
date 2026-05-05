@@ -447,8 +447,8 @@ const WEAPON_SCALING_TYPES = [
 
 const MAX_WEAPONS = 2;
 const WORLD = {
-  width: 3000,
-  height: 1900,
+  width: 2100,
+  height: 1300,
 };
 
 const keys = new Set();
@@ -1136,10 +1136,16 @@ function rollShopEntry(offeredCards = []) {
 }
 
 function rollShopSlots() {
-  const slots = [];
-  const offeredCards = [];
-  slots.push({ ...createWeapon(), bought: false });
-  for (let slotIndex = 1; slotIndex < 6; slotIndex += 1) {
+  const slots = state.shopSlots.filter((slot) => slot.locked && !slot.bought);
+  const offeredCards = slots
+    .filter((slot) => slot.type === "card" || slot.type === "cursedCard")
+    .map((slot) => slot.card);
+
+  if (!slots.some((slot) => slot.type === "weapon")) {
+    slots.push({ ...createWeapon(), bought: false });
+  }
+
+  while (slots.length < 6) {
     slots.push(rollShopEntry(offeredCards));
   }
   return slots.sort(() => Math.random() - 0.5);
@@ -1831,6 +1837,9 @@ function weaponCardHTML(weapon, options = {}) {
   const offerAttr = options.shopSlotId ? `data-shop-slot="${options.shopSlotId}"` : "";
   const disabledAttr = options.disabled ? "aria-disabled=\"true\"" : "";
   const tag = options.shopSlotId ? "market-item weapon-offer" : "weapon";
+  const lockButton = options.shopSlotId
+    ? `<button class="lock-button ${options.locked ? "is-locked" : ""}" type="button" data-lock-slot="${weapon.id}">${options.locked ? "LOCK" : "GARDER"}</button>`
+    : "";
   const cta = options.price
     ? `<div class="action-pill ${options.disabled ? "is-disabled" : ""}">$${options.price}</div>`
     : options.replaceIndex !== undefined
@@ -1838,7 +1847,8 @@ function weaponCardHTML(weapon, options = {}) {
       : "";
 
   return `
-    <article class="${tag}" style="--rarity:${weapon.gradeColor}; --weapon-suit:${weapon.color}" ${offerAttr} ${replaceAttr} ${disabledAttr}>
+    <article class="${tag} ${options.locked ? "is-locked" : ""}" style="--rarity:${weapon.gradeColor}; --weapon-suit:${weapon.color}" ${offerAttr} ${replaceAttr} ${disabledAttr}>
+      ${lockButton}
       <div class="weapon-top">
         <span class="grade">${weapon.grade.name} · Niv.${weapon.level}</span>
         <strong>${weapon.baseName}</strong>
@@ -1984,11 +1994,18 @@ function renderShopSlot(slot) {
     `;
   }
 
+  const lockButton = `
+    <button class="lock-button ${slot.locked ? "is-locked" : ""}" type="button" data-lock-slot="${slot.id}">
+      ${slot.locked ? "LOCK" : "GARDER"}
+    </button>
+  `;
+
   if (slot.type === "card" || slot.type === "cursedCard") {
     const fullHand = !hasFreeHandSlot();
     const disabled = state.money < slot.price || fullHand;
     return `
-      <article class="market-item ${slot.type === "cursedCard" ? "is-cursed" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+      <article class="market-item ${slot.locked ? "is-locked" : ""} ${slot.type === "cursedCard" ? "is-cursed" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+        ${lockButton}
         <div class="market-card card ${slot.card.suit}">${cardHTML(slot.card)}</div>
         <div>
           <span class="label">${slot.name}</span>
@@ -2004,7 +2021,8 @@ function renderShopSlot(slot) {
     const fullHand = !hasFreeHandSlot();
     const disabled = state.money < slot.price || fullHand;
     return `
-      <article class="market-item" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+      <article class="market-item ${slot.locked ? "is-locked" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+        ${lockButton}
         <div>
           <span class="label">Pack</span>
           <h4>${slot.name}</h4>
@@ -2018,7 +2036,8 @@ function renderShopSlot(slot) {
   if (slot.type === "cardCurse") {
     const disabled = state.money < slot.price || state.hand.every((card) => card.cursed);
     return `
-      <article class="market-item is-cursed" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+      <article class="market-item is-cursed ${slot.locked ? "is-locked" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+        ${lockButton}
         <div>
           <span class="label">Malédiction</span>
           <h4>${slot.name}</h4>
@@ -2031,12 +2050,13 @@ function renderShopSlot(slot) {
 
   if (slot.type === "weapon") {
     const disabled = state.money < slot.price;
-    return weaponCardHTML(slot, { shopSlotId: slot.id, price: slot.price, disabled });
+    return weaponCardHTML(slot, { shopSlotId: slot.id, price: slot.price, disabled, locked: slot.locked });
   }
 
   const disabled = state.money < slot.price;
   return `
-    <article class="market-item" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+    <article class="market-item ${slot.locked ? "is-locked" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+      ${lockButton}
       <div>
         <span class="label">${slot.type === "slot" ? "Main" : "Modificateur"}</span>
         <h4>${slot.name}</h4>
@@ -2229,6 +2249,14 @@ function rerollShop() {
   renderUI();
 }
 
+function toggleShopLock(id) {
+  if (!state.betweenWaves || state.pendingCurse || state.pendingWeapon || state.packOffer.length > 0) return;
+  const slot = state.shopSlots.find((item) => item.id === id);
+  if (!slot || slot.bought) return;
+  slot.locked = !slot.locked;
+  renderUI();
+}
+
 function equipWeapon(weapon) {
   const equipped = { ...weapon, cooldown: 0.2 };
   if (state.weapons.length < MAX_WEAPONS) {
@@ -2272,6 +2300,7 @@ function buyShopSlot(id) {
 
   state.money -= slot.price;
   slot.bought = true;
+  slot.locked = false;
 
   if (slot.type === "weapon") {
     const equippedNow = equipWeapon(slot);
@@ -2510,6 +2539,13 @@ ui.weapons.addEventListener("click", (event) => {
   replaceWeapon(Number(button.dataset.replaceWeapon));
 });
 ui.shopSlots.addEventListener("click", (event) => {
+  const lockButton = event.target.closest("[data-lock-slot]");
+  if (lockButton) {
+    event.stopPropagation();
+    toggleShopLock(lockButton.dataset.lockSlot);
+    return;
+  }
+
   const button = event.target.closest("[data-shop-slot]");
   if (!button) return;
   buyShopSlot(button.dataset.shopSlot);

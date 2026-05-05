@@ -779,12 +779,41 @@ h3 {
 }
 
 .market-item {
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(52px, 1fr) auto;
   gap: 8px;
   min-height: 168px;
   padding: 8px;
   transition: transform 0.16s ease;
+}
+
+.lock-button {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 1;
+  min-height: 26px;
+  padding: 0 7px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.lock-button.is-locked {
+  background: var(--gold);
+  color: #090909;
+  border-color: var(--gold);
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.market-item.is-locked {
+  border-color: var(--gold);
+  box-shadow: 5px 5px 0 var(--gold);
 }
 
 .market-item h4 {

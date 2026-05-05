@@ -30,6 +30,7 @@ Ouvre `index.html` dans un navigateur moderne.
 - Si la main dépasse 5 cartes, le jeu évalue la meilleure combinaison de 5 cartes et peut détecter des mains spéciales comme Suite longue, Grande couleur, Flush royal et Couleur parfaite.
 - Easter egg: réunir les 52 cartes uniques déclenche le mode Dieu tout puissant, puis la page tente de se fermer après 10 secondes.
 - La boutique propose 6 offres aléatoires: cartes simples, cartes avec malédiction, packs, malédictions ciblées, bonus permanents et emplacements de carte supplémentaires.
+- Une offre de boutique peut être lockée avec `GARDER`; elle reste disponible au reroll et à la boutique suivante tant qu'elle n'est pas achetée.
 - Les cartes et packs ne peuvent plus être achetés si tous les emplacements de main sont pris; il faut vendre une carte ou gagner un slot.
 - Les malédictions sont des effets positifs à mettre sur les cartes: dégâts, vitesse d'attaque, vie, or, et très rarement +1 emplacement de carte.
 - Les packs apparaissent dans ces 6 offres et révèlent 4 ou 6 cartes. Il existe des packs standards et des packs spécialisés Coeur, Pique, Trèfle et Carreau.

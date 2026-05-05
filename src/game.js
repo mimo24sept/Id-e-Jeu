@@ -7,6 +7,8 @@ const ui = {
   connectPlayer: document.querySelector("#connectPlayer"),
   launchGame: document.querySelector("#launchGame"),
   menuPlayerName: document.querySelector("#menuPlayerName"),
+  characterSelect: document.querySelector("#characterSelect"),
+  characterChoices: document.querySelector("#characterChoices"),
   playerNameHud: document.querySelector("#playerNameHud"),
   wave: document.querySelector("#wave"),
   hp: document.querySelector("#hp"),
@@ -68,6 +70,11 @@ const RANKS = [
   { label: "K", value: 13 },
   { label: "A", value: 14 },
 ];
+
+// Character definitions will be added once their designs are decided.
+// Shape:
+// { id, name, title, desc, cardEffectMultipliers: { spades, diamonds, clubs, hearts }, effects }
+const CHARACTER_DEFS = [];
 
 const CURSES = [
   {
@@ -628,21 +635,34 @@ function rollCardCurseDef() {
   return common[Math.floor(Math.random() * common.length)];
 }
 
+function scaleEffects(effects, multiplier = 1) {
+  if (multiplier === 1) return effects;
+  return Object.fromEntries(Object.entries(effects).map(([key, value]) => [key, value * multiplier]));
+}
+
+function characterCardMultiplier(character, suit) {
+  return character?.cardEffectMultipliers?.[suit] ?? 1;
+}
+
 function cardBaseEffects(card) {
   const faceMultiplier = cardFaceMultiplier(card);
+  const characterMultiplier = characterCardMultiplier(state?.character, card.suit);
+  let effects;
   if (faceMultiplier > 0) {
     const multiplierBonus = faceMultiplier - 1;
-    if (card.suit === "spades") return { damage: multiplierBonus };
-    if (card.suit === "diamonds") return { money: multiplierBonus };
-    if (card.suit === "clubs") return { attackSpeed: multiplierBonus };
-    return { maxHpMultiplier: multiplierBonus };
+    if (card.suit === "spades") effects = { damage: multiplierBonus };
+    else if (card.suit === "diamonds") effects = { money: multiplierBonus };
+    else if (card.suit === "clubs") effects = { attackSpeed: multiplierBonus };
+    else effects = { maxHpMultiplier: multiplierBonus };
+    return scaleEffects(effects, characterMultiplier);
   }
 
   const value = cardStatValue(card);
-  if (card.suit === "spades") return { flatDamage: value };
-  if (card.suit === "diamonds") return { money: value / 100 };
-  if (card.suit === "clubs") return { attackSpeed: value / 100 };
-  return { maxHp: value };
+  if (card.suit === "spades") effects = { flatDamage: value };
+  else if (card.suit === "diamonds") effects = { money: value / 100 };
+  else if (card.suit === "clubs") effects = { attackSpeed: value / 100 };
+  else effects = { maxHp: value };
+  return scaleEffects(effects, characterMultiplier);
 }
 
 function cardStatValue(card) {
@@ -798,6 +818,7 @@ function calculateStats() {
     if (card.cursed) addEffects(effects, card.curse.effects);
   });
   state.modifiers.forEach((modifier) => addEffects(effects, modifier.effects));
+  if (state.character?.effects) addEffects(effects, state.character.effects);
   state.weapons.forEach((weapon) => {
     const suitCount = suits[weapon.suit] || 0;
     const gradeMult = weapon.grade.statMult;
@@ -855,6 +876,7 @@ function createState(options = {}) {
   const hand = drawUniqueCards(5);
   const initial = {
     playerName: options.playerName || connectedPlayerName || "Joueur",
+    character: options.character || null,
     paused: false,
     betweenWaves: false,
     wave: 1,
@@ -2152,14 +2174,70 @@ function restart() {
   cancelAnimationFrame(animationId);
   clearTimeout(godCloseTimeout);
   clearInterval(godCountdownInterval);
-  createState({ playerName: connectedPlayerName || state?.playerName || "Joueur" });
+  connectedPlayerName = connectedPlayerName || state?.playerName || "Joueur";
   ui.gameOver.classList.add("is-hidden");
   ui.godMode.classList.add("is-hidden");
   ui.mainMenu.classList.add("is-hidden");
+  ui.characterSelect.classList.add("is-hidden");
+  ui.shop.classList.add("is-hidden");
+  showCharacterSelect();
+}
+
+function randomCharacterChoices() {
+  return CHARACTER_DEFS
+    .slice()
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
+}
+
+function characterBonusText(character) {
+  const multipliers = character.cardEffectMultipliers || {};
+  const lines = Object.entries(SUITS)
+    .map(([suit, data]) => {
+      const multiplier = multipliers[suit];
+      if (!multiplier || multiplier === 1) return "";
+      return `${data.symbol} x${multiplier}`;
+    })
+    .filter(Boolean);
+  return lines.length ? lines.join(" · ") : "Aucun modificateur de couleur";
+}
+
+function startRun(character = null) {
+  cancelAnimationFrame(animationId);
+  clearTimeout(godCloseTimeout);
+  clearInterval(godCountdownInterval);
+  createState({ playerName: connectedPlayerName, character });
+  ui.mainMenu.classList.add("is-hidden");
+  ui.characterSelect.classList.add("is-hidden");
+  ui.gameOver.classList.add("is-hidden");
+  ui.godMode.classList.add("is-hidden");
   ui.shop.classList.add("is-hidden");
   lastTime = performance.now();
   beginWave();
   animationId = requestAnimationFrame(loop);
+}
+
+function showCharacterSelect() {
+  const choices = randomCharacterChoices();
+  if (choices.length < 3) {
+    startRun();
+    return;
+  }
+
+  ui.mainMenu.classList.add("is-hidden");
+  ui.characterSelect.classList.remove("is-hidden");
+  ui.characterChoices.innerHTML = choices
+    .map(
+      (character) => `
+        <button class="character-card" type="button" data-character-id="${character.id}">
+          <span class="label">${character.title || "Personnage"}</span>
+          <strong>${character.name}</strong>
+          <p>${character.desc || ""}</p>
+          <div class="stat-strip">${characterBonusText(character)}</div>
+        </button>
+      `,
+    )
+    .join("");
 }
 
 function cleanPlayerName(value) {
@@ -2183,21 +2261,13 @@ function launchGame() {
   const typedName = cleanPlayerName(ui.playerNameInput.value);
   if (typedName && typedName !== connectedPlayerName) setConnectedPlayer(typedName);
   if (!connectedPlayerName) connectPlayer();
-  cancelAnimationFrame(animationId);
-  clearTimeout(godCloseTimeout);
-  clearInterval(godCountdownInterval);
-  createState({ playerName: connectedPlayerName });
-  ui.mainMenu.classList.add("is-hidden");
-  ui.gameOver.classList.add("is-hidden");
-  ui.godMode.classList.add("is-hidden");
-  ui.shop.classList.add("is-hidden");
-  lastTime = performance.now();
-  beginWave();
-  animationId = requestAnimationFrame(loop);
+  showCharacterSelect();
 }
 
 function initMenu() {
   resizeCanvas();
+  ui.mainMenu.classList.remove("is-hidden");
+  ui.characterSelect.classList.add("is-hidden");
   ui.playerNameInput.value = connectedPlayerName;
   ui.launchGame.disabled = !connectedPlayerName;
   ui.menuPlayerName.textContent = connectedPlayerName ? `Connecté: ${connectedPlayerName}` : "Aucun joueur connecté";
@@ -2213,6 +2283,13 @@ function renderGameShell() {
 window.addEventListener("resize", resizeCanvas);
 ui.connectPlayer.addEventListener("click", connectPlayer);
 ui.launchGame.addEventListener("click", launchGame);
+ui.characterChoices.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-character-id]");
+  if (!button) return;
+  const character = CHARACTER_DEFS.find((item) => item.id === button.dataset.characterId);
+  if (!character) return;
+  startRun(character);
+});
 ui.playerNameInput.addEventListener("keydown", (event) => {
   if (event.key !== "Enter") return;
   event.preventDefault();

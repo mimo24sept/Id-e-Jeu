@@ -9,6 +9,7 @@ Ouvre `index.html` dans un navigateur moderne.
 ## Contrôles
 
 - Au lancement: saisis un pseudo, connecte-toi, puis lance une partie avec ce joueur.
+- Le système de sélection de personnage est prêt: quand des personnages seront définis, 3 choix aléatoires seront proposés au début d'une run.
 - `WASD` ou flèches: déplacer le personnage
 - Les armes ciblent automatiquement l'ennemi le plus proche
 - Entre deux vagues: vendre des cartes, acheter dans les 6 offres aléatoires, relancer la boutique, ouvrir les packs trouvés, acheter des armes, puis lancer la vague suivante

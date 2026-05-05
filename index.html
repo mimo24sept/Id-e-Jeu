@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poker Survivor Prototype</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <canvas id="game" width="1280" height="720" aria-label="Zone de jeu"></canvas>
+
+      <section class="hud hud-top" aria-label="Statistiques">
+        <div>
+          <span class="label">Joueur</span>
+          <strong id="playerNameHud">-</strong>
+        </div>
+        <div>
+          <span class="label">Vague</span>
+          <strong id="wave">1</strong>
+        </div>
+        <div>
+          <span class="label">Vie</span>
+          <strong id="hp">100 / 100</strong>
+        </div>
+        <div>
+          <span class="label">Argent</span>
+          <strong id="money">$0</strong>
+        </div>
+        <div>
+          <span class="label">Or x</span>
+          <strong id="goldMultiplier">x1.00</strong>
+        </div>
+        <div>
+          <span class="label">Temps</span>
+          <strong id="enemyCount">0</strong>
+        </div>
+      </section>
+
+      <aside class="panel panel-left" aria-label="Main de poker">
+        <div class="panel-header">
+          <h1>Poker Survivor</h1>
+          <p id="handRank">Carte haute</p>
+        </div>
+        <div id="hand" class="card-row"></div>
+        <div id="suits" class="suit-grid"></div>
+        <div class="tip">WASD · Auto-fire</div>
+      </aside>
+
+      <aside class="panel panel-right" aria-label="Armes">
+        <div class="panel-header">
+          <h2>Armes</h2>
+          <p id="dpsHint">Build de départ</p>
+        </div>
+        <div id="weapons" class="weapon-list"></div>
+      </aside>
+
+      <section id="shop" class="shop is-hidden" aria-label="Boutique entre les vagues">
+        <div class="shop-board">
+          <header class="shop-header">
+            <div>
+              <span class="label">Boutique</span>
+              <h2>SHOP</h2>
+            </div>
+            <div class="shop-actions">
+              <button id="rerollShop" class="secondary-button">Relancer - $4</button>
+              <button id="startWave" class="primary-button">Lancer la vague</button>
+            </div>
+          </header>
+
+          <div class="shop-grid">
+            <div class="shop-section">
+              <h3>MAIN</h3>
+              <p>Vendre / marquer</p>
+              <div id="shopHand" class="shop-hand"></div>
+            </div>
+
+            <div class="shop-section">
+              <h3>MARCHÉ</h3>
+              <p>6 offres · 1 arme garantie</p>
+              <div id="shopSlots" class="market-grid"></div>
+              <h3 id="packChoiceTitle" class="pack-choice-title">Choix du pack</h3>
+              <div id="packOffer" class="offer-row"></div>
+            </div>
+
+          </div>
+        </div>
+        <div id="weaponCompare" class="weapon-compare is-hidden"></div>
+      </section>
+
+      <section id="mainMenu" class="main-menu" aria-label="Menu principal">
+        <div class="menu-board">
+          <span class="label">Poker Survivor</span>
+          <h1>ENTRÉE</h1>
+          <div class="menu-form">
+            <label for="playerNameInput">Pseudo</label>
+            <input id="playerNameInput" type="text" maxlength="18" autocomplete="nickname" placeholder="Ton pseudo" />
+            <div class="menu-actions">
+              <button id="connectPlayer" class="secondary-button" type="button">Se connecter</button>
+              <button id="launchGame" class="primary-button" type="button" disabled>Lancer partie</button>
+            </div>
+            <p id="menuPlayerName">Aucun joueur connecté</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="godMode" class="god-mode is-hidden" aria-label="Easter egg divin">
+        <div>
+          <span class="label">52 / 52</span>
+          <h2>Dieu tout puissant</h2>
+          <p>Le deck entier est à toi. La réalité ferme dans <strong id="godCountdown">10</strong>s.</p>
+        </div>
+      </section>
+
+      <section id="gameOver" class="game-over is-hidden" aria-label="Partie terminée">
+        <div>
+          <span class="label">Partie terminée</span>
+          <h2 id="finalScore">Vague 1</h2>
+          <button id="restart" class="primary-button">Recommencer</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="src/game.js"></script>
+  </body>
+</html>

@@ -1,0 +1,873 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap");
+
+:root {
+  color-scheme: dark;
+  --bg: #090909;
+  --surface: #141414;
+  --surface-2: #1f1f1f;
+  --surface-3: #f4f4f4;
+  --text: #f4f4f4;
+  --text-dark: #090909;
+  --muted: #b8b8b8;
+  --accent: #0d67ff;
+  --line: #f4f4f4;
+  --gold: #f0d24b;
+  --danger: #e46363;
+  --heart: #e8526d;
+  --diamond: #58b7e9;
+  --club: #71d58a;
+  --spade: #d7dbe4;
+  --shadow: 6px 6px 0 var(--accent);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Space Mono", monospace;
+}
+
+button {
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-width: 320px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    var(--bg);
+  background-size: 18px 18px;
+}
+
+#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hud,
+.panel,
+.shop-board,
+.game-over > div {
+  border: 3px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.hud-top {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(84px, 1fr));
+  gap: 8px;
+  width: min(860px, calc(100vw - 32px));
+  padding: 8px;
+  transform: translateX(-50%);
+}
+
+.hud-top > div {
+  min-width: 0;
+  padding: 7px 9px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+}
+
+.label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+strong {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel {
+  position: absolute;
+  top: 92px;
+  width: 282px;
+  max-height: calc(100vh - 112px);
+  padding: 12px;
+  overflow: auto;
+}
+
+.panel-left {
+  left: 16px;
+}
+
+.panel-right {
+  right: 16px;
+}
+
+.panel-header {
+  margin-bottom: 10px;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.08em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: 2.1rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  margin-bottom: 8px;
+  font-size: 1.35rem;
+}
+
+.panel-header p,
+.shop-section p,
+.tip {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.card-row,
+.offer-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.offer-row {
+  grid-template-columns: repeat(auto-fit, minmax(70px, 92px));
+  margin-top: 12px;
+}
+
+.offer-row.is-replacing-weapon {
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+}
+
+.card {
+  position: relative;
+  display: grid;
+  min-height: 74px;
+  place-items: center;
+  border: 3px solid #090909;
+  background: #f4f4f4;
+  color: #090909;
+  font-weight: 900;
+  user-select: none;
+  box-shadow: 3px 3px 0 var(--accent);
+}
+
+.card .rank {
+  font-size: 1.12rem;
+}
+
+.card .suit {
+  font-size: 1.38rem;
+  line-height: 1;
+}
+
+.card.hearts,
+.card.diamonds {
+  color: #c51e3f;
+}
+
+.suit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.suit-stat {
+  min-width: 0;
+  padding: 8px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+}
+
+.suit-stat b {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 1rem;
+}
+
+.suit-stat span {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.weapon-list,
+.shop-list {
+  display: grid;
+  gap: 10px;
+}
+
+.weapon,
+.market-item,
+.replace-weapon-card,
+.shop-hand-card {
+  border: 3px solid var(--line);
+  background: var(--surface);
+}
+
+.weapon,
+.weapon-offer {
+  --rarity: var(--line);
+  border-color: var(--rarity);
+  box-shadow: 6px 6px 0 var(--rarity);
+}
+
+.weapon {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.weapon-top {
+  display: grid;
+  gap: 3px;
+}
+
+.weapon-top .grade {
+  color: var(--rarity);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.weapon-top strong {
+  color: var(--text);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.55rem;
+  letter-spacing: 0.07em;
+  line-height: 0.9;
+  text-transform: uppercase;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.weapon-scale {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  align-items: stretch;
+  border: 2px solid var(--line);
+}
+
+.weapon-scale span,
+.weapon-scale strong {
+  display: grid;
+  min-width: 0;
+  min-height: 34px;
+  place-items: center;
+  padding: 4px 6px;
+  text-align: center;
+}
+
+.weapon-scale span {
+  background: var(--scale-color);
+  color: #090909;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.weapon-scale strong {
+  margin: 0;
+  background: var(--surface-3);
+  color: #090909;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.scaling-bonus {
+  padding: 6px 8px;
+  border: 2px solid var(--scale-color);
+  background: #090909;
+  color: var(--scale-color);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.stat-strip {
+  padding: 6px 8px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.weapon-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.weapon-tags span {
+  border: 2px solid var(--line);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 900;
+  padding: 2px 5px;
+  text-transform: uppercase;
+}
+
+.weapon .action-pill {
+  width: 100%;
+}
+
+.empty-weapon {
+  border-style: dashed;
+  box-shadow: none;
+  opacity: 0.68;
+}
+
+.shop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(9, 9, 9, 0.72);
+}
+
+.main-menu {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    rgba(9, 9, 9, 0.92);
+  background-size: 18px 18px;
+}
+
+.menu-board {
+  width: min(560px, calc(100vw - 40px));
+  padding: 22px;
+  border: 3px solid var(--line);
+  background: var(--surface);
+  box-shadow: 10px 10px 0 var(--accent);
+}
+
+.menu-board h1 {
+  margin: 4px 0 18px;
+  color: var(--accent);
+  font-size: clamp(4rem, 14vw, 7rem);
+}
+
+.menu-form {
+  display: grid;
+  gap: 10px;
+}
+
+.menu-form label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.menu-form input {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 12px;
+  border: 3px solid var(--line);
+  background: var(--surface-3);
+  color: var(--text-dark);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 900;
+  outline: none;
+  text-transform: uppercase;
+  box-shadow: 5px 5px 0 var(--accent);
+}
+
+.menu-form input:focus {
+  border-color: var(--accent);
+}
+
+.menu-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.menu-form p {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.shop-board {
+  width: min(1140px, 100%);
+  max-height: min(740px, calc(100vh - 36px));
+  overflow: auto;
+}
+
+.shop-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border-bottom: 3px solid var(--line);
+  background: var(--surface);
+}
+
+.shop-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.78fr) minmax(360px, 1.36fr);
+  gap: 14px;
+  padding: 14px;
+}
+
+.shop-section {
+  min-width: 0;
+}
+
+.primary-button,
+.secondary-button,
+.shop-button,
+.action-pill {
+  display: grid;
+  min-height: 42px;
+  place-items: center;
+  border: 3px solid var(--line);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.primary-button,
+.secondary-button {
+  padding: 0 16px;
+}
+
+.secondary-button {
+  background: var(--surface-3);
+  color: var(--text-dark);
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.market-item[data-shop-slot]:hover,
+.shop-hand-card[data-sell-card]:hover,
+.shop-hand-card[data-curse-card]:hover,
+.card[data-card]:hover,
+.weapon[data-replace-weapon]:hover,
+.replace-weapon-card[data-replace-weapon]:hover {
+  transform: translate(-3px, -3px);
+}
+
+.shop-hand,
+.market-grid {
+  display: grid;
+  gap: 9px;
+}
+
+.shop-hand-card,
+.replace-weapon-card {
+  padding: 8px;
+}
+
+.shop-hand-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.shop-hand-card .card,
+.market-card {
+  min-height: 64px;
+  box-shadow: none;
+}
+
+.shop-hand-card strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.shop-hand-card p,
+.market-item p,
+.replace-weapon-card p {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.market-grid {
+  grid-template-columns: repeat(3, minmax(128px, 1fr));
+}
+
+.weapon-compare {
+  position: fixed;
+  z-index: 20;
+  width: min(560px, calc(100vw - 28px));
+  max-height: calc(100vh - 28px);
+  overflow: auto;
+  padding: 10px;
+  border: 3px solid var(--accent);
+  background: var(--surface-2);
+  box-shadow: 8px 8px 0 var(--accent);
+  pointer-events: none;
+}
+
+.weapon-compare h3 {
+  color: var(--accent);
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.78fr) minmax(220px, 1fr);
+  gap: 12px;
+}
+
+.compare-equipped {
+  display: grid;
+  gap: 10px;
+}
+
+.compare-current {
+  display: grid;
+  gap: 8px;
+}
+
+.compare-deltas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.compare-deltas span,
+.compare-empty {
+  display: grid;
+  min-height: 30px;
+  place-items: center;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.compare-deltas .is-good {
+  background: var(--club);
+  color: #090909;
+}
+
+.compare-deltas .is-bad {
+  background: var(--danger);
+  color: #fff;
+}
+
+.market-item {
+  display: grid;
+  grid-template-rows: auto minmax(52px, 1fr) auto;
+  gap: 8px;
+  min-height: 168px;
+  padding: 8px;
+  transition: transform 0.16s ease;
+}
+
+.market-item h4 {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.28rem;
+  letter-spacing: 0.06em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.market-item .action-pill,
+.shop-hand-card .action-pill,
+.replace-weapon-card .action-pill {
+  width: 100%;
+  pointer-events: none;
+}
+
+.shop-hand-card[data-sell-card],
+.shop-hand-card[data-curse-card],
+.market-item[data-shop-slot],
+.card[data-card],
+.weapon[data-replace-weapon],
+.replace-weapon-card[data-replace-weapon] {
+  cursor: pointer;
+}
+
+.market-item[data-shop-slot]:hover,
+.shop-hand-card[data-sell-card]:hover,
+.shop-hand-card[data-curse-card]:hover,
+.card[data-card]:hover,
+.weapon[data-replace-weapon]:hover,
+.replace-weapon-card[data-replace-weapon]:hover {
+  background: #202a42;
+}
+
+.action-pill.is-disabled,
+.market-item[aria-disabled="true"] .action-pill {
+  cursor: not-allowed;
+  filter: grayscale(0.85);
+  opacity: 0.55;
+}
+
+.market-item[aria-disabled="true"] {
+  opacity: 0.68;
+}
+
+.market-item.is-bought {
+  opacity: 0.52;
+}
+
+.market-item.is-cursed {
+  border-color: var(--gold);
+  box-shadow: 4px 4px 0 var(--gold);
+}
+
+.empty-card {
+  border-style: dashed;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.curse-mark {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 2px solid #090909;
+  background: var(--gold);
+  color: #090909;
+  font-size: 0.72rem;
+}
+
+.pack-choice-title {
+  margin-top: 16px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.85);
+  opacity: 0.55;
+}
+
+.game-over {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(9, 9, 9, 0.78);
+}
+
+.game-over > div {
+  width: min(360px, calc(100vw - 32px));
+  padding: 22px;
+  text-align: center;
+}
+
+.game-over h2 {
+  margin: 4px 0 18px;
+}
+
+.god-mode {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  background: rgba(9, 9, 9, 0.82);
+  text-align: center;
+}
+
+.god-mode > div {
+  width: min(520px, calc(100vw - 32px));
+  padding: 28px;
+  border: 3px solid var(--gold);
+  background: var(--surface);
+  box-shadow: 8px 8px 0 var(--gold);
+}
+
+.god-mode h2 {
+  margin: 6px 0 10px;
+  color: var(--gold);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 4rem;
+  letter-spacing: 0.08em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.god-mode p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.god-mode strong {
+  color: var(--gold);
+}
+
+.is-hidden {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .hud-top {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .panel {
+    top: auto;
+    bottom: 12px;
+    max-height: 218px;
+  }
+
+  .panel-left {
+    left: 12px;
+    width: min(340px, calc(50vw - 18px));
+  }
+
+  .panel-right {
+    right: 12px;
+    width: min(340px, calc(50vw - 18px));
+  }
+
+  .shop-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-grid {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .hud-top {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .menu-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    display: none;
+  }
+
+  .shop-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .shop-actions {
+    flex-direction: column;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+  }
+
+  .market-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-deltas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shop-hand-card {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .shop-hand-card .action-pill {
+    grid-column: 1 / -1;
+  }
+
+  .god-mode h2 {
+    font-size: 2.6rem;
+  }
+}

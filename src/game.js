@@ -1151,6 +1151,14 @@ function rollShopSlots() {
   return slots.sort(() => Math.random() - 0.5);
 }
 
+function enemyTier(wave = state.wave) {
+  return Math.floor(Math.max(1, wave) / 10);
+}
+
+function enemyTierMultiplier(wave = state.wave) {
+  return Math.pow(1.75, enemyTier(wave));
+}
+
 function beginWave() {
   state.betweenWaves = false;
   state.packOffer = [];
@@ -1162,6 +1170,7 @@ function beginWave() {
   state.waveDuration = Math.min(18 + state.wave * 2, 58);
   state.waveTimeLeft = state.waveDuration;
   state.spawnTimer = 0;
+  if (state.wave % 10 === 0) spawnBoss();
   ui.shop.classList.add("is-hidden");
   renderUI();
 }
@@ -1187,7 +1196,8 @@ function spawnEnemy() {
   const wave = state.wave;
   const shooter = wave >= 2 && Math.random() < Math.min(0.14 + wave * 0.018, 0.42);
   const brute = wave >= 4 && Math.random() < Math.min(0.09 + wave * 0.014, 0.34);
-  const hp = brute ? 42 + wave * 10 : shooter ? 24 + wave * 6 : 16 + wave * 4.5;
+  const tierMult = enemyTierMultiplier(wave);
+  const hp = (brute ? 42 + wave * 10 : shooter ? 24 + wave * 6 : 16 + wave * 4.5) * tierMult;
   const radius = brute ? 21 : shooter ? 16 : 15;
   const spawnPoint = clampToWorld(
     state.player.x + Math.cos(angle) * spawnDistance,
@@ -1201,11 +1211,50 @@ function spawnEnemy() {
     radius,
     hp,
     maxHp: hp,
-    speed: brute ? 78 + wave * 2.4 : shooter ? 92 + wave * 2.4 : 118 + wave * 3.4,
-    damage: brute ? 19 : shooter ? 11 : 13,
+    speed: (brute ? 78 + wave * 2.4 : shooter ? 92 + wave * 2.4 : 118 + wave * 3.4) * Math.min(1.45, Math.pow(1.08, enemyTier(wave))),
+    damage: (brute ? 19 : shooter ? 11 : 13) * Math.pow(1.35, enemyTier(wave)),
     type: brute ? "brute" : shooter ? "shooter" : "chaser",
     shootTimer: random(0.5, 1.6),
-    value: brute ? 2.35 : shooter ? 1.55 : 0.95,
+    value: (brute ? 2.35 : shooter ? 1.55 : 0.95) * Math.pow(1.35, enemyTier(wave)),
+    tier: enemyTier(wave),
+  });
+}
+
+function spawnBoss() {
+  const wave = state.wave;
+  const tierMult = enemyTierMultiplier(wave);
+  const radius = 46 + enemyTier(wave) * 5;
+  const side = Math.floor(random(0, 4));
+  const bounds = worldBounds();
+  let x = state.player.x;
+  let y = state.player.y;
+  if (side === 0) {
+    x = random(bounds.left + radius, bounds.right - radius);
+    y = bounds.top + radius;
+  } else if (side === 1) {
+    x = random(bounds.left + radius, bounds.right - radius);
+    y = bounds.bottom - radius;
+  } else if (side === 2) {
+    x = bounds.left + radius;
+    y = random(bounds.top + radius, bounds.bottom - radius);
+  } else {
+    x = bounds.right - radius;
+    y = random(bounds.top + radius, bounds.bottom - radius);
+  }
+
+  state.enemies.push({
+    x,
+    y,
+    radius,
+    hp: (900 + wave * 120) * tierMult,
+    maxHp: (900 + wave * 120) * tierMult,
+    speed: 62 + wave * 1.6,
+    damage: (28 + wave * 1.8) * Math.pow(1.35, enemyTier(wave)),
+    type: "boss",
+    shootTimer: 0.8,
+    value: 70 + wave * 8,
+    tier: enemyTier(wave),
+    boss: true,
   });
 }
 
@@ -1360,30 +1409,40 @@ function updateEnemies(dt) {
     }
 
     const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
-    const desiredRange = enemy.type === "shooter" ? 250 : 0;
+    const desiredRange = enemy.type === "shooter" ? 250 : enemy.type === "boss" ? 190 : 0;
     const d = distance(enemy, state.player);
 
-    if (enemy.type !== "shooter" || d > desiredRange) {
+    if ((enemy.type !== "shooter" && enemy.type !== "boss") || d > desiredRange) {
       enemy.x += Math.cos(angle) * enemy.speed * dt;
       enemy.y += Math.sin(angle) * enemy.speed * dt;
     } else {
-      enemy.x -= Math.cos(angle) * enemy.speed * 0.28 * dt;
-      enemy.y -= Math.sin(angle) * enemy.speed * 0.28 * dt;
+      const retreat = enemy.type === "boss" ? 0.12 : 0.28;
+      enemy.x -= Math.cos(angle) * enemy.speed * retreat * dt;
+      enemy.y -= Math.sin(angle) * enemy.speed * retreat * dt;
     }
 
-    if (enemy.type === "shooter") {
+    const clampedEnemy = clampToWorld(enemy.x, enemy.y, enemy.radius);
+    enemy.x = clampedEnemy.x;
+    enemy.y = clampedEnemy.y;
+
+    if (enemy.type === "shooter" || enemy.type === "boss") {
       enemy.shootTimer -= dt;
-      if (enemy.shootTimer <= 0 && d < 680) {
-        state.enemyBullets.push({
-          x: enemy.x,
-          y: enemy.y,
-          vx: Math.cos(angle) * 270,
-          vy: Math.sin(angle) * 270,
-          radius: 6,
-          damage: 9 + state.wave * 0.55,
-          life: 3,
-        });
-        enemy.shootTimer = random(1.35, 2.2);
+      if (enemy.shootTimer <= 0 && d < (enemy.type === "boss" ? 880 : 680)) {
+        const shots = enemy.type === "boss" ? 7 : 1;
+        const spread = enemy.type === "boss" ? 0.78 : 0;
+        for (let i = 0; i < shots; i += 1) {
+          const offset = shots > 1 ? ((i / (shots - 1)) - 0.5) * spread : 0;
+          state.enemyBullets.push({
+            x: enemy.x,
+            y: enemy.y,
+            vx: Math.cos(angle + offset) * (enemy.type === "boss" ? 230 : 270),
+            vy: Math.sin(angle + offset) * (enemy.type === "boss" ? 230 : 270),
+            radius: enemy.type === "boss" ? 9 : 6,
+            damage: (enemy.type === "boss" ? 14 + state.wave * 0.9 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0),
+            life: enemy.type === "boss" ? 4 : 3,
+          });
+        }
+        enemy.shootTimer = enemy.type === "boss" ? random(1.05, 1.5) : random(1.35, 2.2);
       }
     }
 
@@ -1683,14 +1742,28 @@ function renderGame() {
 
   for (const enemy of state.enemies) {
     const p = screenPoint(enemy.x, enemy.y);
-    const fill = enemy.type === "brute" ? "#9f5ec7" : enemy.type === "shooter" ? "#e08d4f" : "#e46363";
+    const fill = enemy.type === "boss" ? "#f0d24b" : enemy.type === "brute" ? "#9f5ec7" : enemy.type === "shooter" ? "#e08d4f" : "#e46363";
     drawCircle(p.x, p.y, enemy.radius, fill, "rgba(0,0,0,0.35)");
 
-    const hpWidth = enemy.radius * 2;
+    if (enemy.type === "boss") {
+      ctx.save();
+      ctx.strokeStyle = "#090909";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(p.x - enemy.radius * 0.58, p.y);
+      ctx.lineTo(p.x + enemy.radius * 0.58, p.y);
+      ctx.moveTo(p.x, p.y - enemy.radius * 0.58);
+      ctx.lineTo(p.x, p.y + enemy.radius * 0.58);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    const hpWidth = enemy.type === "boss" ? enemy.radius * 3 : enemy.radius * 2;
+    const hpHeight = enemy.type === "boss" ? 7 : 4;
     ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(p.x - hpWidth / 2, p.y - enemy.radius - 10, hpWidth, 4);
-    ctx.fillStyle = "#71d58a";
-    ctx.fillRect(p.x - hpWidth / 2, p.y - enemy.radius - 10, hpWidth * (enemy.hp / enemy.maxHp), 4);
+    ctx.fillRect(p.x - hpWidth / 2, p.y - enemy.radius - 14, hpWidth, hpHeight);
+    ctx.fillStyle = enemy.type === "boss" ? "#f0d24b" : "#71d58a";
+    ctx.fillRect(p.x - hpWidth / 2, p.y - enemy.radius - 14, hpWidth * (enemy.hp / enemy.maxHp), hpHeight);
   }
 
   const playerPulse = state.player.invuln > 0 ? 0.45 + Math.sin(state.worldTime * 30) * 0.22 : 1;

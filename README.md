@@ -18,6 +18,7 @@ Ouvre `index.html` dans un navigateur moderne.
 ## Système actuel
 
 - Les vagues sont infinies, durent un temps défini, et font apparaître des ennemis en continu pendant ce timer.
+- Toutes les 10 vagues, un boss majeur apparaît et les monstres prennent un gros palier de scaling.
 - La carte est un rectangle borné plus compact, avec une bordure visible; le joueur et les spawns ennemis restent dans ses limites.
 - La progression vise des shops plus actifs: vagues plus courtes, revenu naturel plus généreux, et assez d'or pour acheter plusieurs cartes avec quelques relances sans build économie.
 - L'interface utilise une direction brutaliste: gros contours, ombres franches, moins de texte, et rareté d'arme affichée directement par la couleur de l'encadré.

@@ -23,6 +23,8 @@ const ui = {
   shop: document.querySelector("#shop"),
   shopHand: document.querySelector("#shopHand"),
   shopSlots: document.querySelector("#shopSlots"),
+  shopGold: document.querySelector("#shopGold"),
+  shopGoldMultiplier: document.querySelector("#shopGoldMultiplier"),
   shopRunInfo: document.querySelector("#shopRunInfo"),
   weaponCompare: document.querySelector("#weaponCompare"),
   packChoiceTitle: document.querySelector("#packChoiceTitle"),
@@ -2054,6 +2056,8 @@ function renderUI() {
   ui.hp.textContent = `${Math.ceil(state.player.hp)} / ${state.stats.maxHp}`;
   ui.money.textContent = `$${state.money}`;
   ui.goldMultiplier.textContent = `x${state.stats.moneyMultiplier.toFixed(2)}`;
+  ui.shopGold.textContent = `$${state.money}`;
+  ui.shopGoldMultiplier.textContent = `OR x${state.stats.moneyMultiplier.toFixed(2)}`;
   ui.enemyCount.textContent = state.betweenWaves
     ? "Shop"
     : `${Math.ceil(state.waveTimeLeft)}s · ${state.enemies.length}`;

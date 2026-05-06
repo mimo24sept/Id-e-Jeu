@@ -1,0 +1,7 @@
+﻿.run-character p {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-transform: uppercase;
+}

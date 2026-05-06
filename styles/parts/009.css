@@ -1,0 +1,11 @@
+﻿.hud-top {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(84px, 1fr));
+  gap: 8px;
+  width: min(860px, calc(100vw - 32px));
+  padding: 8px;
+  transform: translateX(-50%);
+}

@@ -1,0 +1,6 @@
+﻿.tutorial-card .tutorial-actions {
+  display: grid;
+  grid-template-columns: 0.8fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}

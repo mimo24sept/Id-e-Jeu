@@ -1,0 +1,59 @@
+﻿@media (max-width: 640px) {
+  .hud-top {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .menu-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .character-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tutorial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tutorial-actions {
+    display: grid;
+  }
+
+  .panel {
+    display: none;
+  }
+
+  .shop-header {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .shop-actions {
+    flex-direction: column;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+  }
+
+  .market-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-deltas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shop-hand-card {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .shop-hand-card .action-pill {
+    grid-column: 1 / -1;
+  }
+
+  .god-mode h2 {
+    font-size: 2.6rem;
+  }
+}

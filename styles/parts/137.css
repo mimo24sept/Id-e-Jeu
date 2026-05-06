@@ -1,0 +1,9 @@
+﻿.god-mode h2 {
+  margin: 6px 0 10px;
+  color: var(--gold);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 4rem;
+  letter-spacing: 0.08em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}

@@ -1,0 +1,7 @@
+﻿.character-card p {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+}

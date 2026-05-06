@@ -1,0 +1,11 @@
+﻿.run-character strong {
+  overflow: visible;
+  color: var(--accent);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.07em;
+  line-height: 0.92;
+  text-overflow: clip;
+  text-transform: uppercase;
+  white-space: normal;
+}

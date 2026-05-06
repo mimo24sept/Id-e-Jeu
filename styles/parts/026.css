@@ -1,0 +1,9 @@
+﻿.pack-skip {
+  min-height: 74px;
+  align-content: center;
+  gap: 2px;
+  padding: 8px;
+  background: #090909;
+  color: #f4f4f4;
+  cursor: pointer;
+}

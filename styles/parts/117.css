@@ -1,0 +1,15 @@
+﻿.lock-button {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 1;
+  min-height: 26px;
+  padding: 0 7px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--line);
+}

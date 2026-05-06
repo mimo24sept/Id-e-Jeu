@@ -1,0 +1,5 @@
+﻿.shop-board {
+  width: min(1140px, 100%);
+  max-height: min(740px, calc(100vh - 36px));
+  overflow: auto;
+}

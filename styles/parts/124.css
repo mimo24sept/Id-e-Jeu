@@ -1,0 +1,6 @@
+﻿.action-pill.is-disabled,
+.market-item[aria-disabled="true"] .action-pill {
+  cursor: not-allowed;
+  filter: grayscale(0.85);
+  opacity: 0.55;
+}

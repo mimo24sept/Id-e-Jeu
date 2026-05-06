@@ -1,0 +1,6 @@
+﻿.shop-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(360px, 1.32fr) minmax(230px, 0.82fr);
+  gap: 14px;
+  padding: 14px;
+}

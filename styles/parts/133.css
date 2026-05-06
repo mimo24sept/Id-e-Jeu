@@ -1,0 +1,5 @@
+﻿.game-over > div {
+  width: min(360px, calc(100vw - 32px));
+  padding: 22px;
+  text-align: center;
+}

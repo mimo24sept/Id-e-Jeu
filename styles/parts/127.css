@@ -1,0 +1,4 @@
+﻿.market-item.is-cursed {
+  border-color: var(--gold);
+  box-shadow: 4px 4px 0 var(--gold);
+}

@@ -1,0 +1,6 @@
+﻿body {
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Space Mono", monospace;
+}

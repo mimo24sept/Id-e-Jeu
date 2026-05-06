@@ -1,0 +1,8 @@
+﻿.weapon-scale strong {
+  margin: 0;
+  background: var(--surface-3);
+  color: #090909;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}

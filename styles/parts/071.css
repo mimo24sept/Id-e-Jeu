@@ -1,0 +1,7 @@
+﻿.tutorial-progress {
+  margin-top: 10px;
+  color: var(--gold);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}

@@ -1,0 +1,5 @@
+﻿.tutorial-card h2 {
+  margin: 4px 0 8px;
+  color: var(--accent);
+  font-size: 2.7rem;
+}

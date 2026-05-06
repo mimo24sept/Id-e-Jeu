@@ -1,0 +1,7 @@
+﻿.stat-box span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}

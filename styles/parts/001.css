@@ -1,0 +1,19 @@
+﻿:root {
+  color-scheme: dark;
+  --bg: #090909;
+  --surface: #141414;
+  --surface-2: #1f1f1f;
+  --surface-3: #f4f4f4;
+  --text: #f4f4f4;
+  --text-dark: #090909;
+  --muted: #b8b8b8;
+  --accent: #0d67ff;
+  --line: #f4f4f4;
+  --gold: #f0d24b;
+  --danger: #e46363;
+  --heart: #e8526d;
+  --diamond: #58b7e9;
+  --club: #71d58a;
+  --spade: #d7dbe4;
+  --shadow: 6px 6px 0 var(--accent);
+}

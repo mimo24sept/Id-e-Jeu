@@ -1,0 +1,6 @@
+﻿.market-item .action-pill,
+.shop-hand-card .action-pill,
+.replace-weapon-card .action-pill {
+  width: 100%;
+  pointer-events: none;
+}

@@ -1,0 +1,6 @@
+﻿.suit-stat {
+  min-width: 0;
+  padding: 8px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+}

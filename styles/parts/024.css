@@ -1,0 +1,4 @@
+﻿.offer-row {
+  grid-template-columns: repeat(auto-fit, minmax(70px, 92px));
+  margin-top: 12px;
+}

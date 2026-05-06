@@ -1,0 +1,4 @@
+﻿.market-item.is-locked {
+  border-color: var(--gold);
+  box-shadow: 5px 5px 0 var(--gold);
+}

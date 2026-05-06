@@ -1,0 +1,11 @@
+﻿.primary-button:hover,
+.secondary-button:hover,
+.market-item[data-shop-slot]:hover,
+.shop-hand-card[data-sell-card]:hover,
+.shop-hand-card[data-curse-card]:hover,
+.card[data-card]:hover,
+.pack-skip:hover,
+.weapon[data-replace-weapon]:hover,
+.replace-weapon-card[data-replace-weapon]:hover {
+  transform: translate(-3px, -3px);
+}

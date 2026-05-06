@@ -1,0 +1,9 @@
+﻿.shop-hand-card p,
+.market-item p,
+.replace-weapon-card p {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}

@@ -6,6 +6,18 @@ Base jouable pour un survivant automatique façon Vampire Survivors / Brotato av
 
 Ouvre `index.html` dans un navigateur moderne.
 
+## Structure
+
+- `index.html`: structure DOM et liste des scripts charges dans l'ordre.
+- `styles.css`: point d'entree CSS, importe les petits fichiers de `styles/parts/`.
+- `src/core/`: DOM, runtime, utilitaires, input et tutoriel.
+- `src/data/`: definitions brutes des cartes, personnages, armes, packs et bonus.
+- `src/systems/`: logique de deck, stats, armes, vagues, ennemis et combat.
+- `src/render/`: rendu canvas.
+- `src/ui/`: rendu HTML des cartes, armes, shop et panneaux.
+- `src/actions/`: actions joueur en boutique et sur les packs.
+- `src/app/`: cycle de vie, menu, evenements et initialisation.
+
 ## Contrôles
 
 - Au lancement: saisis un pseudo, connecte-toi, puis lance une partie avec ce joueur.

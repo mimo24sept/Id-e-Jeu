@@ -1,0 +1,6 @@
+﻿.weapon,
+.weapon-offer {
+  --rarity: var(--line);
+  border-color: var(--rarity);
+  box-shadow: 6px 6px 0 var(--rarity);
+}

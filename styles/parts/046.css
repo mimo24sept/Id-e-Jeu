@@ -1,0 +1,7 @@
+﻿.weapon-scale span {
+  background: var(--scale-color);
+  color: #090909;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}

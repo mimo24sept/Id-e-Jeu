@@ -1,0 +1,33 @@
+﻿@media (max-width: 900px) {
+  .hud-top {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .panel {
+    top: auto;
+    bottom: 12px;
+    max-height: 218px;
+  }
+
+  .panel-left {
+    left: 12px;
+    width: min(340px, calc(50vw - 18px));
+  }
+
+  .panel-right {
+    right: 12px;
+    width: min(340px, calc(50vw - 18px));
+  }
+
+  .shop-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-grid {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+}

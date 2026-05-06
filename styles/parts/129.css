@@ -1,0 +1,13 @@
+﻿.curse-mark {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 2px solid #090909;
+  background: var(--gold);
+  color: #090909;
+  font-size: 0.72rem;
+}

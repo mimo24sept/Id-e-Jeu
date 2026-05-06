@@ -1,0 +1,8 @@
+﻿.market-item[data-shop-slot]:hover,
+.shop-hand-card[data-sell-card]:hover,
+.shop-hand-card[data-curse-card]:hover,
+.card[data-card]:hover,
+.weapon[data-replace-weapon]:hover,
+.replace-weapon-card[data-replace-weapon]:hover {
+  background: #202a42;
+}

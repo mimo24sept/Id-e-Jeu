@@ -1,0 +1,12 @@
+﻿.weapon-compare {
+  position: fixed;
+  z-index: 20;
+  width: min(560px, calc(100vw - 28px));
+  max-height: calc(100vh - 28px);
+  overflow: auto;
+  padding: 10px;
+  border: 3px solid var(--accent);
+  background: var(--surface-2);
+  box-shadow: 8px 8px 0 var(--accent);
+  pointer-events: none;
+}

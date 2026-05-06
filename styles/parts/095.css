@@ -1,0 +1,5 @@
+﻿.shop-hand-card .card,
+.market-card {
+  min-height: 64px;
+  box-shadow: none;
+}

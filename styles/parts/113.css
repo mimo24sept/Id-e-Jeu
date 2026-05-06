@@ -1,0 +1,13 @@
+﻿.compare-deltas span,
+.compare-empty {
+  display: grid;
+  min-height: 30px;
+  place-items: center;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}

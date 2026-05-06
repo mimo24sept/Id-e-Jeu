@@ -1,0 +1,5 @@
+﻿.weapon {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}

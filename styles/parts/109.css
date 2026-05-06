@@ -1,0 +1,5 @@
+﻿.compare-grid {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.78fr) minmax(220px, 1fr);
+  gap: 12px;
+}

@@ -1,0 +1,6 @@
+﻿.stat-box {
+  min-width: 0;
+  padding: 7px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+}

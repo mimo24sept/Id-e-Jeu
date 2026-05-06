@@ -1,0 +1,10 @@
+﻿.stat-strip {
+  padding: 6px 8px;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}

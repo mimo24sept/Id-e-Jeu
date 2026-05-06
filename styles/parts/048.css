@@ -1,0 +1,10 @@
+﻿.scaling-bonus {
+  padding: 6px 8px;
+  border: 2px solid var(--scale-color);
+  background: #090909;
+  color: var(--scale-color);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}

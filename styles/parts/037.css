@@ -1,0 +1,5 @@
+﻿.weapon-list,
+.shop-list {
+  display: grid;
+  gap: 10px;
+}

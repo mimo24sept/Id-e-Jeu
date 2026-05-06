@@ -1,0 +1,4 @@
+﻿.compare-deltas .is-bad {
+  background: var(--danger);
+  color: #fff;
+}

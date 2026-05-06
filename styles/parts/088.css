@@ -1,0 +1,15 @@
+﻿.primary-button,
+.secondary-button,
+.shop-button,
+.action-pill,
+.pack-skip {
+  display: grid;
+  min-height: 42px;
+  place-items: center;
+  border: 3px solid var(--line);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--line);
+}

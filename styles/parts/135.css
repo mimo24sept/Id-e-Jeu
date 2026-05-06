@@ -1,0 +1,9 @@
+﻿.god-mode {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  background: rgba(9, 9, 9, 0.82);
+  text-align: center;
+}

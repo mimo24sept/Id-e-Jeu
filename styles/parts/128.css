@@ -1,0 +1,5 @@
+﻿.empty-card {
+  border-style: dashed;
+  background: var(--surface-2);
+  color: var(--muted);
+}

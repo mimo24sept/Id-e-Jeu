@@ -1,0 +1,11 @@
+﻿.game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-width: 320px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    var(--bg);
+  background-size: 18px 18px;
+}

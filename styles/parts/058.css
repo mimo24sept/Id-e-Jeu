@@ -1,0 +1,6 @@
+﻿.menu-board h1,
+.character-board h1 {
+  margin: 4px 0 18px;
+  color: var(--accent);
+  font-size: clamp(4rem, 14vw, 7rem);
+}

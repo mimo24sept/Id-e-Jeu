@@ -1,0 +1,10 @@
+﻿.suit-stat span {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}

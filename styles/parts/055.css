@@ -1,0 +1,15 @@
+﻿.main-menu,
+.character-select,
+.tutorial {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    rgba(9, 9, 9, 0.92);
+  background-size: 18px 18px;
+}

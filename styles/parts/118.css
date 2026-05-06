@@ -1,0 +1,6 @@
+﻿.lock-button.is-locked {
+  background: var(--gold);
+  color: #090909;
+  border-color: var(--gold);
+  box-shadow: 3px 3px 0 var(--line);
+}

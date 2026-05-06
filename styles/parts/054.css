@@ -1,0 +1,8 @@
+﻿.shop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(9, 9, 9, 0.72);
+}

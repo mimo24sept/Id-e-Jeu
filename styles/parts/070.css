@@ -1,0 +1,7 @@
+﻿.tutorial-card p {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-transform: uppercase;
+}

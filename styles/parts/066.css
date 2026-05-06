@@ -1,0 +1,7 @@
+﻿.tutorial {
+  z-index: 70;
+  display: block;
+  padding: 0;
+  pointer-events: none;
+  background: transparent;
+}

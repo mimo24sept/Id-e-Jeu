@@ -15,11 +15,25 @@ function weaponHasMod(weapon, id) {
   return weapon.modifiers.some((mod) => mod.id === id);
 }
 
+function weaponSuitIdentityDamageBonus(weapon, suitCount) {
+  if (suitCount <= 0) return 0;
+  const gradeMult = weapon.grade.statMult;
+  if (weapon.suit === "hearts") {
+    const vitality = Math.log1p((state.stats.maxHp || 0) / 150) + (state.stats.regen || 0) * 0.08;
+    return suitCount * vitality * 0.42 * gradeMult;
+  }
+  if (weapon.suit === "diamonds") {
+    return suitCount * Math.log1p(Math.max(0, state.money || 0) / 120) * 0.38 * gradeMult;
+  }
+  return 0;
+}
+
 function weaponDamage(weapon) {
   const suitCount = state.stats[weapon.suit] || 0;
   const scalingType = getWeaponScalingType(weapon.scalingTypeId);
   const suitBonus = scalingType.id === "damage" ? suitCount * 1.15 * weapon.grade.statMult : suitCount * 0.35 * weapon.grade.statMult;
-  let damage = (weapon.damage + state.stats.flatDamage + suitBonus + state.stats.handPower * 0.75) * state.stats.damageMultiplier;
+  const identityBonus = weaponSuitIdentityDamageBonus(weapon, suitCount);
+  let damage = (weapon.damage + state.stats.flatDamage + suitBonus + identityBonus + state.stats.handPower * 0.75) * state.stats.damageMultiplier;
   const critChance = Math.min(0.9, state.stats.critChance + (scalingType.id === "crit" ? 0.03 * suitCount : 0));
   const crit = Math.random() < critChance;
   if (crit) damage *= 2;

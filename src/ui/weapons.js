@@ -11,6 +11,7 @@ function weaponScalingEffects(weapon) {
   const effects = { damage: 0, flatDamage: 0, money: 0, attackSpeed: 0, maxHp: 0, maxHpMultiplier: 0, regen: 0, cardSlots: 0, critChance: 0, moveSpeed: 0 };
   const count = state?.stats?.[weapon.suit] || 0;
   getWeaponScalingType(weapon.scalingTypeId).apply(effects, count, weapon.grade.statMult);
+  applyWeaponSuitIdentityEffects(effects, weapon, count);
   return { count, effects };
 }
 
@@ -25,6 +26,8 @@ function formatWeaponScalingBonus(weapon) {
   if (effects.maxHp) parts.push(`+${Math.round(effects.maxHp)} PV`);
   if (effects.regen) parts.push(`+${effects.regen.toFixed(1)} REG`);
   if (effects.moveSpeed) parts.push(`+${Math.round(effects.moveSpeed)} VIT`);
+  const identityDamage = weaponSuitIdentityDamageBonus(weapon, count);
+  if (identityDamage) parts.push(`+${Math.round(identityDamage)} DMG ARME`);
   return `${count} ${suit.symbol} = ${parts.length ? parts.join(" / ") : "0 bonus"}`;
 }
 

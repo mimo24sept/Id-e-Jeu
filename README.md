@@ -57,6 +57,7 @@ Ouvre `index.html` dans un navigateur moderne.
 - Le joueur ne peut équiper que 2 armes en même temps. Acheter une troisième arme demande quelle arme jeter.
 - Les armes ont un type, une couleur et un grade: mitraillette classique, Machine Gun, Uzi, Sniper, Katana, Fusil à pompe; grades verte, bleue, violette et jaune.
 - Une arme a une couleur de scaling et un type de scaling séparés. Exemple: une arme Pique peut compter tes Piques mais donner de la vie, de la vitesse, des dégâts, du critique ou des revenus selon son type.
+- Les armes Coeur et Carreau ont une identité renforcée: Coeur ajoute plus de survie et convertit une part de la vitalité en dégâts d'arme; Carreau ajoute plus de revenus et convertit une part de l'argent en dégâts d'arme.
 - Les meilleurs grades peuvent ajouter des modificateurs comme explosion, brûlure, stun ou bonus d'or.
 - Les armes ont aussi un niveau d'objet basé sur la vague et des statistiques rollées. Une arme rare trouvée tôt finit donc par être dépassée par une arme commune trouvée bien plus tard.
 - Chaque couleur donne une identité:

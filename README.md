@@ -50,6 +50,7 @@ Ouvre `index.html` dans un navigateur moderne.
 - Les cartes seules ne peuvent plus être achetées si tous les emplacements de main sont pris; il faut vendre une carte ou gagner un slot.
 - Les malédictions sont des effets positifs à mettre sur les cartes: dégâts, vie, vitesse d'attaque + déplacement, or, +1 emplacement de carte, et très rarement une carte qui compte comme toutes les couleurs.
 - Les malédictions passent par un pack de malédictions: il révèle 3 choix, puis le joueur en applique une sur la carte de son choix.
+- La méta-progression ajoute les premiers effets de cartes: les 2, 3, 4, 5 et 6 ont l'effet Révolution, où chaque petite carte améliorée booste les autres rangs 2-6 présents dans la main.
 - Les packs apparaissent dans ces 6 offres et révèlent 4 ou 6 cartes. Les packs spécialisés ne peuvent viser que la ou les couleurs les plus présentes dans la main.
 - Les packs peuvent être ouverts même si la main est pleine: le joueur peut vendre une carte pendant le choix, ou passer le pack sans prendre de carte.
 - Les armes apparaissent dans les 6 offres de boutique sans garantie fixe: chaque slot a 15% de chance d'être une arme.

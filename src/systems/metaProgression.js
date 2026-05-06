@@ -63,6 +63,18 @@ function cardUpgradeLevel(key, meta = playerMeta()) {
   return meta.cardUpgrades[key] || 0;
 }
 
+function cardMetaKey(card) {
+  return `${card.rank}-${card.suit}`;
+}
+
+function cardMetaLevel(card, meta = playerMeta()) {
+  return cardUpgradeLevel(cardMetaKey(card), meta);
+}
+
+function cardMetaEffectName(card) {
+  return card.value >= 2 && card.value <= 6 ? "Révolution" : "";
+}
+
 function upgradeableMetaCards(meta = playerMeta()) {
   return metaDeckKeys().filter((key) => cardUpgradeLevel(key, meta) < MAX_CARD_UPGRADE_LEVEL);
 }

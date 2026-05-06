@@ -1,8 +1,10 @@
 ﻿function cardHTML(card) {
+  const metaLevel = cardMetaLevel(card);
   return `
     <span class="rank">${card.rank}</span>
     <span class="suit">${card.cursed && card.curse?.allSuits ? "♠♦♣♥" : SUITS[card.suit].symbol}</span>
     ${card.cursed ? `<span class="curse-mark">+</span>` : ""}
+    ${metaLevel > 0 ? `<span class="meta-mark">R${metaLevel}</span>` : ""}
   `;
 }
 
@@ -11,9 +13,14 @@ function emptyCardHTML() {
 }
 
 function shopCardDetails(card) {
-  const base = describeCardBaseBonus(card);
-  if (!card.cursed) return base;
-  return `${base} · ${card.curse.name}`;
+  const parts = [describeCardBaseBonus(card)];
+  const metaLevel = cardMetaLevel(card);
+  const metaName = cardMetaEffectName(card);
+  const revolutionBoost = revolutionSourceLevel(card);
+  if (metaLevel > 0 && metaName) parts.push(`${metaName} niv.${metaLevel}`);
+  if (revolutionBoost > 0) parts.push(`+${Math.round((revolutionBoostMultiplier(card) - 1) * 100)}% Révolution`);
+  if (card.cursed) parts.push(card.curse.name);
+  return parts.join(" · ");
 }
 
 function effectiveHandSlots() {

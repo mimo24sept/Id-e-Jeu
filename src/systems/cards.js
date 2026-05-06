@@ -29,6 +29,19 @@ function scaleEffects(effects, multiplier = 1) {
   return Object.fromEntries(Object.entries(effects).map(([key, value]) => [key, value * multiplier]));
 }
 
+function revolutionSourceLevel(targetCard) {
+  if (!state?.hand || targetCard.value < 2 || targetCard.value > 6) return 0;
+  return state.hand.reduce((total, sourceCard) => {
+    if (sourceCard.value < 2 || sourceCard.value > 6) return total;
+    if (sourceCard.value === targetCard.value) return total;
+    return total + cardMetaLevel(sourceCard);
+  }, 0);
+}
+
+function revolutionBoostMultiplier(card) {
+  return 1 + revolutionSourceLevel(card) * 0.08;
+}
+
 function characterCardMultiplier(character, suit) {
   const dynamicMultiplier = character?.getCardEffectMultiplier?.(state, suit);
   if (dynamicMultiplier !== undefined) return dynamicMultiplier;
@@ -38,6 +51,7 @@ function characterCardMultiplier(character, suit) {
 function cardBaseEffects(card) {
   const faceMultiplier = cardFaceMultiplier(card);
   const characterMultiplier = characterCardMultiplier(state?.character, card.suit);
+  const metaMultiplier = revolutionBoostMultiplier(card);
   let effects;
   if (faceMultiplier > 0) {
     const multiplierBonus = faceMultiplier - 1;
@@ -45,7 +59,7 @@ function cardBaseEffects(card) {
     else if (card.suit === "diamonds") effects = { money: multiplierBonus };
     else if (card.suit === "clubs") effects = { attackSpeed: multiplierBonus };
     else effects = { maxHpMultiplier: multiplierBonus };
-    return scaleEffects(effects, characterMultiplier);
+    return scaleEffects(effects, characterMultiplier * metaMultiplier);
   }
 
   const value = cardStatValue(card);
@@ -53,7 +67,7 @@ function cardBaseEffects(card) {
   else if (card.suit === "diamonds") effects = { money: value / 100 };
   else if (card.suit === "clubs") effects = { attackSpeed: value / 100 };
   else effects = { maxHp: value };
-  return scaleEffects(effects, characterMultiplier);
+  return scaleEffects(effects, characterMultiplier * metaMultiplier);
 }
 
 function cardStatValue(card) {

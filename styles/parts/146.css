@@ -1,0 +1,14 @@
+.meta-mark {
+  position: absolute;
+  right: 5px;
+  top: 4px;
+  display: grid;
+  min-width: 22px;
+  height: 18px;
+  place-items: center;
+  border: 2px solid #090909;
+  background: var(--accent);
+  color: #f4f4f4;
+  font-size: 0.66rem;
+  font-weight: 700;
+}

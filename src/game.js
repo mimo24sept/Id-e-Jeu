@@ -6,6 +6,9 @@ const ui = {
   playerNameInput: document.querySelector("#playerNameInput"),
   connectPlayer: document.querySelector("#connectPlayer"),
   launchGame: document.querySelector("#launchGame"),
+  openTutorial: document.querySelector("#openTutorial"),
+  tutorial: document.querySelector("#tutorial"),
+  closeTutorial: document.querySelector("#closeTutorial"),
   menuPlayerName: document.querySelector("#menuPlayerName"),
   characterSelect: document.querySelector("#characterSelect"),
   characterChoices: document.querySelector("#characterChoices"),
@@ -463,6 +466,7 @@ let uiRefresh = 0;
 let godCloseTimeout = 0;
 let godCountdownInterval = 0;
 let connectedPlayerName = localStorage.getItem("pokerSurvivorName") || "";
+const TUTORIAL_STORAGE_KEY = "pokerSurvivorTutorialSeen";
 
 function random(min, max) {
   return min + Math.random() * (max - min);
@@ -2710,6 +2714,15 @@ function launchGame() {
   showCharacterSelect();
 }
 
+function showTutorial() {
+  ui.tutorial.classList.remove("is-hidden");
+}
+
+function closeTutorial() {
+  localStorage.setItem(TUTORIAL_STORAGE_KEY, "1");
+  ui.tutorial.classList.add("is-hidden");
+}
+
 function initMenu() {
   resizeCanvas();
   ui.mainMenu.classList.remove("is-hidden");
@@ -2719,6 +2732,9 @@ function initMenu() {
   ui.menuPlayerName.textContent = connectedPlayerName ? `Connecté: ${connectedPlayerName}` : "Aucun joueur connecté";
   ui.playerNameHud.textContent = connectedPlayerName || "-";
   renderGameShell();
+  if (localStorage.getItem(TUTORIAL_STORAGE_KEY) !== "1") {
+    showTutorial();
+  }
 }
 
 function renderGameShell() {
@@ -2729,6 +2745,8 @@ function renderGameShell() {
 window.addEventListener("resize", resizeCanvas);
 ui.connectPlayer.addEventListener("click", connectPlayer);
 ui.launchGame.addEventListener("click", launchGame);
+ui.openTutorial.addEventListener("click", showTutorial);
+ui.closeTutorial.addEventListener("click", closeTutorial);
 ui.characterChoices.addEventListener("click", (event) => {
   const button = event.target.closest("[data-character-id]");
   if (!button) return;
@@ -2746,6 +2764,10 @@ ui.playerNameInput.addEventListener("keydown", (event) => {
   connectPlayer();
 });
 window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !ui.tutorial.classList.contains("is-hidden")) {
+    closeTutorial();
+    return;
+  }
   keys.add(event.key.toLowerCase());
 });
 window.addEventListener("keyup", (event) => {

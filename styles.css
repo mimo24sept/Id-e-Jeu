@@ -408,7 +408,8 @@ h3 {
 }
 
 .main-menu,
-.character-select {
+.character-select,
+.tutorial {
   position: absolute;
   inset: 0;
   z-index: 30;
@@ -480,11 +481,75 @@ h3 {
   gap: 8px;
 }
 
+.menu-help {
+  width: 100%;
+}
+
 .menu-form p {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.tutorial {
+  z-index: 40;
+}
+
+.tutorial-board {
+  width: min(860px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  padding: 22px;
+  overflow: auto;
+  border: 3px solid var(--line);
+  background: var(--surface);
+  box-shadow: 10px 10px 0 var(--accent);
+}
+
+.tutorial-board h1 {
+  margin: 4px 0 18px;
+  color: var(--accent);
+  font-size: clamp(3.8rem, 12vw, 6.4rem);
+}
+
+.tutorial-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tutorial-grid article {
+  min-height: 136px;
+  padding: 14px;
+  border: 3px solid var(--line);
+  background: var(--surface-2);
+  box-shadow: 5px 5px 0 var(--accent);
+}
+
+.tutorial-grid strong {
+  overflow: visible;
+  color: var(--accent);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.07em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  white-space: normal;
+}
+
+.tutorial-grid p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.tutorial-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .character-grid {
@@ -1025,6 +1090,14 @@ button:disabled {
 
   .character-grid {
     grid-template-columns: 1fr;
+  }
+
+  .tutorial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tutorial-actions {
+    display: grid;
   }
 
   .panel {

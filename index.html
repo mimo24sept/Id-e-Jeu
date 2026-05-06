@@ -109,7 +109,36 @@
               <button id="connectPlayer" class="secondary-button" type="button">Se connecter</button>
               <button id="launchGame" class="primary-button" type="button" disabled>Lancer partie</button>
             </div>
+            <button id="openTutorial" class="secondary-button menu-help" type="button">Tutoriel</button>
             <p id="menuPlayerName">Aucun joueur connecté</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tutorial" class="tutorial is-hidden" aria-label="Tutoriel">
+        <div class="tutorial-board">
+          <span class="label">Premiere connexion</span>
+          <h1>TUTORIEL</h1>
+          <div class="tutorial-grid">
+            <article>
+              <strong>BOUGER</strong>
+              <p>WASD ou fleches. Reste mobile, les ennemis te cherchent en continu.</p>
+            </article>
+            <article>
+              <strong>SURVIVRE</strong>
+              <p>Une vague dure un temps donne. Les monstres spawn en boucle, puis la boutique s'ouvre.</p>
+            </article>
+            <article>
+              <strong>CARTES</strong>
+              <p>Ta main booste tes stats et ton bonus poker. Les packs peuvent etre passes.</p>
+            </article>
+            <article>
+              <strong>SHOP</strong>
+              <p>Achats, reroll, lock, armes et maledictions. Les caisses ramassees donnent des packs gratuits.</p>
+            </article>
+          </div>
+          <div class="tutorial-actions">
+            <button id="closeTutorial" class="primary-button" type="button">J'ai compris</button>
           </div>
         </div>
       </section>

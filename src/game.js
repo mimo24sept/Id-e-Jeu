@@ -2204,8 +2204,7 @@ function renderShopSlot(slot) {
   }
 
   if (slot.type === "pack") {
-    const fullHand = !hasFreeHandSlot();
-    const disabled = state.money < slot.price || fullHand;
+    const disabled = state.money < slot.price;
     return `
       <article class="market-item ${slot.locked ? "is-locked" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
         ${lockButton}
@@ -2214,7 +2213,7 @@ function renderShopSlot(slot) {
           <h4>${slot.name}</h4>
           <p>${packDetails(slot)}</p>
         </div>
-        <div class="action-pill ${disabled ? "is-disabled" : ""}">${fullHand ? "Main pleine" : `$${slot.price}`}</div>
+        <div class="action-pill ${disabled ? "is-disabled" : ""}">$${slot.price}</div>
       </article>
     `;
   }
@@ -2346,6 +2345,11 @@ function renderUI() {
     : state.pendingCurse
       ? `${state.pendingCurse.name} · Cible`
     : "PACK";
+  if (state.packContext) {
+    ui.packChoiceTitle.textContent = hasFreeHandSlot()
+      ? `${state.packContext.name} | Choisis 1 ou passe`
+      : "Main pleine | Vends ou passe";
+  }
   ui.packChoiceTitle.classList.toggle("is-hidden", state.packOffer.length === 0 && !state.pendingCurse && !state.pendingWeapon);
   ui.packOffer.classList.toggle("is-replacing-weapon", Boolean(state.pendingWeapon));
 
@@ -2353,15 +2357,22 @@ function renderUI() {
     ? state.weapons
         .map((weapon, index) => weaponCardHTML(weapon, { replaceIndex: index }))
         .join("")
-    : state.packOffer
-        .map(
-          (card, index) => `
-            <div class="card ${card.suit}" data-card="${index}" title="Ajouter cette carte">
-              ${cardHTML(card)}
-            </div>
-          `,
-        )
-        .join("");
+    : state.packOffer.length > 0
+      ? state.packOffer
+          .map(
+            (card, index) => `
+              <div class="card ${card.suit}" data-card="${index}" title="Ajouter cette carte">
+                ${cardHTML(card)}
+              </div>
+            `,
+          )
+          .join("") + `
+            <button class="pack-skip" type="button" data-skip-pack>
+              <span>PASSER</span>
+              <strong>0 carte</strong>
+            </button>
+          `
+      : "";
 }
 
 function pickReplacementIndex(card) {
@@ -2423,16 +2434,26 @@ function openNextCratePack() {
   return state.packOffer.length > 0;
 }
 
+function closePackChoice() {
+  state.packOffer = [];
+  state.packContext = null;
+  openNextCratePack();
+}
+
 function chooseCard(index) {
   if (state.pendingWeapon) return;
   const card = state.packOffer[index];
   if (!card) return;
   if (!addCardToHand(card)) return;
-  state.packOffer = [];
-  state.packContext = null;
-  openNextCratePack();
+  closePackChoice();
   state.stats = calculateStats();
   state.player.hp = Math.min(state.stats.maxHp, state.player.hp + 12);
+  renderUI();
+}
+
+function skipPack() {
+  if (state.pendingWeapon || state.packOffer.length === 0) return;
+  closePackChoice();
   renderUI();
 }
 
@@ -2494,7 +2515,7 @@ function buyShopSlot(id) {
   const slot = state.shopSlots.find((item) => item.id === id);
   if (state.pendingWeapon) return;
   if (!slot || slot.bought || state.money < slot.price) return;
-  if ((slot.type === "card" || slot.type === "cursedCard" || slot.type === "pack") && !hasFreeHandSlot()) return;
+  if ((slot.type === "card" || slot.type === "cursedCard") && !hasFreeHandSlot()) return;
   if (state.previewWeaponId === slot.id) state.previewWeaponId = null;
 
   if (slot.type === "pack") {
@@ -2571,7 +2592,7 @@ function applyCurseToCard(index) {
 }
 
 function buyPack(pack) {
-  if (!pack || pack.bought || state.money < pack.price || !hasFreeHandSlot()) return;
+  if (!pack || pack.bought || state.money < pack.price) return;
   state.money -= pack.price;
   pack.bought = true;
   state.packContext = pack;
@@ -2788,6 +2809,12 @@ window.addEventListener("scroll", () => {
 }, true);
 ui.rerollShop.addEventListener("click", rerollShop);
 ui.packOffer.addEventListener("click", (event) => {
+  const skipButton = event.target.closest("[data-skip-pack]");
+  if (skipButton) {
+    skipPack();
+    return;
+  }
+
   const replaceButton = event.target.closest("[data-replace-weapon]");
   if (replaceButton) {
     replaceWeapon(Number(replaceButton.dataset.replaceWeapon));

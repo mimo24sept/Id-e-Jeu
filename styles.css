@@ -187,6 +187,25 @@ h3 {
   grid-template-columns: repeat(2, minmax(220px, 1fr));
 }
 
+.pack-skip {
+  min-height: 74px;
+  align-content: center;
+  gap: 2px;
+  padding: 8px;
+  background: #090909;
+  color: #f4f4f4;
+  cursor: pointer;
+}
+
+.pack-skip span {
+  font-size: 0.86rem;
+}
+
+.pack-skip strong {
+  color: var(--accent);
+  font-size: 0.76rem;
+}
+
 .card {
   position: relative;
   display: grid;
@@ -579,7 +598,8 @@ h3 {
 .primary-button,
 .secondary-button,
 .shop-button,
-.action-pill {
+.action-pill,
+.pack-skip {
   display: grid;
   min-height: 42px;
   place-items: center;
@@ -607,6 +627,7 @@ h3 {
 .shop-hand-card[data-sell-card]:hover,
 .shop-hand-card[data-curse-card]:hover,
 .card[data-card]:hover,
+.pack-skip:hover,
 .weapon[data-replace-weapon]:hover,
 .replace-weapon-card[data-replace-weapon]:hover {
   transform: translate(-3px, -3px);

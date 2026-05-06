@@ -116,29 +116,15 @@
       </section>
 
       <section id="tutorial" class="tutorial is-hidden" aria-label="Tutoriel">
-        <div class="tutorial-board">
-          <span class="label">Premiere connexion</span>
-          <h1>TUTORIEL</h1>
-          <div class="tutorial-grid">
-            <article>
-              <strong>BOUGER</strong>
-              <p>WASD, ZQSD ou fleches. Reste mobile, les ennemis te cherchent en continu.</p>
-            </article>
-            <article>
-              <strong>SURVIVRE</strong>
-              <p>Une vague dure un temps donne. Les monstres spawn en boucle, puis la boutique s'ouvre.</p>
-            </article>
-            <article>
-              <strong>CARTES</strong>
-              <p>Ta main booste tes stats et ton bonus poker. Les packs peuvent etre passes.</p>
-            </article>
-            <article>
-              <strong>SHOP</strong>
-              <p>Achats, reroll, lock, armes et maledictions. Les caisses ramassees donnent des packs gratuits.</p>
-            </article>
-          </div>
+        <div id="tutorialSpotlight" class="tutorial-spotlight"></div>
+        <div id="tutorialCard" class="tutorial-card">
+          <span id="tutorialKicker" class="label">Tutoriel</span>
+          <h2 id="tutorialTitle">Bienvenue</h2>
+          <p id="tutorialText">Je te montre les zones importantes quand tu les rencontres.</p>
+          <div class="tutorial-progress" id="tutorialProgress">1 / 1</div>
           <div class="tutorial-actions">
-            <button id="closeTutorial" class="primary-button" type="button">J'ai compris</button>
+            <button id="skipTutorial" class="secondary-button" type="button">Passer</button>
+            <button id="closeTutorial" class="primary-button" type="button">OK</button>
           </div>
         </div>
       </section>

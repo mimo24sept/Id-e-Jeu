@@ -493,57 +493,62 @@ h3 {
 }
 
 .tutorial {
-  z-index: 40;
+  z-index: 70;
+  display: block;
+  padding: 0;
+  pointer-events: none;
+  background: transparent;
 }
 
-.tutorial-board {
-  width: min(860px, calc(100vw - 40px));
-  max-height: calc(100vh - 40px);
-  padding: 22px;
-  overflow: auto;
+.tutorial-spotlight {
+  position: fixed;
+  z-index: 1;
+  border: 3px solid var(--line);
+  background: rgba(13, 103, 255, 0.07);
+  box-shadow:
+    0 0 0 9999px rgba(9, 9, 9, 0.64),
+    6px 6px 0 var(--accent);
+  transition: left 160ms ease, top 160ms ease, width 160ms ease, height 160ms ease;
+}
+
+.tutorial-card {
+  position: fixed;
+  z-index: 2;
+  width: min(370px, calc(100vw - 28px));
+  padding: 16px;
   border: 3px solid var(--line);
   background: var(--surface);
-  box-shadow: 10px 10px 0 var(--accent);
+  box-shadow: 8px 8px 0 var(--accent);
+  pointer-events: auto;
 }
 
-.tutorial-board h1 {
-  margin: 4px 0 18px;
+.tutorial-card h2 {
+  margin: 4px 0 8px;
   color: var(--accent);
-  font-size: clamp(3.8rem, 12vw, 6.4rem);
+  font-size: 2.7rem;
 }
 
-.tutorial-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.tutorial-grid article {
-  min-height: 136px;
-  padding: 14px;
-  border: 3px solid var(--line);
-  background: var(--surface-2);
-  box-shadow: 5px 5px 0 var(--accent);
-}
-
-.tutorial-grid strong {
-  overflow: visible;
-  color: var(--accent);
-  font-family: "Bebas Neue", sans-serif;
-  font-size: 2rem;
-  letter-spacing: 0.07em;
-  line-height: 0.95;
-  text-transform: uppercase;
-  white-space: normal;
-}
-
-.tutorial-grid p {
-  margin-top: 10px;
+.tutorial-card p {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.35;
   text-transform: uppercase;
+}
+
+.tutorial-progress {
+  margin-top: 10px;
+  color: var(--gold);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tutorial-card .tutorial-actions {
+  display: grid;
+  grid-template-columns: 0.8fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .tutorial-actions {

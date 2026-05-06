@@ -9,7 +9,7 @@ Ouvre `index.html` dans un navigateur moderne.
 ## Contrôles
 
 - Au lancement: saisis un pseudo, connecte-toi, puis lance une partie avec ce joueur.
-- A la premiere visite, un tutoriel s'affiche automatiquement; il peut aussi etre relu depuis le menu principal.
+- A la premiere visite, un tutoriel interactif surligne les elements importants au moment ou le joueur les rencontre; il peut aussi etre relu depuis le menu principal.
 - Le système de sélection de personnage est prêt: quand des personnages seront définis, 3 choix aléatoires seront proposés au début d'une run.
 - Personnages définis actuellement: L'ombre, Vampire, Expert comptable, Ange Blanc, Gâchette folle, Bazooka, GigaCHAD et Time Breaker.
 - `WASD`, `ZQSD` ou flèches: déplacer le personnage. Le jeu détecte le layout quand le navigateur le permet et accepte les deux mappings.

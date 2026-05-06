@@ -8,7 +8,14 @@ const ui = {
   launchGame: document.querySelector("#launchGame"),
   openTutorial: document.querySelector("#openTutorial"),
   tutorial: document.querySelector("#tutorial"),
+  tutorialSpotlight: document.querySelector("#tutorialSpotlight"),
+  tutorialCard: document.querySelector("#tutorialCard"),
+  tutorialKicker: document.querySelector("#tutorialKicker"),
+  tutorialTitle: document.querySelector("#tutorialTitle"),
+  tutorialText: document.querySelector("#tutorialText"),
+  tutorialProgress: document.querySelector("#tutorialProgress"),
   closeTutorial: document.querySelector("#closeTutorial"),
+  skipTutorial: document.querySelector("#skipTutorial"),
   menuPlayerName: document.querySelector("#menuPlayerName"),
   characterSelect: document.querySelector("#characterSelect"),
   characterChoices: document.querySelector("#characterChoices"),
@@ -467,8 +474,87 @@ let uiRefresh = 0;
 let godCloseTimeout = 0;
 let godCountdownInterval = 0;
 let connectedPlayerName = localStorage.getItem("pokerSurvivorName") || "";
-const TUTORIAL_STORAGE_KEY = "pokerSurvivorTutorialSeen";
+const TUTORIAL_STORAGE_KEY = "pokerSurvivorInteractiveTutorialDone";
+const TUTORIAL_STEPS_STORAGE_KEY = "pokerSurvivorInteractiveTutorialSteps";
 let keyboardLayout = "qwerty";
+let tutorialQueue = [];
+let activeTutorialStep = null;
+let tutorialSeenSteps = new Set(JSON.parse(localStorage.getItem(TUTORIAL_STEPS_STORAGE_KEY) || "[]"));
+
+const TUTORIAL_STEPS = {
+  menuName: {
+    selector: "#playerNameInput",
+    kicker: "Connexion",
+    title: "Choisis ton pseudo",
+    text: "C'est le nom de ta run locale. Ecris-le, puis connecte-toi pour pouvoir lancer une partie.",
+  },
+  menuLaunch: {
+    selector: ".menu-actions",
+    kicker: "Menu",
+    title: "Lance ta run",
+    text: "Une fois connecte, le bouton Lancer partie t'envoie au choix de personnage.",
+  },
+  characterPick: {
+    selector: "#characterChoices",
+    kicker: "Personnage",
+    title: "Choisis ton modificateur",
+    text: "Trois personnages sont tires au hasard. Chaque choix change la puissance des couleurs de tes cartes.",
+  },
+  waveControls: {
+    selector: "#controlsTip",
+    kicker: "Vague",
+    title: "Bouge en continu",
+    text: "Le clavier est detecte quand possible. WASD, ZQSD et les fleches marchent pour esquiver.",
+  },
+  handPanel: {
+    selector: ".panel-left",
+    kicker: "Main",
+    title: "Tes cartes font ton build",
+    text: "Chaque carte donne une stat. La meilleure main de poker ajoute un gros bonus de degats.",
+  },
+  weaponPanel: {
+    selector: ".panel-right",
+    kicker: "Armes",
+    title: "Tes armes tirent seules",
+    text: "Elles ciblent automatiquement. Tu en gardes deux, alors cherche les meilleurs rolls au shop.",
+  },
+  crateField: {
+    selector: "#game",
+    kicker: "Terrain",
+    title: "Ramasse les caisses",
+    text: "Pendant les vagues, des caisses apparaissent sur la map. Elles donnent des packs gratuits en boutique.",
+  },
+  shopGold: {
+    selector: ".shop-wallet",
+    kicker: "Boutique",
+    title: "Surveille ton or",
+    text: "L'or disponible et ton multiplicateur sont ici. C'est ton carburant pour cartes, armes et rerolls.",
+  },
+  shopHand: {
+    selector: "#shopHand",
+    kicker: "Main",
+    title: "Vends pour faire de la place",
+    text: "Clique une carte ici pour la vendre. Tu peux aussi vendre pendant qu'un pack est ouvert.",
+  },
+  shopMarket: {
+    selector: "#shopSlots",
+    kicker: "Marche",
+    title: "Six offres aleatoires",
+    text: "Cartes, packs, armes, maledictions et bonus tournent ici. Tu peux lock une offre pour la garder.",
+  },
+  shopStart: {
+    selector: ".shop-actions",
+    kicker: "Suite",
+    title: "Relance ou repars",
+    text: "Reroll si le marche est mauvais, puis lance la vague suivante quand ton build te plait.",
+  },
+  packChoice: {
+    selector: "#packOffer",
+    kicker: "Pack",
+    title: "Choisis ou passe",
+    text: "Un pack revele plusieurs cartes. Prends une carte, vends d'abord si la main est pleine, ou passe.",
+  },
+};
 
 function random(min, max) {
   return min + Math.random() * (max - min);
@@ -573,6 +659,140 @@ function movementKeyFromEvent(event) {
 
 function isTypingTarget(target) {
   return target instanceof HTMLElement && (target.matches("input, textarea, select") || target.isContentEditable);
+}
+
+function saveTutorialProgress() {
+  localStorage.setItem(TUTORIAL_STEPS_STORAGE_KEY, JSON.stringify([...tutorialSeenSteps]));
+}
+
+function isTutorialDone() {
+  return localStorage.getItem(TUTORIAL_STORAGE_KEY) === "1";
+}
+
+function tutorialTarget(step) {
+  return document.querySelector(step.selector);
+}
+
+function isVisibleElement(element) {
+  if (!element || element.classList.contains("is-hidden")) return false;
+  const rect = element.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+}
+
+function positionTutorialCard(step, target) {
+  const rect = target.getBoundingClientRect();
+  const padding = 8;
+  const spotLeft = clamp(rect.left - padding, 8, window.innerWidth - 16);
+  const spotTop = clamp(rect.top - padding, 8, window.innerHeight - 16);
+  const spotWidth = clamp(rect.width + padding * 2, 54, window.innerWidth - spotLeft - 8);
+  const spotHeight = clamp(rect.height + padding * 2, 54, window.innerHeight - spotTop - 8);
+
+  ui.tutorialSpotlight.style.left = `${spotLeft}px`;
+  ui.tutorialSpotlight.style.top = `${spotTop}px`;
+  ui.tutorialSpotlight.style.width = `${spotWidth}px`;
+  ui.tutorialSpotlight.style.height = `${spotHeight}px`;
+
+  const cardRect = ui.tutorialCard.getBoundingClientRect();
+  const gap = 14;
+  const margin = 14;
+  let left = rect.left;
+  let top = rect.bottom + gap;
+  if (top + cardRect.height > window.innerHeight - margin) {
+    top = rect.top - cardRect.height - gap;
+  }
+  if (top < margin) {
+    top = Math.min(window.innerHeight - cardRect.height - margin, rect.top + rect.height / 2 - cardRect.height / 2);
+  }
+  left = clamp(left, margin, window.innerWidth - cardRect.width - margin);
+  top = clamp(top, margin, window.innerHeight - cardRect.height - margin);
+
+  ui.tutorialCard.style.left = `${left}px`;
+  ui.tutorialCard.style.top = `${top}px`;
+}
+
+function showActiveTutorialStep() {
+  const step = TUTORIAL_STEPS[activeTutorialStep];
+  const target = step ? tutorialTarget(step) : null;
+  if (!step || !isVisibleElement(target)) {
+    activeTutorialStep = null;
+    ui.tutorial.classList.add("is-hidden");
+    return;
+  }
+
+  ui.tutorialKicker.textContent = step.kicker;
+  ui.tutorialTitle.textContent = step.title;
+  ui.tutorialText.textContent = step.text;
+  ui.tutorialProgress.textContent = `${tutorialSeenSteps.size + 1} / ${Object.keys(TUTORIAL_STEPS).length}`;
+  ui.closeTutorial.textContent = tutorialQueue.length > 0 ? "Suivant" : "OK";
+  ui.tutorial.classList.remove("is-hidden");
+  requestAnimationFrame(() => positionTutorialCard(step, target));
+}
+
+function showNextTutorialStep() {
+  if (activeTutorialStep || isTutorialDone()) return;
+
+  while (tutorialQueue.length > 0) {
+    const nextStep = tutorialQueue.shift();
+    if (tutorialSeenSteps.has(nextStep)) continue;
+    const step = TUTORIAL_STEPS[nextStep];
+    if (!step || !isVisibleElement(tutorialTarget(step))) continue;
+    activeTutorialStep = nextStep;
+    showActiveTutorialStep();
+    return;
+  }
+
+  ui.tutorial.classList.add("is-hidden");
+}
+
+function queueTutorialSteps(stepIds, options = {}) {
+  if (isTutorialDone() && !options.force) return;
+  if (activeTutorialStep && !isVisibleElement(tutorialTarget(TUTORIAL_STEPS[activeTutorialStep]))) {
+    tutorialSeenSteps.add(activeTutorialStep);
+    saveTutorialProgress();
+    activeTutorialStep = null;
+  }
+
+  for (const stepId of stepIds) {
+    if (!TUTORIAL_STEPS[stepId]) continue;
+    if (!options.force && tutorialSeenSteps.has(stepId)) continue;
+    if (activeTutorialStep === stepId || tutorialQueue.includes(stepId)) continue;
+    tutorialQueue.push(stepId);
+  }
+
+  requestAnimationFrame(showNextTutorialStep);
+}
+
+function completeTutorialStep() {
+  if (!activeTutorialStep) {
+    showNextTutorialStep();
+    return;
+  }
+  tutorialSeenSteps.add(activeTutorialStep);
+  saveTutorialProgress();
+  if (tutorialSeenSteps.size >= Object.keys(TUTORIAL_STEPS).length) {
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, "1");
+  }
+  activeTutorialStep = null;
+  ui.tutorial.classList.add("is-hidden");
+  showNextTutorialStep();
+}
+
+function skipTutorial() {
+  Object.keys(TUTORIAL_STEPS).forEach((stepId) => tutorialSeenSteps.add(stepId));
+  saveTutorialProgress();
+  localStorage.setItem(TUTORIAL_STORAGE_KEY, "1");
+  tutorialQueue = [];
+  activeTutorialStep = null;
+  ui.tutorial.classList.add("is-hidden");
+}
+
+function replayTutorial() {
+  localStorage.removeItem(TUTORIAL_STORAGE_KEY);
+  tutorialSeenSteps = new Set();
+  saveTutorialProgress();
+  tutorialQueue = [];
+  activeTutorialStep = null;
+  queueTutorialSteps(["menuName", "menuLaunch"], { force: true });
 }
 
 function uniqueId(prefix) {
@@ -1253,6 +1473,7 @@ function beginWave() {
   if (state.wave % 10 === 0) spawnBoss();
   ui.shop.classList.add("is-hidden");
   renderUI();
+  queueTutorialSteps(["waveControls", "handPanel", "weaponPanel", "crateField"]);
 }
 
 function completeWave() {
@@ -1270,6 +1491,8 @@ function completeWave() {
   openNextCratePack();
   renderUI();
   ui.shop.classList.remove("is-hidden");
+  queueTutorialSteps(["shopGold", "shopHand", "shopMarket", "shopStart"]);
+  if (state.packOffer.length > 0) queueTutorialSteps(["packChoice"]);
 }
 
 function spawnEnemy() {
@@ -2521,12 +2744,14 @@ function chooseCard(index) {
   state.stats = calculateStats();
   state.player.hp = Math.min(state.stats.maxHp, state.player.hp + 12);
   renderUI();
+  if (state.packOffer.length > 0) queueTutorialSteps(["packChoice"]);
 }
 
 function skipPack() {
   if (state.pendingWeapon || state.packOffer.length === 0) return;
   closePackChoice();
   renderUI();
+  if (state.packOffer.length > 0) queueTutorialSteps(["packChoice"]);
 }
 
 function sellCard(index) {
@@ -2671,6 +2896,7 @@ function buyPack(pack) {
   state.pendingCurse = null;
   state.packOffer = drawUniqueCards(pack.size, { suit: pack.suit, exclude: usedCardKeys() });
   renderUI();
+  queueTutorialSteps(["packChoice"]);
 }
 
 function loop(now) {
@@ -2756,6 +2982,7 @@ function showCharacterSelect() {
       `,
     )
     .join("");
+  queueTutorialSteps(["characterPick"]);
 }
 
 function cleanPlayerName(value) {
@@ -2783,12 +3010,11 @@ function launchGame() {
 }
 
 function showTutorial() {
-  ui.tutorial.classList.remove("is-hidden");
+  replayTutorial();
 }
 
 function closeTutorial() {
-  localStorage.setItem(TUTORIAL_STORAGE_KEY, "1");
-  ui.tutorial.classList.add("is-hidden");
+  completeTutorialStep();
 }
 
 function initMenu() {
@@ -2802,9 +3028,7 @@ function initMenu() {
   ui.menuPlayerName.textContent = connectedPlayerName ? `Connecté: ${connectedPlayerName}` : "Aucun joueur connecté";
   ui.playerNameHud.textContent = connectedPlayerName || "-";
   renderGameShell();
-  if (localStorage.getItem(TUTORIAL_STORAGE_KEY) !== "1") {
-    showTutorial();
-  }
+  queueTutorialSteps(["menuName", "menuLaunch"]);
 }
 
 function renderGameShell() {
@@ -2812,11 +3036,15 @@ function renderGameShell() {
   drawGridBackdrop();
 }
 
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize", () => {
+  resizeCanvas();
+  if (activeTutorialStep) showActiveTutorialStep();
+});
 ui.connectPlayer.addEventListener("click", connectPlayer);
 ui.launchGame.addEventListener("click", launchGame);
 ui.openTutorial.addEventListener("click", showTutorial);
 ui.closeTutorial.addEventListener("click", closeTutorial);
+ui.skipTutorial.addEventListener("click", skipTutorial);
 ui.characterChoices.addEventListener("click", (event) => {
   const button = event.target.closest("[data-character-id]");
   if (!button) return;

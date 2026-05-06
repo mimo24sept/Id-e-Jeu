@@ -130,7 +130,7 @@ function updateCrates(dt) {
 
   state.crateSpawnTimer -= dt;
   if (state.crateSpawnTimer <= 0) {
-    if (state.crates.length < MAX_CRATES_ON_MAP) {
+    if (state.crates.length < MAX_CRATES_ON_MAP && state.pendingCratePacks < 1) {
       spawnCrate();
     }
     state.crateSpawnTimer = nextCrateDelay();
@@ -307,7 +307,9 @@ function applyHitEffects(enemy, source) {
 function updateKills(dt) {
   for (const enemy of state.enemies) {
     if (enemy.hp <= 0) {
-      state.moneyDust += enemy.value * state.stats.moneyMultiplier * (1 + (enemy.goldBonus || 0));
+      const expectedCards = 5 + Math.max(1, state.wave) * 4;
+      const densityPenalty = Math.max(0.55, 1 - Math.max(0, state.hand.length - expectedCards) * 0.035);
+      state.moneyDust += enemy.value * state.stats.moneyMultiplier * densityPenalty * (1 + (enemy.goldBonus || 0));
       const gain = Math.floor(state.moneyDust);
       if (gain > 0) {
         state.money += gain;

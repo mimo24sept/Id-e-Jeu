@@ -114,7 +114,7 @@ function spawnBoss() {
 }
 
 function nextCrateDelay() {
-  return random(6.5, 10.5);
+  return random(8, 13);
 }
 
 function spawnCrate() {

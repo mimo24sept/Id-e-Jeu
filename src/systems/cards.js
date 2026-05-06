@@ -117,6 +117,11 @@ function combinations(items, size) {
   return result;
 }
 
+function pokerHand(name, bonusKey, power) {
+  const damageBonus = POKER_DAMAGE_BONUS[bonusKey];
+  return { name, multiplier: 1 + damageBonus, damageBonus, power };
+}
+
 function longestStraightLength(cards) {
   const values = new Set(cards.map((card) => card.value));
   if (values.has(14)) values.add(1);
@@ -132,47 +137,119 @@ function longestStraightLength(cards) {
   return best;
 }
 
+function hasStraight(cards, minimumLength = 5) {
+  return longestStraightLength(cards) >= minimumLength;
+}
+
+function hasStraightFlush(cards) {
+  return Object.keys(SUITS).some((suit) => hasStraight(cards.filter((card) => card.suit === suit), 5));
+}
+
+function evaluateBestPokerHand(cards) {
+  if (cards.length === 0) return pokerHand("Aucune carte", "high", 0);
+  if (cards.length <= 5) return evaluateFiveCardHand(cards);
+
+  const groups = rankGroupCounts(cards).sort((a, b) => b - a);
+  const pairCount = groups.filter((count) => count >= 2).length;
+  const tripleCount = groups.filter((count) => count >= 3).length;
+  const hasFlush = Object.keys(SUITS).some((suit) => cards.filter((card) => card.suit === suit).length >= 5);
+  const hasFullHouse = tripleCount >= 1 && (pairCount >= 2 || groups.filter((count) => count >= 3).length >= 2);
+
+  if (hasStraightFlush(cards)) return pokerHand("Quinte flush", "straightFlush", 8);
+  if (groups[0] >= 4) return pokerHand("Carré", "four", 7);
+  if (hasFullHouse) return pokerHand("Full", "fullHouse", 6);
+  if (hasFlush) return pokerHand("Couleur", "flush", 5);
+  if (hasStraight(cards)) return pokerHand("Quinte", "straight", 4);
+  if (groups[0] >= 3) return pokerHand("Brelan", "three", 3);
+  if (pairCount >= 2) return pokerHand("Double paire", "twoPair", 2);
+  if (pairCount >= 1) return pokerHand("Paire", "pair", 1);
+  return pokerHand("Carte haute", "high", 0);
+}
+
+function betterHand(candidate, current) {
+  if (!candidate) return current;
+  if (candidate.damageBonus > current.damageBonus) return candidate;
+  if (candidate.damageBonus === current.damageBonus && candidate.power > current.power) return candidate;
+  return current;
+}
+
+function pokerSpecial(name, bonusKey, power) {
+  const damageBonus = POKER_DAMAGE_BONUS[bonusKey];
+  return { name, multiplier: 1 + damageBonus, damageBonus, power };
+}
+
+function rankGroupCounts(cards) {
+  const ranks = new Map();
+  for (const card of cards) {
+    ranks.set(card.value, (ranks.get(card.value) || 0) + 1);
+  }
+  return [...ranks.values()];
+}
+
+function completeSuitCount(cards) {
+  return Object.keys(SUITS).filter((suit) => {
+    const values = new Set(cards.filter((card) => card.suit === suit).map((card) => card.value));
+    return RANKS.every((rank) => values.has(rank.value));
+  }).length;
+}
+
 function specialHand(cards, best) {
   if (cards.length <= 5) return best;
 
   let upgraded = best;
+  const groups = rankGroupCounts(cards);
+  const pairCount = groups.filter((count) => count >= 2).length;
+  const brelanCount = groups.filter((count) => count >= 3).length;
+  const squareCount = groups.filter((count) => count >= 4).length;
+  const fullRankCount = groups.filter((count) => count === 4).length;
+  const fullSuits = completeSuitCount(cards);
   const suits = Object.keys(SUITS);
+
   for (const suit of suits) {
     const suited = cards.filter((card) => card.suit === suit);
     const royalValues = new Set(suited.map((card) => card.value));
     if ([10, 11, 12, 13, 14].every((value) => royalValues.has(value))) {
-      const royal = { name: "Flush royal", multiplier: 1 + POKER_DAMAGE_BONUS.royalFlush, damageBonus: POKER_DAMAGE_BONUS.royalFlush, power: 9 };
-      if (royal.damageBonus > upgraded.damageBonus) upgraded = royal;
+      upgraded = betterHand(pokerSpecial("Flush royal", "royalFlush", 9), upgraded);
     }
     if (suited.length >= 6) {
-      const grand = { name: "Grande couleur", multiplier: 1 + POKER_DAMAGE_BONUS.grandFlush, damageBonus: POKER_DAMAGE_BONUS.grandFlush, power: 7 };
-      if (grand.damageBonus > upgraded.damageBonus) upgraded = grand;
+      upgraded = betterHand(pokerSpecial("Grande couleur", "grandFlush", 7), upgraded);
     }
     if (suited.length >= 7) {
-      const perfect = { name: "Couleur parfaite", multiplier: 1 + POKER_DAMAGE_BONUS.perfectFlush, damageBonus: POKER_DAMAGE_BONUS.perfectFlush, power: 10 };
-      if (perfect.damageBonus > upgraded.damageBonus) upgraded = perfect;
+      upgraded = betterHand(pokerSpecial("Couleur parfaite", "perfectFlush", 10), upgraded);
     }
   }
 
-  if (longestStraightLength(cards) >= 6) {
-    const longStraight = { name: "Suite longue", multiplier: 1 + POKER_DAMAGE_BONUS.longStraight, damageBonus: POKER_DAMAGE_BONUS.longStraight, power: 6 };
-    if (longStraight.damageBonus > upgraded.damageBonus) upgraded = longStraight;
-  }
+  const straightLength = longestStraightLength(cards);
+  if (straightLength >= 6) upgraded = betterHand(pokerSpecial("Suite longue", "longStraight", 6), upgraded);
+  if (straightLength >= 9) upgraded = betterHand(pokerSpecial("Autoroute royale", "megaStraight", 11), upgraded);
+  if (straightLength >= 13) upgraded = betterHand(pokerSpecial("Route complète", "royalRoad", 15), upgraded);
+
+  if (pairCount >= 3) upgraded = betterHand(pokerSpecial("Triple paire", "threePair", 4), upgraded);
+  if (pairCount >= 4) upgraded = betterHand(pokerSpecial("Quatre paires", "fourPair", 7), upgraded);
+  if (pairCount >= 5) upgraded = betterHand(pokerSpecial("Cinq paires", "fivePair", 10), upgraded);
+  if (pairCount >= 6) upgraded = betterHand(pokerSpecial("Six paires", "sixPair", 14), upgraded);
+
+  if (brelanCount >= 3) upgraded = betterHand(pokerSpecial("Triple brelan", "tripleBrelan", 11), upgraded);
+  if (brelanCount >= 4) upgraded = betterHand(pokerSpecial("Quatre brelans", "quadrupleBrelan", 15), upgraded);
+  if (brelanCount >= 5) upgraded = betterHand(pokerSpecial("Cinq brelans", "quintupleBrelan", 19), upgraded);
+
+  if (squareCount >= 2) upgraded = betterHand(pokerSpecial("Double carré", "doubleSquare", 13), upgraded);
+  if (squareCount >= 3) upgraded = betterHand(pokerSpecial("Triple carré", "tripleSquare", 18), upgraded);
+  if (squareCount >= 4) upgraded = betterHand(pokerSpecial("Quatre carrés", "quadrupleSquare", 24), upgraded);
+  if (squareCount >= 6) upgraded = betterHand(pokerSpecial("Six carrés", "sixSquare", 34), upgraded);
+
+  if (fullRankCount >= 13) upgraded = betterHand(pokerSpecial("Toutes les familles", "rankCollector", 42), upgraded);
+
+  if (fullSuits >= 1) upgraded = betterHand(pokerSpecial("Couleur complète", "completeSuit", 22), upgraded);
+  if (fullSuits >= 2) upgraded = betterHand(pokerSpecial("Double couleur complète", "doubleCompleteSuit", 34), upgraded);
+  if (fullSuits >= 3) upgraded = betterHand(pokerSpecial("Triple couleur complète", "tripleCompleteSuit", 48), upgraded);
+  if (fullSuits >= 4) upgraded = betterHand(pokerSpecial("Deck chromatique", "fourCompleteSuits", 70), upgraded);
 
   return upgraded;
 }
 
 function evaluateHand(cards) {
-  if (cards.length <= 5) return evaluateFiveCardHand(cards);
-
-  let best = { name: "Aucune carte", multiplier: 1, damageBonus: 0, power: 0 };
-  for (const combo of combinations(cards, 5)) {
-    const evaluated = evaluateFiveCardHand(combo);
-    if (evaluated.damageBonus > best.damageBonus || (evaluated.damageBonus === best.damageBonus && evaluated.power > best.power)) {
-      best = evaluated;
-    }
-  }
-  return specialHand(cards, best);
+  return specialHand(cards, evaluateBestPokerHand(cards));
 }
 
 function addEffects(total, effects = {}) {
@@ -186,6 +263,20 @@ function addEffects(total, effects = {}) {
   total.cardSlots += effects.cardSlots || 0;
   total.critChance += effects.critChance || 0;
   total.moveSpeed += effects.moveSpeed || 0;
+}
+
+function softCap(value, start, strength = 0.55) {
+  if (value <= start) return value;
+  const excess = value - start;
+  return start + (excess < 1 ? excess * strength : Math.pow(excess, strength));
+}
+
+function moneyMultiplierValue(suits, effects) {
+  const rawValue = 1 + suits.diamonds * 0.08 + effects.money;
+  if (state.character?.id === "expert-comptable") {
+    return softCap(rawValue, 2.3, 0.55);
+  }
+  return softCap(rawValue, 3.1, 0.72);
 }
 
 function calculateStats() {
@@ -223,7 +314,7 @@ function calculateStats() {
     damageMultiplier: Math.max(0.25, 1 + hand.damageBonus + suits.spades * 0.035 + effects.damage),
     flatDamage: effects.flatDamage,
     attackSpeedMultiplier: Math.max(0.25, 1 + suits.clubs * 0.07 + effects.attackSpeed),
-    moneyMultiplier: Math.max(0.25, 1 + suits.diamonds * 0.08 + effects.money),
+    moneyMultiplier: Math.max(0.25, moneyMultiplierValue(suits, effects)),
     moveSpeed: Math.max(120, 225 + suits.clubs * 4 + effects.moveSpeed),
     maxHp,
     regen: Math.max(0, suits.hearts * 0.18 + hand.power * 0.05 + effects.regen),

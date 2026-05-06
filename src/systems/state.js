@@ -46,7 +46,7 @@
 function cardPrice(card) {
   const rankTax = card.value >= 11 ? 3 : card.value >= 8 ? 2 : 0;
   const curseTax = card.cursed ? (card.curse.rare ? 30 : 9) : 0;
-  return Math.max(4, scaleShopPrice(7 + rankTax + curseTax));
+  return Math.max(5, scaleShopPrice(9 + rankTax + curseTax + handSizeTax()));
 }
 
 function sellValue(card) {
@@ -55,15 +55,27 @@ function sellValue(card) {
 
 function shopPriceMultiplier(wave = state?.wave || 1) {
   const waveIndex = Math.max(0, wave - 1);
-  return 1 + waveIndex * 0.04 + Math.floor(waveIndex / 10) * 0.08;
+  return 1 + waveIndex * 0.045 + Math.floor(waveIndex / 10) * 0.1;
 }
 
 function scaleShopPrice(basePrice, wave = state?.wave || 1) {
   return Math.max(1, Math.round(basePrice * shopPriceMultiplier(wave)));
 }
 
+function handSizeTax() {
+  const expectedCards = 5 + Math.max(1, state.wave) * 4;
+  const excessCards = Math.max(0, state.hand.length - expectedCards);
+  return Math.floor(excessCards * 2.1 + Math.max(0, excessCards - 6) * 2.4 + Math.max(0, excessCards - 14) * 4.5);
+}
+
+function packPrice(pack) {
+  const sizeTax = pack.size === 6 ? Math.ceil(handSizeTax() * 1.45) : handSizeTax();
+  const suitTax = pack.suit ? 2 + Math.floor(state.wave / 5) : 0;
+  return scaleShopPrice(pack.price + sizeTax + suitTax);
+}
+
 function rerollCost() {
-  return 3 + state.shopRerolls * 2 + Math.floor(state.wave / 6);
+  return 3 + (state.shopRerolls || 0) * 2 + Math.floor(state.wave / 6) + Math.floor(handSizeTax() / 8);
 }
 
 function rollShopEntry(offeredCards = []) {
@@ -104,7 +116,7 @@ function rollShopEntry(offeredCards = []) {
       ...pack,
       id: uniqueId(pack.id),
       type: "pack",
-      price: scaleShopPrice(pack.price),
+      price: packPrice(pack),
       bought: false,
     };
   }
@@ -115,7 +127,7 @@ function rollShopEntry(offeredCards = []) {
       ...curse,
       id: uniqueId(curse.id),
       type: "cardCurse",
-      price: scaleShopPrice(curse.rare ? 46 : 14) + (curse.rare ? state.wave * 2 : 0),
+      price: scaleShopPrice(curse.rare ? 46 : 14) + (curse.rare ? state.wave * 2 + handSizeTax() : Math.floor(handSizeTax() * 0.45)),
       bought: false,
     };
   }
@@ -133,7 +145,7 @@ function rollShopEntry(offeredCards = []) {
       ...modifier,
       id: uniqueId(modifier.id),
       type: "modifier",
-      price: scaleShopPrice(modifier.price),
+      price: scaleShopPrice(modifier.price + Math.floor(handSizeTax() * 0.25)),
       bought: false,
     };
   }
@@ -143,7 +155,7 @@ function rollShopEntry(offeredCards = []) {
     type: "slot",
     name: "Emplacement de carte",
     desc: "+1 emplacement dans ta main.",
-    price: scaleShopPrice(42) + state.wave * 2,
+    price: scaleShopPrice(42 + handSizeTax() * 2) + state.wave * 2,
     bought: false,
   };
 }

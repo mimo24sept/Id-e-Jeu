@@ -35,15 +35,15 @@ Ouvre `index.html` dans un navigateur moderne.
 - Toutes les 10 vagues, un boss majeur apparaît et les monstres prennent un gros palier de scaling.
 - La carte est un rectangle borné plus compact, avec une bordure visible; le joueur et les spawns ennemis restent dans ses limites.
 - Des caisses peuvent apparaitre sur la carte pendant les vagues; les ramasser donne un pack de 4 cartes a ouvrir a la fin de la vague.
-- La progression vise des shops plus actifs: vagues plus courtes, revenu naturel plus généreux, et assez d'or pour acheter plusieurs cartes avec quelques relances sans build économie.
+- La progression vise des shops actifs: les premiers achats restent accessibles, puis un frein anti-snowball s'active seulement si la main dépasse largement le rythme attendu pour la vague.
 - L'interface utilise une direction brutaliste: gros contours, ombres franches, moins de texte, et rareté d'arme affichée directement par la couleur de l'encadré.
 - La couleur d'accent de l'UI suit la couleur dominante de la main: Coeur rouge, Carreau orange, Pique gris, Trèfle bleu.
-- Les prix de boutique scalent avec la vague: cartes, packs, malédictions, modificateurs, slots et armes deviennent plus chers au fil de la run.
+- Les prix de boutique scalent avec la vague, et une taxe de collection s'ajoute seulement si le joueur accumule beaucoup trop de cartes trop tôt.
 - Les ennemis peuvent être des chasseurs, des tireurs ou des brutes.
 - La main contient 5 cartes et génère une vraie évaluation poker: paire, double paire, brelan, quinte, couleur, full, carré, quinte flush.
 - Chaque combinaison de poker donne un bonus de dégâts dédié, de +12% pour une paire jusqu'à +185% pour une quinte flush.
 - Chaque carte donne aussi un bonus selon sa couleur et son rang: 10 de Pique = +10 dégâts, 3 de Carreau = +3% or, 7 de Coeur = +7 PV. Valet/Dame/Roi/As appliquent des multiplicateurs x2/x3/x4/x5 sur leur stat.
-- Si la main dépasse 5 cartes, le jeu évalue la meilleure combinaison de 5 cartes et peut détecter des mains spéciales comme Suite longue, Grande couleur, Flush royal et Couleur parfaite.
+- Si la main dépasse 5 cartes, le jeu évalue la meilleure combinaison de 5 cartes et détecte aussi des mains spéciales larges: Suite longue, Route complète, Grande couleur, Flush royal, Couleur parfaite, Couleur complète, Double couleur complète, multiples paires, multiples brelans et multiples carrés.
 - Easter egg: réunir les 52 cartes uniques déclenche le mode Dieu tout puissant, puis la page tente de se fermer après 10 secondes.
 - La boutique propose 6 offres aléatoires: cartes simples, cartes avec malédiction, packs, malédictions ciblées, bonus permanents et emplacements de carte supplémentaires.
 - Une offre de boutique peut être lockée avec `GARDER`; elle reste disponible au reroll et à la boutique suivante tant qu'elle n'est pas achetée.

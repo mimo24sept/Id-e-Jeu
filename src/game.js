@@ -21,6 +21,7 @@ const ui = {
   hand: document.querySelector("#hand"),
   handRank: document.querySelector("#handRank"),
   suits: document.querySelector("#suits"),
+  controlsTip: document.querySelector("#controlsTip"),
   weapons: document.querySelector("#weapons"),
   dpsHint: document.querySelector("#dpsHint"),
   shop: document.querySelector("#shop"),
@@ -467,6 +468,7 @@ let godCloseTimeout = 0;
 let godCountdownInterval = 0;
 let connectedPlayerName = localStorage.getItem("pokerSurvivorName") || "";
 const TUTORIAL_STORAGE_KEY = "pokerSurvivorTutorialSeen";
+let keyboardLayout = "qwerty";
 
 function random(min, max) {
   return min + Math.random() * (max - min);
@@ -505,6 +507,72 @@ function clampToWorld(x, y, radius = 0) {
     x: clamp(x, bounds.left + radius, bounds.right - radius),
     y: clamp(y, bounds.top + radius, bounds.bottom - radius),
   };
+}
+
+function controlLabel() {
+  return keyboardLayout === "azerty" ? "ZQSD" : "WASD";
+}
+
+function updateControlsTip() {
+  if (!ui.controlsTip) return;
+  ui.controlsTip.textContent = `${controlLabel()} · Auto-fire`;
+}
+
+async function detectKeyboardLayout() {
+  let detected = /^fr\b|^fr-|^be\b|^be-/i.test(navigator.language || "") ? "azerty" : "qwerty";
+
+  try {
+    const layoutMap = await navigator.keyboard?.getLayoutMap?.();
+    const keyW = layoutMap?.get("KeyW")?.toLowerCase();
+    const keyA = layoutMap?.get("KeyA")?.toLowerCase();
+    const keyQ = layoutMap?.get("KeyQ")?.toLowerCase();
+    if (keyW === "z" || keyA === "q" || keyQ === "a") {
+      detected = "azerty";
+    } else if (keyW === "w" || keyA === "a") {
+      detected = "qwerty";
+    }
+  } catch {
+    // Some browsers block layout reads; physical key codes still make both layouts playable.
+  }
+
+  keyboardLayout = detected;
+  updateControlsTip();
+}
+
+function movementKeyFromEvent(event) {
+  const byCode = {
+    ArrowUp: "up",
+    ArrowDown: "down",
+    ArrowLeft: "left",
+    ArrowRight: "right",
+    KeyW: "up",
+    KeyZ: "up",
+    KeyS: "down",
+    KeyA: "left",
+    KeyQ: "left",
+    KeyD: "right",
+  };
+  const codeMatch = byCode[event.code];
+  if (codeMatch) return codeMatch;
+
+  const key = event.key.toLowerCase();
+  const byKey = {
+    arrowup: "up",
+    arrowdown: "down",
+    arrowleft: "left",
+    arrowright: "right",
+    w: "up",
+    z: "up",
+    s: "down",
+    a: "left",
+    q: "left",
+    d: "right",
+  };
+  return byKey[key] || null;
+}
+
+function isTypingTarget(target) {
+  return target instanceof HTMLElement && (target.matches("input, textarea, select") || target.isContentEditable);
 }
 
 function uniqueId(prefix) {
@@ -1390,10 +1458,10 @@ function fireWeapon(weapon) {
 function updatePlayer(dt) {
   let dx = 0;
   let dy = 0;
-  if (keys.has("w") || keys.has("arrowup")) dy -= 1;
-  if (keys.has("s") || keys.has("arrowdown")) dy += 1;
-  if (keys.has("a") || keys.has("arrowleft")) dx -= 1;
-  if (keys.has("d") || keys.has("arrowright")) dx += 1;
+  if (keys.has("up")) dy -= 1;
+  if (keys.has("down")) dy += 1;
+  if (keys.has("left")) dx -= 1;
+  if (keys.has("right")) dx += 1;
 
   const length = Math.hypot(dx, dy) || 1;
   const nextPosition = clampToWorld(
@@ -2725,6 +2793,8 @@ function closeTutorial() {
 
 function initMenu() {
   resizeCanvas();
+  updateControlsTip();
+  detectKeyboardLayout();
   ui.mainMenu.classList.remove("is-hidden");
   ui.characterSelect.classList.add("is-hidden");
   ui.playerNameInput.value = connectedPlayerName;
@@ -2768,11 +2838,18 @@ window.addEventListener("keydown", (event) => {
     closeTutorial();
     return;
   }
-  keys.add(event.key.toLowerCase());
+  if (isTypingTarget(event.target)) return;
+  const movementKey = movementKeyFromEvent(event);
+  if (!movementKey) return;
+  event.preventDefault();
+  keys.add(movementKey);
 });
 window.addEventListener("keyup", (event) => {
-  keys.delete(event.key.toLowerCase());
+  if (isTypingTarget(event.target)) return;
+  const movementKey = movementKeyFromEvent(event);
+  if (movementKey) keys.delete(movementKey);
 });
+window.addEventListener("blur", () => keys.clear());
 
 ui.shopHand.addEventListener("click", (event) => {
   const curseButton = event.target.closest("[data-curse-card]");

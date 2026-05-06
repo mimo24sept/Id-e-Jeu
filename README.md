@@ -12,7 +12,7 @@ Ouvre `index.html` dans un navigateur moderne.
 - A la premiere visite, un tutoriel s'affiche automatiquement; il peut aussi etre relu depuis le menu principal.
 - Le système de sélection de personnage est prêt: quand des personnages seront définis, 3 choix aléatoires seront proposés au début d'une run.
 - Personnages définis actuellement: L'ombre, Vampire, Expert comptable, Ange Blanc, Gâchette folle, Bazooka, GigaCHAD et Time Breaker.
-- `WASD` ou flèches: déplacer le personnage
+- `WASD`, `ZQSD` ou flèches: déplacer le personnage. Le jeu détecte le layout quand le navigateur le permet et accepte les deux mappings.
 - Les armes ciblent automatiquement l'ennemi le plus proche
 - Entre deux vagues: vendre des cartes, consulter le personnage et les stats de run, acheter dans les 6 offres aléatoires, relancer la boutique, ouvrir les packs trouvés, acheter des armes, puis lancer la vague suivante
 

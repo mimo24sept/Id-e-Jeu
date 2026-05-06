@@ -46,7 +46,7 @@
 function cardPrice(card) {
   const rankTax = card.value >= 11 ? 3 : card.value >= 8 ? 2 : 0;
   const curseTax = card.cursed ? (card.curse.rare ? 30 : 9) : 0;
-  return Math.max(5, scaleShopPrice(9 + rankTax + curseTax + handSizeTax()));
+  return Math.max(4, scaleShopPrice(7 + rankTax + curseTax));
 }
 
 function sellValue(card) {
@@ -62,26 +62,35 @@ function scaleShopPrice(basePrice, wave = state?.wave || 1) {
   return Math.max(1, Math.round(basePrice * shopPriceMultiplier(wave)));
 }
 
-function handSizeTax() {
-  const expectedCards = 5 + Math.max(1, state.wave) * 4;
-  const excessCards = Math.max(0, state.hand.length - expectedCards);
-  return Math.floor(excessCards * 2.1 + Math.max(0, excessCards - 6) * 2.4 + Math.max(0, excessCards - 14) * 4.5);
-}
-
-function packPrice(pack) {
-  const sizeTax = pack.size === 6 ? Math.ceil(handSizeTax() * 1.45) : handSizeTax();
-  const suitTax = pack.suit ? 2 + Math.floor(state.wave / 5) : 0;
-  return scaleShopPrice(pack.price + sizeTax + suitTax);
-}
-
 function rerollCost() {
-  return 3 + (state.shopRerolls || 0) * 2 + Math.floor(state.wave / 6) + Math.floor(handSizeTax() / 8);
+  return 3 + (state.shopRerolls || 0) * 2 + Math.floor(state.wave / 6);
+}
+
+function dominantHandSuits() {
+  const counts = Object.fromEntries(Object.keys(SUITS).map((suit) => [suit, 0]));
+  for (const card of state.hand) {
+    cardSuits(card).forEach((suit) => {
+      counts[suit] += 1;
+    });
+  }
+  const maxCount = Math.max(...Object.values(counts));
+  return Object.keys(counts).filter((suit) => counts[suit] === maxCount);
+}
+
+function pickPack({ size, specialized }) {
+  const dominantSuits = specialized ? dominantHandSuits() : [];
+  const packs = PACK_DEFS.filter((pack) => {
+    if (pack.size !== size) return false;
+    if (specialized) return pack.suit && dominantSuits.includes(pack.suit);
+    return !pack.suit;
+  });
+  return packs[Math.floor(Math.random() * packs.length)];
 }
 
 function rollShopEntry(offeredCards = []) {
   const roll = Math.random();
 
-  if (roll < 0.24) {
+  if (roll < 0.4) {
     const card = drawCard({ exclude: new Set([...state.hand.map(cardKey), ...offeredCards.map(cardKey)]) });
     offeredCards.push(card);
     return {
@@ -94,68 +103,63 @@ function rollShopEntry(offeredCards = []) {
     };
   }
 
-  if (roll < 0.37) {
-    const card = drawCard({
-      cursed: true,
-      exclude: new Set([...state.hand.map(cardKey), ...offeredCards.map(cardKey)]),
-    });
-    offeredCards.push(card);
-    return {
-      id: uniqueId("offer-cursed"),
-      type: "cursedCard",
-      name: "Carte à malédiction",
-      card,
-      price: cardPrice(card),
-      bought: false,
-    };
-  }
-
-  if (roll < 0.5) {
-    const pack = PACK_DEFS[Math.floor(Math.random() * PACK_DEFS.length)];
-    return {
-      ...pack,
-      id: uniqueId(pack.id),
-      type: "pack",
-      price: packPrice(pack),
-      bought: false,
-    };
-  }
-
-  if (roll < 0.64) {
-    const curse = rollCardCurseDef();
-    return {
-      ...curse,
-      id: uniqueId(curse.id),
-      type: "cardCurse",
-      price: scaleShopPrice(curse.rare ? 46 : 14) + (curse.rare ? state.wave * 2 + handSizeTax() : Math.floor(handSizeTax() * 0.45)),
-      bought: false,
-    };
-  }
-
-  if (roll < 0.8) {
+  if (roll < 0.55) {
     return {
       ...createWeapon(),
       bought: false,
     };
   }
 
-  if (roll < 0.95) {
-    const modifier = MODIFIER_DEFS[Math.floor(Math.random() * MODIFIER_DEFS.length)];
+  if (roll < 0.6) {
+    const pack = CURSE_PACK_DEFS[Math.floor(Math.random() * CURSE_PACK_DEFS.length)];
     return {
-      ...modifier,
-      id: uniqueId(modifier.id),
-      type: "modifier",
-      price: scaleShopPrice(modifier.price + Math.floor(handSizeTax() * 0.25)),
+      ...pack,
+      id: uniqueId(pack.id),
+      type: "cursePack",
+      price: scaleShopPrice(pack.price),
       bought: false,
     };
   }
 
+  if (roll < 0.8) {
+    const pack = pickPack({ size: 4, specialized: false });
+    return {
+      ...pack,
+      id: uniqueId(pack.id),
+      type: "pack",
+      price: scaleShopPrice(pack.price),
+      bought: false,
+    };
+  }
+
+  if (roll < 0.85) {
+    const pack = pickPack({ size: 4, specialized: true });
+    return {
+      ...pack,
+      id: uniqueId(pack.id),
+      type: "pack",
+      price: scaleShopPrice(pack.price),
+      bought: false,
+    };
+  }
+
+  if (roll < 0.975) {
+    const pack = pickPack({ size: 6, specialized: false });
+    return {
+      ...pack,
+      id: uniqueId(pack.id),
+      type: "pack",
+      price: scaleShopPrice(pack.price),
+      bought: false,
+    };
+  }
+
+  const pack = pickPack({ size: 6, specialized: true });
   return {
-    id: uniqueId("slot-upgrade"),
-    type: "slot",
-    name: "Emplacement de carte",
-    desc: "+1 emplacement dans ta main.",
-    price: scaleShopPrice(42 + handSizeTax() * 2) + state.wave * 2,
+    ...pack,
+    id: uniqueId(pack.id),
+    type: "pack",
+    price: scaleShopPrice(pack.price),
     bought: false,
   };
 }
@@ -163,12 +167,8 @@ function rollShopEntry(offeredCards = []) {
 function rollShopSlots() {
   const slots = state.shopSlots.filter((slot) => slot.locked && !slot.bought);
   const offeredCards = slots
-    .filter((slot) => slot.type === "card" || slot.type === "cursedCard")
+    .filter((slot) => slot.type === "card")
     .map((slot) => slot.card);
-
-  if (!slots.some((slot) => slot.type === "weapon")) {
-    slots.push({ ...createWeapon(), bought: false });
-  }
 
   while (slots.length < 6) {
     slots.push(rollShopEntry(offeredCards));

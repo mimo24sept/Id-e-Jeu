@@ -1,7 +1,7 @@
 ﻿function cardHTML(card) {
   return `
     <span class="rank">${card.rank}</span>
-    <span class="suit">${SUITS[card.suit].symbol}</span>
+    <span class="suit">${card.cursed && card.curse?.allSuits ? "♠♦♣♥" : SUITS[card.suit].symbol}</span>
     ${card.cursed ? `<span class="curse-mark">+</span>` : ""}
   `;
 }

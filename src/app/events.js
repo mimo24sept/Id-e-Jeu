@@ -113,6 +113,12 @@ ui.packOffer.addEventListener("click", (event) => {
     return;
   }
 
+  const curseChoice = event.target.closest("[data-curse-choice]");
+  if (curseChoice) {
+    chooseCurse(Number(curseChoice.dataset.curseChoice));
+    return;
+  }
+
   const button = event.target.closest("[data-card]");
   if (!button) return;
   chooseCard(Number(button.dataset.card));

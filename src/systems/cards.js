@@ -6,10 +6,22 @@
 }
 
 function rollCardCurseDef() {
-  const roll = Math.random();
-  if (roll > 0.94) return CARD_CURSE_DEFS.find((curse) => curse.rare);
-  const common = CARD_CURSE_DEFS.filter((curse) => !curse.rare);
-  return common[Math.floor(Math.random() * common.length)];
+  return pickWeighted([
+    { weight: 25, value: CARD_CURSE_DEFS.find((curse) => curse.id === "curse-health-apply") },
+    { weight: 25, value: CARD_CURSE_DEFS.find((curse) => curse.id === "curse-damage-apply") },
+    { weight: 20, value: CARD_CURSE_DEFS.find((curse) => curse.id === "curse-speed-apply") },
+    { weight: 10, value: CARD_CURSE_DEFS.find((curse) => curse.id === "curse-gold-apply") },
+    { weight: 10, value: CARD_CURSE_DEFS.find((curse) => curse.id === "curse-slot-apply") },
+    { weight: 10, value: CARD_CURSE_DEFS.find((curse) => curse.id === "curse-all-suits-apply") },
+  ]).value;
+}
+
+function cardSuits(card) {
+  return card.cursed && card.curse?.allSuits ? Object.keys(SUITS) : [card.suit];
+}
+
+function cardHasSuit(card, suit) {
+  return cardSuits(card).includes(suit);
 }
 
 function scaleEffects(effects, multiplier = 1) {
@@ -81,7 +93,7 @@ function evaluateFiveCardHand(cards) {
   const counts = new Map();
   values.forEach((value) => counts.set(value, (counts.get(value) || 0) + 1));
   const groups = [...counts.values()].sort((a, b) => b - a);
-  const flush = cards.length === 5 && cards.every((card) => card.suit === cards[0].suit);
+  const flush = cards.length === 5 && Object.keys(SUITS).some((suit) => cards.every((card) => cardHasSuit(card, suit)));
   const unique = [...new Set(values)];
   const wheel = unique.join(",") === "2,3,4,5,14";
   const straight =
@@ -142,7 +154,7 @@ function hasStraight(cards, minimumLength = 5) {
 }
 
 function hasStraightFlush(cards) {
-  return Object.keys(SUITS).some((suit) => hasStraight(cards.filter((card) => card.suit === suit), 5));
+  return Object.keys(SUITS).some((suit) => hasStraight(cards.filter((card) => cardHasSuit(card, suit)), 5));
 }
 
 function evaluateBestPokerHand(cards) {
@@ -152,7 +164,7 @@ function evaluateBestPokerHand(cards) {
   const groups = rankGroupCounts(cards).sort((a, b) => b - a);
   const pairCount = groups.filter((count) => count >= 2).length;
   const tripleCount = groups.filter((count) => count >= 3).length;
-  const hasFlush = Object.keys(SUITS).some((suit) => cards.filter((card) => card.suit === suit).length >= 5);
+  const hasFlush = Object.keys(SUITS).some((suit) => cards.filter((card) => cardHasSuit(card, suit)).length >= 5);
   const hasFullHouse = tripleCount >= 1 && (pairCount >= 2 || groups.filter((count) => count >= 3).length >= 2);
 
   if (hasStraightFlush(cards)) return pokerHand("Quinte flush", "straightFlush", 8);
@@ -188,7 +200,7 @@ function rankGroupCounts(cards) {
 
 function completeSuitCount(cards) {
   return Object.keys(SUITS).filter((suit) => {
-    const values = new Set(cards.filter((card) => card.suit === suit).map((card) => card.value));
+    const values = new Set(cards.filter((card) => cardHasSuit(card, suit)).map((card) => card.value));
     return RANKS.every((rank) => values.has(rank.value));
   }).length;
 }
@@ -206,7 +218,7 @@ function specialHand(cards, best) {
   const suits = Object.keys(SUITS);
 
   for (const suit of suits) {
-    const suited = cards.filter((card) => card.suit === suit);
+    const suited = cards.filter((card) => cardHasSuit(card, suit));
     const royalValues = new Set(suited.map((card) => card.value));
     if ([10, 11, 12, 13, 14].every((value) => royalValues.has(value))) {
       upgraded = betterHand(pokerSpecial("Flush royal", "royalFlush", 9), upgraded);
@@ -265,25 +277,19 @@ function addEffects(total, effects = {}) {
   total.moveSpeed += effects.moveSpeed || 0;
 }
 
-function softCap(value, start, strength = 0.55) {
-  if (value <= start) return value;
-  const excess = value - start;
-  return start + (excess < 1 ? excess * strength : Math.pow(excess, strength));
-}
-
-function moneyMultiplierValue(suits, effects) {
-  const rawValue = 1 + suits.diamonds * 0.08 + effects.money;
-  if (state.character?.id === "expert-comptable") {
-    return softCap(rawValue, 2.3, 0.55);
-  }
-  return softCap(rawValue, 3.1, 0.72);
+function logarithmicMoneyMultiplier(suits, effects) {
+  const rawBonus = suits.diamonds * 0.08 + effects.money;
+  if (rawBonus <= 0) return 1 + rawBonus;
+  return 1 + Math.log1p(rawBonus * 1.4) / Math.log(2.4);
 }
 
 function calculateStats() {
   const suits = { spades: 0, diamonds: 0, clubs: 0, hearts: 0 };
   const effects = { damage: 0, flatDamage: 0, money: 0, attackSpeed: 0, maxHp: 0, maxHpMultiplier: 0, regen: 0, cardSlots: 0, critChance: 0, moveSpeed: 0 };
   state.hand.forEach((card) => {
-    suits[card.suit] += 1;
+    cardSuits(card).forEach((suit) => {
+      suits[suit] += 1;
+    });
     addEffects(effects, cardBaseEffects(card));
     if (card.cursed) addEffects(effects, card.curse.effects);
   });
@@ -314,7 +320,7 @@ function calculateStats() {
     damageMultiplier: Math.max(0.25, 1 + hand.damageBonus + suits.spades * 0.035 + effects.damage),
     flatDamage: effects.flatDamage,
     attackSpeedMultiplier: Math.max(0.25, 1 + suits.clubs * 0.07 + effects.attackSpeed),
-    moneyMultiplier: Math.max(0.25, moneyMultiplierValue(suits, effects)),
+    moneyMultiplier: Math.max(0.25, logarithmicMoneyMultiplier(suits, effects)),
     moveSpeed: Math.max(120, 225 + suits.clubs * 4 + effects.moveSpeed),
     maxHp,
     regen: Math.max(0, suits.hearts * 0.18 + hand.power * 0.05 + effects.regen),

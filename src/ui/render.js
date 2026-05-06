@@ -84,7 +84,9 @@
   renderShopRunInfo();
 
   ui.packChoiceTitle.textContent = state.packContext
-    ? hasFreeHandSlot()
+    ? state.packContext.type === "cursePack"
+      ? `${state.packContext.name} | Choisis 1`
+      : hasFreeHandSlot()
       ? `${state.packContext.name} · Choisis 1`
       : "Main pleine · Vends 1 carte"
     : state.pendingWeapon
@@ -92,7 +94,7 @@
     : state.pendingCurse
       ? `${state.pendingCurse.name} · Cible`
     : "PACK";
-  if (state.packContext) {
+  if (state.packContext && state.packContext.type !== "cursePack") {
     ui.packChoiceTitle.textContent = hasFreeHandSlot()
       ? `${state.packContext.name} | Choisis 1 ou passe`
       : "Main pleine | Vends ou passe";
@@ -105,15 +107,32 @@
         .map((weapon, index) => weaponCardHTML(weapon, { replaceIndex: index }))
         .join("")
     : state.packOffer.length > 0
-      ? state.packOffer
-          .map(
-            (card, index) => `
-              <div class="card ${card.suit}" data-card="${index}" title="Ajouter cette carte">
-                ${cardHTML(card)}
-              </div>
-            `,
-          )
-          .join("") + `
+      ? state.packContext?.type === "cursePack"
+        ? state.packOffer
+            .map(
+              (curse, index) => `
+                <article class="curse-choice" data-curse-choice="${index}">
+                  <span class="label">Malédiction</span>
+                  <strong>${curse.name}</strong>
+                  <p>${curse.desc}</p>
+                </article>
+              `,
+            )
+            .join("") + `
+              <button class="pack-skip" type="button" data-skip-pack>
+                <span>PASSER</span>
+                <strong>0 malédiction</strong>
+              </button>
+            `
+        : state.packOffer
+            .map(
+              (card, index) => `
+                <div class="card ${card.suit}" data-card="${index}" title="Ajouter cette carte">
+                  ${cardHTML(card)}
+                </div>
+              `,
+            )
+            .join("") + `
             <button class="pack-skip" type="button" data-skip-pack>
               <span>PASSER</span>
               <strong>0 carte</strong>

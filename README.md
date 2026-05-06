@@ -35,23 +35,24 @@ Ouvre `index.html` dans un navigateur moderne.
 - Toutes les 10 vagues, un boss majeur apparaît et les monstres prennent un gros palier de scaling.
 - La carte est un rectangle borné plus compact, avec une bordure visible; le joueur et les spawns ennemis restent dans ses limites.
 - Des caisses peuvent apparaitre sur la carte pendant les vagues; les ramasser donne un pack de 4 cartes a ouvrir a la fin de la vague.
-- La progression vise des shops actifs: les premiers achats restent accessibles, puis un frein anti-snowball s'active seulement si la main dépasse largement le rythme attendu pour la vague.
+- La progression vise des shops actifs: l'economie reste lisible pour tous les personnages, tandis que les Carreaux utilisent une courbe logarithmique pour eviter l'emballement.
 - L'interface utilise une direction brutaliste: gros contours, ombres franches, moins de texte, et rareté d'arme affichée directement par la couleur de l'encadré.
 - La couleur d'accent de l'UI suit la couleur dominante de la main: Coeur rouge, Carreau orange, Pique gris, Trèfle bleu.
-- Les prix de boutique scalent avec la vague, et une taxe de collection s'ajoute seulement si le joueur accumule beaucoup trop de cartes trop tôt.
+- Les prix de boutique scalent avec la vague: cartes, armes, packs, packs de maledictions et grands packs deviennent plus chers au fil de la run.
 - Les ennemis peuvent être des chasseurs, des tireurs ou des brutes.
 - La main contient 5 cartes et génère une vraie évaluation poker: paire, double paire, brelan, quinte, couleur, full, carré, quinte flush.
 - Chaque combinaison de poker donne un bonus de dégâts dédié, de +12% pour une paire jusqu'à +185% pour une quinte flush.
 - Chaque carte donne aussi un bonus selon sa couleur et son rang: 10 de Pique = +10 dégâts, 3 de Carreau = +3% or, 7 de Coeur = +7 PV. Valet/Dame/Roi/As appliquent des multiplicateurs x2/x3/x4/x5 sur leur stat.
 - Si la main dépasse 5 cartes, le jeu évalue la meilleure combinaison de 5 cartes et détecte aussi des mains spéciales larges: Suite longue, Route complète, Grande couleur, Flush royal, Couleur parfaite, Couleur complète, Double couleur complète, multiples paires, multiples brelans et multiples carrés.
 - Easter egg: réunir les 52 cartes uniques déclenche le mode Dieu tout puissant, puis la page tente de se fermer après 10 secondes.
-- La boutique propose 6 offres aléatoires: cartes simples, cartes avec malédiction, packs, malédictions ciblées, bonus permanents et emplacements de carte supplémentaires.
+- La boutique propose 6 offres aléatoires: cartes simples, armes, packs de cartes, packs spécialisés, packs de malédictions, grands packs et grands packs spécialisés.
 - Une offre de boutique peut être lockée avec `GARDER`; elle reste disponible au reroll et à la boutique suivante tant qu'elle n'est pas achetée.
 - Les cartes seules ne peuvent plus être achetées si tous les emplacements de main sont pris; il faut vendre une carte ou gagner un slot.
-- Les malédictions sont des effets positifs à mettre sur les cartes: dégâts, vitesse d'attaque, vie, or, et très rarement +1 emplacement de carte.
-- Les packs apparaissent dans ces 6 offres et révèlent 4 ou 6 cartes. Il existe des packs standards et des packs spécialisés Coeur, Pique, Trèfle et Carreau.
+- Les malédictions sont des effets positifs à mettre sur les cartes: dégâts, vie, vitesse d'attaque + déplacement, or, +1 emplacement de carte, et très rarement une carte qui compte comme toutes les couleurs.
+- Les malédictions passent par un pack de malédictions: il révèle 3 choix, puis le joueur en applique une sur la carte de son choix.
+- Les packs apparaissent dans ces 6 offres et révèlent 4 ou 6 cartes. Les packs spécialisés ne peuvent viser que la ou les couleurs les plus présentes dans la main.
 - Les packs peuvent être ouverts même si la main est pleine: le joueur peut vendre une carte pendant le choix, ou passer le pack sans prendre de carte.
-- Les armes apparaissent dans les 6 offres de boutique, avec au moins une arme garantie par boutique.
+- Les armes apparaissent dans les 6 offres de boutique sans garantie fixe: chaque slot a 15% de chance d'être une arme.
 - Survoler une arme en boutique affiche un comparatif avec les armes équipées.
 - Le joueur ne peut équiper que 2 armes en même temps. Acheter une troisième arme demande quelle arme jeter.
 - Les armes ont un type, une couleur et un grade: mitraillette classique, Machine Gun, Uzi, Sniper, Katana, Fusil à pompe; grades verte, bleue, violette et jaune.

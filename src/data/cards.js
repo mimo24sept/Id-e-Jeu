@@ -131,26 +131,26 @@ const CURSES = [
   {
     id: "curse-damage",
     name: "Malédiction de dégâts",
-    desc: "+12% dégâts.",
-    effects: { damage: 0.12 },
+    desc: "+20% dégâts.",
+    effects: { damage: 0.2 },
   },
   {
     id: "curse-speed",
     name: "Malédiction de vitesse",
-    desc: "+12% vitesse d'attaque.",
-    effects: { attackSpeed: 0.12 },
+    desc: "+18% vitesse d'attaque et +28 vitesse.",
+    effects: { attackSpeed: 0.18, moveSpeed: 28 },
   },
   {
     id: "curse-health",
     name: "Malédiction de vie",
-    desc: "+24 PV max.",
-    effects: { maxHp: 24 },
+    desc: "+42 PV max.",
+    effects: { maxHp: 42 },
   },
   {
     id: "curse-gold",
     name: "Malédiction d'or",
-    desc: "+8% or gagné.",
-    effects: { money: 0.08 },
+    desc: "+14% or gagné.",
+    effects: { money: 0.14 },
   },
   {
     id: "curse-card-slot",
@@ -159,31 +159,39 @@ const CURSES = [
     effects: { cardSlots: 1 },
     rare: true,
   },
+  {
+    id: "curse-all-suits",
+    name: "Malédiction chromatique",
+    desc: "Cette carte compte comme toutes les couleurs.",
+    effects: {},
+    allSuits: true,
+    rare: true,
+  },
 ];
 
 const CARD_CURSE_DEFS = [
   {
     id: "curse-damage-apply",
     name: "Marque de dégâts",
-    desc: "Ajoute +12% dégâts à une carte de ton choix.",
+    desc: "Ajoute +20% dégâts à une carte de ton choix.",
     curse: CURSES[0],
   },
   {
     id: "curse-speed-apply",
     name: "Marque de vitesse",
-    desc: "Ajoute +12% vitesse d'attaque à une carte de ton choix.",
+    desc: "Ajoute +18% vitesse d'attaque et +28 vitesse à une carte de ton choix.",
     curse: CURSES[1],
   },
   {
     id: "curse-health-apply",
     name: "Marque de vie",
-    desc: "Ajoute +24 PV max à une carte de ton choix.",
+    desc: "Ajoute +42 PV max à une carte de ton choix.",
     curse: CURSES[2],
   },
   {
     id: "curse-gold-apply",
     name: "Marque d'or",
-    desc: "Ajoute +8% or gagné à une carte de ton choix.",
+    desc: "Ajoute +14% or gagné à une carte de ton choix.",
     curse: CURSES[3],
   },
   {
@@ -193,43 +201,22 @@ const CARD_CURSE_DEFS = [
     curse: CURSES[4],
     rare: true,
   },
+  {
+    id: "curse-all-suits-apply",
+    name: "Marque chromatique",
+    desc: "La carte choisie compte comme toutes les couleurs. Très rare.",
+    curse: CURSES[5],
+    rare: true,
+  },
 ];
 
-const MODIFIER_DEFS = [
+const CURSE_PACK_DEFS = [
   {
-    id: "mod-damage",
-    name: "Aiguisage",
-    desc: "+10% dégâts.",
+    id: "curse-pack",
+    name: "Pack de malédictions",
+    desc: "Révèle 3 malédictions. Choisis-en une à appliquer sur une carte.",
     price: 18,
-    effects: { damage: 0.1 },
-  },
-  {
-    id: "mod-money",
-    name: "Bourse truquée",
-    desc: "+8% or gagné.",
-    price: 16,
-    effects: { money: 0.08 },
-  },
-  {
-    id: "mod-attack-speed",
-    name: "Doigts rapides",
-    desc: "+12% vitesse d'attaque.",
-    price: 20,
-    effects: { attackSpeed: 0.12 },
-  },
-  {
-    id: "mod-health",
-    name: "Peau dure",
-    desc: "+24 PV max.",
-    price: 17,
-    effects: { maxHp: 24 },
-  },
-  {
-    id: "mod-regen",
-    name: "Sang chaud",
-    desc: "+0.5 régénération.",
-    price: 15,
-    effects: { regen: 0.5 },
+    size: 3,
   },
 ];
 

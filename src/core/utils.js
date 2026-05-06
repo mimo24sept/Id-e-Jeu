@@ -253,12 +253,12 @@ function cardKey(card) {
 function usedCardKeys(extraCards = []) {
   const keys = new Set(state?.hand.map(cardKey) || []);
   for (const slot of state?.shopSlots || []) {
-    if ((slot.type === "card" || slot.type === "cursedCard") && !slot.bought) {
+    if (slot.type === "card" && !slot.bought) {
       keys.add(cardKey(slot.card));
     }
   }
   for (const card of state?.packOffer || []) {
-    keys.add(cardKey(card));
+    if (card.suit && card.rank) keys.add(cardKey(card));
   }
   extraCards.forEach((card) => keys.add(cardKey(card)));
   return keys;

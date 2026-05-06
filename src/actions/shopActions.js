@@ -140,7 +140,7 @@ function buyShopSlot(id) {
   const slot = state.shopSlots.find((item) => item.id === id);
   if (state.pendingWeapon) return;
   if (!slot || slot.bought || state.money < slot.price) return;
-  if ((slot.type === "card" || slot.type === "cursedCard") && !hasFreeHandSlot()) return;
+  if (slot.type === "card" && !hasFreeHandSlot()) return;
   if (state.previewWeaponId === slot.id) state.previewWeaponId = null;
 
   if (slot.type === "pack") {
@@ -148,8 +148,8 @@ function buyShopSlot(id) {
     return;
   }
 
-  if (slot.type === "cardCurse") {
-    buyCardCurse(slot);
+  if (slot.type === "cursePack") {
+    buyCursePack(slot);
     return;
   }
 
@@ -165,22 +165,13 @@ function buyShopSlot(id) {
     }
   }
 
-  if (slot.type === "card" || slot.type === "cursedCard") {
+  if (slot.type === "card") {
     if (!addCardToHand(slot.card)) {
       slot.bought = false;
       state.money += slot.price;
       renderUI();
       return;
     }
-  }
-
-  if (slot.type === "modifier") {
-    state.modifiers.push({
-      id: slot.id,
-      name: slot.name,
-      desc: slot.desc,
-      effects: slot.effects,
-    });
   }
 
   if (slot.type === "slot") {
@@ -192,13 +183,40 @@ function buyShopSlot(id) {
   renderUI();
 }
 
-function buyCardCurse(slot) {
+function rollCurseChoices(count) {
+  const choices = [];
+  const used = new Set();
+  let guard = 0;
+  while (choices.length < count && guard < 40) {
+    guard += 1;
+    const curseDef = rollCardCurseDef();
+    if (used.has(curseDef.id)) continue;
+    used.add(curseDef.id);
+    choices.push({
+      ...curseDef,
+      id: uniqueId(curseDef.id),
+    });
+  }
+  return choices;
+}
+
+function buyCursePack(slot) {
   if (state.hand.every((card) => card.cursed)) return;
   state.money -= slot.price;
   slot.bought = true;
+  state.pendingCurse = null;
+  state.packContext = slot;
+  state.packOffer = rollCurseChoices(slot.size || 3);
+  renderUI();
+}
+
+function chooseCurse(index) {
+  if (!state.packContext || state.packContext.type !== "cursePack") return;
+  const curse = state.packOffer[index];
+  if (!curse) return;
   state.pendingCurse = {
-    name: slot.name,
-    curse: slot.curse,
+    name: curse.name,
+    curse: curse.curse,
   };
   state.packOffer = [];
   state.packContext = null;

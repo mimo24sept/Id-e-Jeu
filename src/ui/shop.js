@@ -114,11 +114,11 @@ function renderShopSlot(slot) {
     </button>
   `;
 
-  if (slot.type === "card" || slot.type === "cursedCard") {
+  if (slot.type === "card") {
     const fullHand = !hasFreeHandSlot();
     const disabled = state.money < slot.price || fullHand;
     return `
-      <article class="market-item ${slot.locked ? "is-locked" : ""} ${slot.type === "cursedCard" ? "is-cursed" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
+      <article class="market-item ${slot.locked ? "is-locked" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
         ${lockButton}
         <div class="market-card card ${slot.card.suit}">${cardHTML(slot.card)}</div>
         <div>
@@ -146,13 +146,13 @@ function renderShopSlot(slot) {
     `;
   }
 
-  if (slot.type === "cardCurse") {
+  if (slot.type === "cursePack") {
     const disabled = state.money < slot.price || state.hand.every((card) => card.cursed);
     return `
       <article class="market-item is-cursed ${slot.locked ? "is-locked" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
         ${lockButton}
         <div>
-          <span class="label">Malédiction</span>
+          <span class="label">Pack</span>
           <h4>${slot.name}</h4>
           <p>${slot.desc}</p>
         </div>
@@ -171,7 +171,7 @@ function renderShopSlot(slot) {
     <article class="market-item ${slot.locked ? "is-locked" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
       ${lockButton}
       <div>
-        <span class="label">${slot.type === "slot" ? "Main" : "Modificateur"}</span>
+        <span class="label">Main</span>
         <h4>${slot.name}</h4>
         <p>${slot.desc}</p>
       </div>

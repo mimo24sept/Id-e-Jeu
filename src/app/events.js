@@ -5,6 +5,7 @@
 ui.connectPlayer.addEventListener("click", connectPlayer);
 ui.launchGame.addEventListener("click", launchGame);
 ui.openTutorial.addEventListener("click", showTutorial);
+ui.buyMetaPack.addEventListener("click", buyMetaPack);
 ui.closeTutorial.addEventListener("click", closeTutorial);
 ui.skipTutorial.addEventListener("click", skipTutorial);
 ui.characterChoices.addEventListener("click", (event) => {

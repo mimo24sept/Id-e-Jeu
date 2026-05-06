@@ -178,7 +178,10 @@ function damagePlayer(amount) {
     state.player.hp = 0;
     state.gameOver = true;
     updateMobileControlsVisibility();
+    const waveReached = state.wave;
+    const reward = grantRunFragments(waveReached);
     ui.finalScore.textContent = `Tu as tenu jusqu'à la vague ${state.wave}`;
+    ui.fragmentReward.textContent = `+${reward} fragments`;
     ui.gameOver.classList.remove("is-hidden");
   }
 }

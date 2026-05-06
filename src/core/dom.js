@@ -10,6 +10,11 @@ const ui = {
   connectPlayer: document.querySelector("#connectPlayer"),
   launchGame: document.querySelector("#launchGame"),
   openTutorial: document.querySelector("#openTutorial"),
+  metaFragments: document.querySelector("#metaFragments"),
+  metaPackCost: document.querySelector("#metaPackCost"),
+  buyMetaPack: document.querySelector("#buyMetaPack"),
+  metaPackResult: document.querySelector("#metaPackResult"),
+  metaUpgradeSummary: document.querySelector("#metaUpgradeSummary"),
   tutorial: document.querySelector("#tutorial"),
   tutorialSpotlight: document.querySelector("#tutorialSpotlight"),
   tutorialCard: document.querySelector("#tutorialCard"),
@@ -49,6 +54,7 @@ const ui = {
   godCountdown: document.querySelector("#godCountdown"),
   gameOver: document.querySelector("#gameOver"),
   finalScore: document.querySelector("#finalScore"),
+  fragmentReward: document.querySelector("#fragmentReward"),
   restart: document.querySelector("#restart"),
 };
 

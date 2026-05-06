@@ -98,6 +98,7 @@ function setConnectedPlayer(name) {
   ui.menuPlayerName.textContent = `Connecté: ${connectedPlayerName}`;
   ui.launchGame.disabled = false;
   ui.playerNameHud.textContent = connectedPlayerName;
+  renderMetaProgression();
 }
 
 function connectPlayer() {
@@ -129,6 +130,7 @@ function initMenu() {
   ui.launchGame.disabled = !connectedPlayerName;
   ui.menuPlayerName.textContent = connectedPlayerName ? `Connecté: ${connectedPlayerName}` : "Aucun joueur connecté";
   ui.playerNameHud.textContent = connectedPlayerName || "-";
+  renderMetaProgression();
   renderGameShell();
   queueTutorialSteps(["menuName", "menuLaunch"]);
   updateMobileControlsVisibility();

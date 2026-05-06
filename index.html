@@ -116,6 +116,21 @@
               <button id="launchGame" class="primary-button" type="button" disabled>Lancer partie</button>
             </div>
             <button id="openTutorial" class="secondary-button menu-help" type="button">Tutoriel</button>
+            <section class="meta-panel" aria-label="Progression permanente">
+              <div class="meta-header">
+                <div>
+                  <span class="label">Fragments</span>
+                  <strong id="metaFragments">0</strong>
+                </div>
+                <div>
+                  <span class="label">Pack upgrade</span>
+                  <strong id="metaPackCost">0</strong>
+                </div>
+              </div>
+              <button id="buyMetaPack" class="primary-button" type="button" disabled>Acheter pack</button>
+              <div id="metaPackResult" class="meta-pack-result"></div>
+              <div id="metaUpgradeSummary" class="meta-upgrade-summary"></div>
+            </section>
             <p id="menuPlayerName">Aucun joueur connecté</p>
           </div>
         </div>
@@ -155,6 +170,7 @@
         <div>
           <span class="label">Partie terminée</span>
           <h2 id="finalScore">Vague 1</h2>
+          <p id="fragmentReward">+0 fragments</p>
           <button id="restart" class="primary-button">Recommencer</button>
         </div>
       </section>
@@ -165,6 +181,7 @@
     <script src="src/data/weapons.js"></script>
     <script src="src/core/runtime.js"></script>
     <script src="src/core/utils.js"></script>
+    <script src="src/systems/metaProgression.js"></script>
     <script src="src/systems/deck.js"></script>
     <script src="src/systems/weaponFactory.js"></script>
     <script src="src/systems/cards.js"></script>

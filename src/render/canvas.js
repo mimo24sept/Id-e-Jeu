@@ -235,3 +235,5 @@ function renderGame() {
 
   ctx.restore();
 }
+
+

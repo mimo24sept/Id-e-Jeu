@@ -21,7 +21,7 @@ function renderShopRunInfo() {
     <div class="shop-stat-grid">
       ${statBox("PV", `${Math.ceil(state.player.hp)} / ${state.stats.maxHp}`)}
       ${statBox("Regen", state.stats.regen.toFixed(1))}
-      ${statBox("DÃ©gÃ¢ts", `+${state.stats.flatDamage} Â· x${state.stats.damageMultiplier.toFixed(2)}`)}
+      ${statBox("Dégâts", `+${state.stats.flatDamage} · x${state.stats.damageMultiplier.toFixed(2)}`)}
       ${statBox("Cadence", `x${state.stats.attackSpeedMultiplier.toFixed(2)}`)}
       ${statBox("Crit", `${Math.round(state.stats.critChance * 100)}%`)}
       ${statBox("Vitesse", Math.round(state.stats.moveSpeed))}
@@ -89,7 +89,7 @@ function renderWeaponCompare(anchor = null) {
                     `,
                   )
                   .join("")
-              : `<div class="compare-empty">Aucune arme Ã©quipÃ©e</div>`
+              : `<div class="compare-empty">Aucune arme équipée</div>`
           }
         </div>
       </div>
@@ -102,7 +102,7 @@ function renderShopSlot(slot) {
   if (slot.bought) {
     return `
       <article class="market-item is-bought">
-        <span class="label">AchetÃ©</span>
+        <span class="label">Acheté</span>
         <h4>${slot.name}</h4>
       </article>
     `;
@@ -152,7 +152,7 @@ function renderShopSlot(slot) {
       <article class="market-item is-cursed ${slot.locked ? "is-locked" : ""}" data-shop-slot="${slot.id}" ${disabled ? "aria-disabled=\"true\"" : ""}>
         ${lockButton}
         <div>
-          <span class="label">MalÃ©diction</span>
+          <span class="label">Malédiction</span>
           <h4>${slot.name}</h4>
           <p>${slot.desc}</p>
         </div>
@@ -179,3 +179,5 @@ function renderShopSlot(slot) {
     </article>
   `;
 }
+
+

@@ -164,7 +164,7 @@ function damagePlayer(amount) {
     state.player.hp = 0;
     state.gameOver = true;
     updateMobileControlsVisibility();
-    ui.finalScore.textContent = `Tu as tenu jusqu'Ã  la vague ${state.wave}`;
+    ui.finalScore.textContent = `Tu as tenu jusqu'à la vague ${state.wave}`;
     ui.gameOver.classList.remove("is-hidden");
   }
 }
@@ -349,3 +349,5 @@ function update(dt) {
   updateKills(dt);
   cameraShake = Math.max(0, cameraShake - dt);
 }
+
+

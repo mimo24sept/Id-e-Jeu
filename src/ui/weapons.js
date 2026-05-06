@@ -4,7 +4,7 @@
 }
 
 function weaponStatLine(weapon) {
-  return `${Math.round(weapon.damage)} DMG Â· ${weapon.baseCooldown.toFixed(2)}S Â· ${weapon.range} POR`;
+  return `${Math.round(weapon.damage)} DMG · ${weapon.baseCooldown.toFixed(2)}S · ${weapon.range} POR`;
 }
 
 function weaponScalingEffects(weapon) {
@@ -66,7 +66,7 @@ function weaponCardHTML(weapon, options = {}) {
     <article class="${tag} ${options.locked ? "is-locked" : ""}" style="--rarity:${weapon.gradeColor}; --weapon-suit:${weapon.color}" ${offerAttr} ${replaceAttr} ${disabledAttr}>
       ${lockButton}
       <div class="weapon-top">
-        <span class="grade">${weapon.grade.name} Â· Niv.${weapon.level}</span>
+        <span class="grade">${weapon.grade.name} · Niv.${weapon.level}</span>
         <strong>${weapon.baseName}</strong>
       </div>
       ${weaponScalingBlock(weapon)}
@@ -100,3 +100,5 @@ function weaponCompareStats(candidate, current) {
     </div>
   `;
 }
+
+

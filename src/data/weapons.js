@@ -67,8 +67,8 @@
   },
   {
     id: "shotgun",
-    name: "Fusil Ã  pompe",
-    fireLabel: "cÃ´ne",
+    name: "Fusil à pompe",
+    fireLabel: "cône",
     basePrice: 34,
     baseCooldown: 0.72,
     damage: 7,
@@ -99,16 +99,16 @@ const WEAPON_MODIFIERS = [
 const WEAPON_SCALING_TYPES = [
   {
     id: "damage",
-    name: "DÃ©gÃ¢ts",
-    desc: "augmente les dÃ©gÃ¢ts",
+    name: "Dégâts",
+    desc: "augmente les dégâts",
     apply(effects, count, mult) {
       effects.damage += count * 0.055 * mult;
     },
   },
   {
     id: "vitality",
-    name: "VitalitÃ©",
-    desc: "augmente la vie et la rÃ©gÃ©nÃ©ration",
+    name: "Vitalité",
+    desc: "augmente la vie et la régénération",
     apply(effects, count, mult) {
       effects.maxHp += count * 9 * mult;
       effects.regen += count * 0.18 * mult;
@@ -117,7 +117,7 @@ const WEAPON_SCALING_TYPES = [
   {
     id: "speed",
     name: "Vitesse",
-    desc: "augmente la cadence et le dÃ©placement",
+    desc: "augmente la cadence et le déplacement",
     apply(effects, count, mult) {
       effects.attackSpeed += count * 0.045 * mult;
       effects.moveSpeed += count * 4 * mult;
@@ -148,3 +148,5 @@ const WORLD = {
 };
 const CRATE_RADIUS = 18;
 const MAX_CRATES_ON_MAP = 3;
+
+

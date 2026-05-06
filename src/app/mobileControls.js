@@ -1,4 +1,4 @@
-function clearTouchMovement() {
+﻿function clearTouchMovement() {
   touchMovement.x = 0;
   touchMovement.y = 0;
   touchMovement.pointerId = null;
@@ -70,3 +70,5 @@ function bindMobileControls() {
 }
 
 bindMobileControls();
+
+

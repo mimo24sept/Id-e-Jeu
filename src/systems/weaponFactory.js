@@ -21,7 +21,7 @@ function rollWeaponModifier(mod) {
       ...mod,
       radius,
       damage,
-      desc: `Explosion ${radius}px, ${Math.round(damage * 100)}% dÃ©gÃ¢ts secondaires.`,
+      desc: `Explosion ${radius}px, ${Math.round(damage * 100)}% dégâts secondaires.`,
     };
   }
   if (mod.id === "burn") {
@@ -31,7 +31,7 @@ function rollWeaponModifier(mod) {
       ...mod,
       duration,
       dps,
-      desc: `BrÃ»lure ${duration.toFixed(1)}s, ${Math.round(dps * 100)}% dÃ©gÃ¢ts/s.`,
+      desc: `Brûlure ${duration.toFixed(1)}s, ${Math.round(dps * 100)}% dégâts/s.`,
     };
   }
   if (mod.id === "stun") {
@@ -48,7 +48,7 @@ function rollWeaponModifier(mod) {
   return {
     ...mod,
     gold,
-    desc: `+${Math.round(gold * 100)}% or sur les victimes touchÃ©es.`,
+    desc: `+${Math.round(gold * 100)}% or sur les victimes touchées.`,
   };
 }
 
@@ -112,7 +112,7 @@ function createWeapon(options = {}) {
 
 function weaponDescription(archetype, suitKey, scalingType, grade, modifiers, stats) {
   const suit = SUITS[suitKey];
-  const rollText = `Niv.${stats.level} Â· ${Math.round(stats.damage)} dÃ©gÃ¢ts Â· ${stats.cooldown.toFixed(2)}s Â· portÃ©e ${stats.range}`;
+  const rollText = `Niv.${stats.level} · ${Math.round(stats.damage)} dégâts · ${stats.cooldown.toFixed(2)}s · portée ${stats.range}`;
   const mods = modifiers.length ? ` Mods: ${modifiers.map((mod) => `${mod.name} (${mod.desc})`).join(", ")}.` : "";
   return `${rollText}. ${archetype.fireLabel}. Scaling ${suit.symbol} ${suit.name} -> ${scalingType.name} (${scalingType.desc}).${mods}`;
 }
@@ -129,3 +129,5 @@ function weaponScore(weapon) {
   }, 0);
   return weapon.damage * cadence * Math.sqrt(pellets) * (1 + modPower) + weapon.level * 0.35 + weapon.healthBonus * 0.03;
 }
+
+

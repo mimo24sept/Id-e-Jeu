@@ -1,4 +1,4 @@
-# Poker Survivor Prototype
+﻿# Poker Survivor Prototype
 
 Base jouable pour un survivant automatique façon Vampire Survivors / Brotato avec une couche poker entre les vagues.
 
@@ -72,3 +72,5 @@ Ouvre `index.html` dans un navigateur moderne.
 - Boss toutes les X vagues.
 - Armes plus typées: zones, ricochets, projectiles perforants, invocations.
 - Carte plus vivante avec obstacles, aimants d'argent et événements rares.
+
+

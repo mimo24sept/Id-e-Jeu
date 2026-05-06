@@ -90,3 +90,5 @@ const TUTORIAL_STEPS = {
     text: "Un pack revele plusieurs cartes. Prends une carte, vends d'abord si la main est pleine, ou passe.",
   },
 };
+
+

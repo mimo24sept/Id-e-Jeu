@@ -91,7 +91,7 @@ function rollShopEntry(offeredCards = []) {
     return {
       id: uniqueId("offer-cursed"),
       type: "cursedCard",
-      name: "Carte Ã  malÃ©diction",
+      name: "Carte à malédiction",
       card,
       price: cardPrice(card),
       bought: false,
@@ -163,3 +163,5 @@ function rollShopSlots() {
   }
   return slots.sort(() => Math.random() - 0.5);
 }
+
+

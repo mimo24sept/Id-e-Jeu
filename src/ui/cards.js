@@ -13,7 +13,7 @@ function emptyCardHTML() {
 function shopCardDetails(card) {
   const base = describeCardBaseBonus(card);
   if (!card.cursed) return base;
-  return `${base} Â· ${card.curse.name}`;
+  return `${base} · ${card.curse.name}`;
 }
 
 function effectiveHandSlots() {
@@ -75,3 +75,5 @@ function triggerGodMode() {
   godCountdownInterval = setInterval(updateGodCountdown, 250);
   godCloseTimeout = setTimeout(closeGodPage, 10000);
 }
+
+

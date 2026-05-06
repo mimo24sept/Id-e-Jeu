@@ -13,7 +13,7 @@
   const crateHudCount = state.pendingCratePacks + state.crates.length;
   ui.enemyCount.textContent = state.betweenWaves
     ? "Shop"
-    : `${Math.ceil(state.waveTimeLeft)}s Â· ${state.enemies.length}`;
+    : `${Math.ceil(state.waveTimeLeft)}s · ${state.enemies.length}`;
   if (state.betweenWaves && cratePacksWaiting() > 0) {
     ui.enemyCount.textContent = `Shop | ${cratePacksWaiting()} caisse`;
   } else if (!state.betweenWaves && crateHudCount > 0) {
@@ -22,7 +22,7 @@
   ui.rerollShop.textContent = `Relancer - $${rerollCost()}`;
   ui.rerollShop.disabled = !state.betweenWaves || state.money < rerollCost() || state.pendingCurse || state.pendingWeapon || state.packOffer.length > 0;
   ui.startWave.disabled = Boolean(state.pendingCurse || state.pendingWeapon || state.packOffer.length > 0);
-  ui.handRank.textContent = `${state.stats.handName} Â· +${Math.round(state.stats.handDamageBonus * 100)}%`;
+  ui.handRank.textContent = `${state.stats.handName} · +${Math.round(state.stats.handDamageBonus * 100)}%`;
 
   const emptySlots = Math.max(0, effectiveHandSlots() - state.hand.length);
   ui.hand.innerHTML =
@@ -55,7 +55,7 @@
       </article>
     `).join("");
 
-  ui.dpsHint.textContent = `DMG x${state.stats.damageMultiplier.toFixed(2)} Â· CRIT ${Math.round(state.stats.critChance * 100)} Â· SPD x${state.stats.attackSpeedMultiplier.toFixed(2)}`;
+  ui.dpsHint.textContent = `DMG x${state.stats.damageMultiplier.toFixed(2)} · CRIT ${Math.round(state.stats.critChance * 100)} · SPD x${state.stats.attackSpeedMultiplier.toFixed(2)}`;
 
   ui.shopHand.innerHTML =
     state.hand
@@ -70,7 +70,7 @@
             ${
               state.pendingCurse
                 ? card.cursed
-                  ? `<div class="action-pill is-disabled">DÃ©jÃ </div>`
+                  ? `<div class="action-pill is-disabled">Déjà</div>`
                   : `<div class="action-pill">Appliquer</div>`
                 : `<div class="action-pill">+$${sellValue(card)}</div>`
             }
@@ -85,12 +85,12 @@
 
   ui.packChoiceTitle.textContent = state.packContext
     ? hasFreeHandSlot()
-      ? `${state.packContext.name} Â· Choisis 1`
-      : "Main pleine Â· Vends 1 carte"
+      ? `${state.packContext.name} · Choisis 1`
+      : "Main pleine · Vends 1 carte"
     : state.pendingWeapon
       ? "JETER UNE ARME"
     : state.pendingCurse
-      ? `${state.pendingCurse.name} Â· Cible`
+      ? `${state.pendingCurse.name} · Cible`
     : "PACK";
   if (state.packContext) {
     ui.packChoiceTitle.textContent = hasFreeHandSlot()
@@ -121,3 +121,5 @@
           `
       : "";
 }
+
+

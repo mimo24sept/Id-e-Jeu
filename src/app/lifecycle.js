@@ -43,7 +43,7 @@ function characterBonusText(character) {
       return `${data.symbol} x${multiplier}`;
     })
     .filter(Boolean);
-  return lines.length ? lines.join(" Â· ") : "Aucun modificateur de couleur";
+  return lines.length ? lines.join(" · ") : "Aucun modificateur de couleur";
 }
 
 function startRun(character = null) {
@@ -95,7 +95,7 @@ function setConnectedPlayer(name) {
   connectedPlayerName = cleanPlayerName(name) || "Joueur";
   localStorage.setItem("pokerSurvivorName", connectedPlayerName);
   ui.playerNameInput.value = connectedPlayerName;
-  ui.menuPlayerName.textContent = `ConnectÃ©: ${connectedPlayerName}`;
+  ui.menuPlayerName.textContent = `Connecté: ${connectedPlayerName}`;
   ui.launchGame.disabled = false;
   ui.playerNameHud.textContent = connectedPlayerName;
 }
@@ -127,7 +127,7 @@ function initMenu() {
   ui.characterSelect.classList.add("is-hidden");
   ui.playerNameInput.value = connectedPlayerName;
   ui.launchGame.disabled = !connectedPlayerName;
-  ui.menuPlayerName.textContent = connectedPlayerName ? `ConnectÃ©: ${connectedPlayerName}` : "Aucun joueur connectÃ©";
+  ui.menuPlayerName.textContent = connectedPlayerName ? `Connecté: ${connectedPlayerName}` : "Aucun joueur connecté";
   ui.playerNameHud.textContent = connectedPlayerName || "-";
   renderGameShell();
   queueTutorialSteps(["menuName", "menuLaunch"]);
@@ -138,4 +138,6 @@ function renderGameShell() {
   ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   drawGridBackdrop();
 }
+
+
 

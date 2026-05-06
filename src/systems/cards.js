@@ -59,14 +59,14 @@ function cardFaceMultiplier(card) {
 function describeCardBaseBonus(card) {
   const faceMultiplier = cardFaceMultiplier(card);
   if (faceMultiplier > 0) {
-    if (card.suit === "spades") return `x${faceMultiplier} dÃ©gÃ¢ts`;
+    if (card.suit === "spades") return `x${faceMultiplier} dégâts`;
     if (card.suit === "diamonds") return `x${faceMultiplier} or`;
     if (card.suit === "clubs") return `x${faceMultiplier} cadence`;
     return `x${faceMultiplier} PV`;
   }
 
   const effects = cardBaseEffects(card);
-  if (effects.flatDamage) return `+${effects.flatDamage} dÃ©gÃ¢ts`;
+  if (effects.flatDamage) return `+${effects.flatDamage} dégâts`;
   if (effects.money) return `+${Math.round(effects.money * 100)}% or`;
   if (effects.attackSpeed) return `+${Math.round(effects.attackSpeed * 100)}% cadence`;
   return `+${effects.maxHp} PV`;
@@ -90,7 +90,7 @@ function evaluateFiveCardHand(cards) {
     (wheel || unique[4] - unique[0] === 4);
 
   if (straight && flush) return { name: "Quinte flush", multiplier: 1 + POKER_DAMAGE_BONUS.straightFlush, damageBonus: POKER_DAMAGE_BONUS.straightFlush, power: 8 };
-  if (groups[0] === 4) return { name: "CarrÃ©", multiplier: 1 + POKER_DAMAGE_BONUS.four, damageBonus: POKER_DAMAGE_BONUS.four, power: 7 };
+  if (groups[0] === 4) return { name: "Carré", multiplier: 1 + POKER_DAMAGE_BONUS.four, damageBonus: POKER_DAMAGE_BONUS.four, power: 7 };
   if (groups[0] === 3 && groups[1] === 2) return { name: "Full", multiplier: 1 + POKER_DAMAGE_BONUS.fullHouse, damageBonus: POKER_DAMAGE_BONUS.fullHouse, power: 6 };
   if (flush) return { name: "Couleur", multiplier: 1 + POKER_DAMAGE_BONUS.flush, damageBonus: POKER_DAMAGE_BONUS.flush, power: 5 };
   if (straight) return { name: "Quinte", multiplier: 1 + POKER_DAMAGE_BONUS.straight, damageBonus: POKER_DAMAGE_BONUS.straight, power: 4 };
@@ -252,3 +252,5 @@ function calculateStats() {
 
   return stats;
 }
+
+

@@ -51,3 +51,5 @@ const ui = {
   finalScore: document.querySelector("#finalScore"),
   restart: document.querySelector("#restart"),
 };
+
+

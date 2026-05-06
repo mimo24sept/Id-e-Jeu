@@ -1,10 +1,10 @@
 ﻿const FULL_DECK_SIZE = 52;
 
 const SUITS = {
-  spades: { symbol: "â™ ", name: "Pique", stat: "DÃ©gÃ¢ts", color: "#d7dbe4" },
-  diamonds: { symbol: "â™¦", name: "Carreau", stat: "Or", color: "#58b7e9" },
-  clubs: { symbol: "â™£", name: "TrÃ¨fle", stat: "Cadence", color: "#71d58a" },
-  hearts: { symbol: "â™¥", name: "Coeur", stat: "PV + regen", color: "#e8526d" },
+  spades: { symbol: "♠", name: "Pique", stat: "Dégâts", color: "#d7dbe4" },
+  diamonds: { symbol: "♦", name: "Carreau", stat: "Or", color: "#58b7e9" },
+  clubs: { symbol: "♣", name: "Trèfle", stat: "Cadence", color: "#71d58a" },
+  hearts: { symbol: "♥", name: "Coeur", stat: "PV + regen", color: "#e8526d" },
 };
 
 const UI_ACCENTS = {
@@ -39,7 +39,7 @@ const CHARACTER_DEFS = [
     id: "shadow",
     name: "L'ombre",
     title: "Noir miroir",
-    desc: "Pique et TrÃ¨fle x2. Coeur et Carreau x0.5.",
+    desc: "Pique et Trèfle x2. Coeur et Carreau x0.5.",
     cardEffectMultipliers: {
       spades: 2,
       clubs: 2,
@@ -51,7 +51,7 @@ const CHARACTER_DEFS = [
     id: "vampire",
     name: "Vampire",
     title: "Sang riche",
-    desc: "Coeur et Carreau x2. Pique et TrÃ¨fle x0.5.",
+    desc: "Coeur et Carreau x2. Pique et Trèfle x0.5.",
     cardEffectMultipliers: {
       hearts: 2,
       diamonds: 2,
@@ -63,7 +63,7 @@ const CHARACTER_DEFS = [
     id: "expert-comptable",
     name: "Expert comptable",
     title: "Audit brutal",
-    desc: "Carreau x3. Pique, TrÃ¨fle et Coeur x0.33.",
+    desc: "Carreau x3. Pique, Trèfle et Coeur x0.33.",
     cardEffectMultipliers: {
       diamonds: 3,
       spades: 1 / 3,
@@ -74,8 +74,8 @@ const CHARACTER_DEFS = [
   {
     id: "ange-blanc",
     name: "Ange Blanc",
-    title: "GrÃ¢ce clinique",
-    desc: "Coeur x3. Pique, TrÃ¨fle et Carreau x0.33.",
+    title: "Grâce clinique",
+    desc: "Coeur x3. Pique, Trèfle et Carreau x0.33.",
     cardEffectMultipliers: {
       hearts: 3,
       spades: 1 / 3,
@@ -85,9 +85,9 @@ const CHARACTER_DEFS = [
   },
   {
     id: "gachette-folle",
-    name: "GÃ¢chette folle",
+    name: "Gâchette folle",
     title: "Cadence sale",
-    desc: "TrÃ¨fle x3. Pique, Coeur et Carreau x0.33.",
+    desc: "Trèfle x3. Pique, Coeur et Carreau x0.33.",
     cardEffectMultipliers: {
       clubs: 3,
       spades: 1 / 3,
@@ -98,8 +98,8 @@ const CHARACTER_DEFS = [
   {
     id: "bazooka",
     name: "Bazooka",
-    title: "DÃ©gÃ¢ts purs",
-    desc: "Pique x3. TrÃ¨fle, Coeur et Carreau x0.33.",
+    title: "Dégâts purs",
+    desc: "Pique x3. Trèfle, Coeur et Carreau x0.33.",
     cardEffectMultipliers: {
       spades: 3,
       clubs: 1 / 3,
@@ -111,7 +111,7 @@ const CHARACTER_DEFS = [
     id: "gigachad",
     name: "GigaCHAD",
     title: "Late bloomer",
-    desc: "Toutes les couleurs x0.5 jusqu'Ã  la vague 10, puis x4.",
+    desc: "Toutes les couleurs x0.5 jusqu'à la vague 10, puis x4.",
     getCardEffectMultiplier(state) {
       return state.wave >= 10 ? 4 : 0.5;
     },
@@ -120,7 +120,7 @@ const CHARACTER_DEFS = [
     id: "time-breaker",
     name: "Time Breaker",
     title: "Scaling pur",
-    desc: "Toutes les couleurs commencent Ã  x0.1 et gagnent +0.1 par vague.",
+    desc: "Toutes les couleurs commencent à x0.1 et gagnent +0.1 par vague.",
     getCardEffectMultiplier(state) {
       return Math.max(0.1, state.wave * 0.1);
     },
@@ -130,31 +130,31 @@ const CHARACTER_DEFS = [
 const CURSES = [
   {
     id: "curse-damage",
-    name: "MalÃ©diction de dÃ©gÃ¢ts",
-    desc: "+12% dÃ©gÃ¢ts.",
+    name: "Malédiction de dégâts",
+    desc: "+12% dégâts.",
     effects: { damage: 0.12 },
   },
   {
     id: "curse-speed",
-    name: "MalÃ©diction de vitesse",
+    name: "Malédiction de vitesse",
     desc: "+12% vitesse d'attaque.",
     effects: { attackSpeed: 0.12 },
   },
   {
     id: "curse-health",
-    name: "MalÃ©diction de vie",
+    name: "Malédiction de vie",
     desc: "+24 PV max.",
     effects: { maxHp: 24 },
   },
   {
     id: "curse-gold",
-    name: "MalÃ©diction d'or",
-    desc: "+8% or gagnÃ©.",
+    name: "Malédiction d'or",
+    desc: "+8% or gagné.",
     effects: { money: 0.08 },
   },
   {
     id: "curse-card-slot",
-    name: "MalÃ©diction de main",
+    name: "Malédiction de main",
     desc: "+1 emplacement de carte.",
     effects: { cardSlots: 1 },
     rare: true,
@@ -164,32 +164,32 @@ const CURSES = [
 const CARD_CURSE_DEFS = [
   {
     id: "curse-damage-apply",
-    name: "Marque de dÃ©gÃ¢ts",
-    desc: "Ajoute +12% dÃ©gÃ¢ts Ã  une carte de ton choix.",
+    name: "Marque de dégâts",
+    desc: "Ajoute +12% dégâts à une carte de ton choix.",
     curse: CURSES[0],
   },
   {
     id: "curse-speed-apply",
     name: "Marque de vitesse",
-    desc: "Ajoute +12% vitesse d'attaque Ã  une carte de ton choix.",
+    desc: "Ajoute +12% vitesse d'attaque à une carte de ton choix.",
     curse: CURSES[1],
   },
   {
     id: "curse-health-apply",
     name: "Marque de vie",
-    desc: "Ajoute +24 PV max Ã  une carte de ton choix.",
+    desc: "Ajoute +24 PV max à une carte de ton choix.",
     curse: CURSES[2],
   },
   {
     id: "curse-gold-apply",
     name: "Marque d'or",
-    desc: "Ajoute +8% or gagnÃ© Ã  une carte de ton choix.",
+    desc: "Ajoute +8% or gagné à une carte de ton choix.",
     curse: CURSES[3],
   },
   {
     id: "curse-slot-apply",
     name: "Marque de main",
-    desc: "Ajoute +1 emplacement de carte. TrÃ¨s rare.",
+    desc: "Ajoute +1 emplacement de carte. Très rare.",
     curse: CURSES[4],
     rare: true,
   },
@@ -199,14 +199,14 @@ const MODIFIER_DEFS = [
   {
     id: "mod-damage",
     name: "Aiguisage",
-    desc: "+10% dÃ©gÃ¢ts.",
+    desc: "+10% dégâts.",
     price: 18,
     effects: { damage: 0.1 },
   },
   {
     id: "mod-money",
-    name: "Bourse truquÃ©e",
-    desc: "+8% or gagnÃ©.",
+    name: "Bourse truquée",
+    desc: "+8% or gagné.",
     price: 16,
     effects: { money: 0.08 },
   },
@@ -227,7 +227,7 @@ const MODIFIER_DEFS = [
   {
     id: "mod-regen",
     name: "Sang chaud",
-    desc: "+0.5 rÃ©gÃ©nÃ©ration.",
+    desc: "+0.5 régénération.",
     price: 15,
     effects: { regen: 0.5 },
   },
@@ -240,8 +240,8 @@ const PACK_DEFS = [
   { id: "spades-6", name: "Grand pack Pique", price: 26, size: 6, suit: "spades" },
   { id: "diamonds-4", name: "Pack Carreau", price: 16, size: 4, suit: "diamonds" },
   { id: "diamonds-6", name: "Grand pack Carreau", price: 26, size: 6, suit: "diamonds" },
-  { id: "clubs-4", name: "Pack TrÃ¨fle", price: 16, size: 4, suit: "clubs" },
-  { id: "clubs-6", name: "Grand pack TrÃ¨fle", price: 26, size: 6, suit: "clubs" },
+  { id: "clubs-4", name: "Pack Trèfle", price: 16, size: 4, suit: "clubs" },
+  { id: "clubs-6", name: "Grand pack Trèfle", price: 26, size: 6, suit: "clubs" },
   { id: "hearts-4", name: "Pack Coeur", price: 16, size: 4, suit: "hearts" },
   { id: "hearts-6", name: "Grand pack Coeur", price: 26, size: 6, suit: "hearts" },
 ];
@@ -261,3 +261,5 @@ const POKER_DAMAGE_BONUS = {
   royalFlush: 2.2,
   perfectFlush: 2.65,
 };
+
+

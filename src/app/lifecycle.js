@@ -22,6 +22,7 @@ function restart() {
   ui.mainMenu.classList.add("is-hidden");
   ui.characterSelect.classList.add("is-hidden");
   ui.shop.classList.add("is-hidden");
+  updateMobileControlsVisibility();
   showCharacterSelect();
 }
 
@@ -57,6 +58,7 @@ function startRun(character = null) {
   ui.shop.classList.add("is-hidden");
   lastTime = performance.now();
   beginWave();
+  updateMobileControlsVisibility();
   animationId = requestAnimationFrame(loop);
 }
 
@@ -69,6 +71,7 @@ function showCharacterSelect() {
 
   ui.mainMenu.classList.add("is-hidden");
   ui.characterSelect.classList.remove("is-hidden");
+  updateMobileControlsVisibility();
   ui.characterChoices.innerHTML = choices
     .map(
       (character) => `
@@ -128,6 +131,7 @@ function initMenu() {
   ui.playerNameHud.textContent = connectedPlayerName || "-";
   renderGameShell();
   queueTutorialSteps(["menuName", "menuLaunch"]);
+  updateMobileControlsVisibility();
 }
 
 function renderGameShell() {

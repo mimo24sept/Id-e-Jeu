@@ -43,7 +43,8 @@ function controlLabel() {
 
 function updateControlsTip() {
   if (!ui.controlsTip) return;
-  ui.controlsTip.textContent = `${controlLabel()} Â· Auto-fire`;
+  const touchCapable = navigator.maxTouchPoints > 0 || matchMedia("(pointer: coarse)").matches;
+  ui.controlsTip.textContent = touchCapable ? `TACTILE Â· ${controlLabel()}` : `${controlLabel()} Â· Auto-fire`;
 }
 
 async function detectKeyboardLayout() {

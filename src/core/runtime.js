@@ -1,4 +1,5 @@
 ﻿const keys = new Set();
+const touchMovement = { x: 0, y: 0, pointerId: null };
 let state;
 let lastTime = performance.now();
 let animationId = 0;
@@ -38,7 +39,7 @@ const TUTORIAL_STEPS = {
     selector: "#controlsTip",
     kicker: "Vague",
     title: "Bouge en continu",
-    text: "Le clavier est detecte quand possible. WASD, ZQSD et les fleches marchent pour esquiver.",
+    text: "Sur mobile, glisse le joystick tactile. Sur clavier, WASD, ZQSD et les fleches marchent pour esquiver.",
   },
   handPanel: {
     selector: ".panel-left",

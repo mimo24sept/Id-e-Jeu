@@ -9,6 +9,12 @@
   <body>
     <main class="game-shell">
       <canvas id="game" width="1280" height="720" aria-label="Zone de jeu"></canvas>
+      <div id="mobileControls" class="mobile-controls is-hidden" aria-label="Controle tactile">
+        <div id="mobileStick" class="mobile-stick">
+          <div id="mobileStickKnob" class="mobile-stick-knob"></div>
+        </div>
+        <div class="mobile-hint">GLISSE POUR BOUGER</div>
+      </div>
 
       <section class="hud hud-top" aria-label="Statistiques">
         <div>
@@ -172,6 +178,7 @@
     <script src="src/ui/render.js"></script>
     <script src="src/actions/shopActions.js"></script>
     <script src="src/app/lifecycle.js"></script>
+    <script src="src/app/mobileControls.js"></script>
     <script src="src/app/events.js"></script>
   </body>
 </html>

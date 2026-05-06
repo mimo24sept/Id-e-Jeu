@@ -1,0 +1,98 @@
+.mobile-controls {
+  position: fixed;
+  left: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 18;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.mobile-stick {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  border: 3px solid var(--line);
+  background: rgba(20, 20, 20, 0.84);
+  box-shadow: 6px 6px 0 var(--accent);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.mobile-stick::before {
+  position: absolute;
+  inset: 26px;
+  border: 2px dashed rgba(244, 244, 244, 0.42);
+  content: "";
+}
+
+.mobile-stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  border: 3px solid #090909;
+  background: var(--accent);
+  box-shadow: 3px 3px 0 var(--line);
+  transform: translate(-50%, -50%);
+}
+
+.mobile-hint {
+  max-width: 86px;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+@media (pointer: coarse), (max-width: 760px) {
+  #game {
+    touch-action: none;
+  }
+
+  .mobile-controls:not(.is-hidden) {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .hud-top {
+    top: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    width: calc(100vw - 16px);
+    padding: 5px;
+  }
+
+  .hud-top > div {
+    padding: 4px 5px;
+  }
+
+  .hud-top .label {
+    font-size: 0.52rem;
+  }
+
+  .hud-top strong {
+    font-size: 0.72rem;
+  }
+
+  .shop {
+    padding: 8px;
+  }
+
+  .shop-board {
+    max-height: calc(100dvh - 16px);
+  }
+
+  .mobile-stick {
+    width: 104px;
+    height: 104px;
+  }
+
+  .mobile-hint {
+    display: none;
+  }
+}

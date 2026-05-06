@@ -85,6 +85,8 @@ function updatePlayer(dt) {
   if (keys.has("down")) dy += 1;
   if (keys.has("left")) dx -= 1;
   if (keys.has("right")) dx += 1;
+  dx += touchMovement.x;
+  dy += touchMovement.y;
 
   const length = Math.hypot(dx, dy) || 1;
   const nextPosition = clampToWorld(
@@ -161,6 +163,7 @@ function damagePlayer(amount) {
   if (state.player.hp <= 0) {
     state.player.hp = 0;
     state.gameOver = true;
+    updateMobileControlsVisibility();
     ui.finalScore.textContent = `Tu as tenu jusqu'Ã  la vague ${state.wave}`;
     ui.gameOver.classList.remove("is-hidden");
   }

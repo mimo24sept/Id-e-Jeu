@@ -65,6 +65,7 @@ function triggerGodMode() {
   state.player.hp = state.stats.maxHp;
   state.player.invuln = 999999;
   cameraShake = 0.6;
+  updateMobileControlsVisibility();
   ui.shop.classList.add("is-hidden");
   ui.gameOver.classList.add("is-hidden");
   ui.godMode.classList.remove("is-hidden");

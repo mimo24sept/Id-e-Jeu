@@ -3,6 +3,9 @@ const ctx = canvas.getContext("2d");
 
 const ui = {
   mainMenu: document.querySelector("#mainMenu"),
+  mobileControls: document.querySelector("#mobileControls"),
+  mobileStick: document.querySelector("#mobileStick"),
+  mobileStickKnob: document.querySelector("#mobileStickKnob"),
   playerNameInput: document.querySelector("#playerNameInput"),
   connectPlayer: document.querySelector("#connectPlayer"),
   launchGame: document.querySelector("#launchGame"),

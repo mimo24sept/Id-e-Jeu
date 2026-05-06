@@ -1,5 +1,6 @@
 ﻿function renderUI() {
   state.stats = calculateStats();
+  updateMobileControlsVisibility();
   updateUIAccent();
   updateGodCountdown();
   ui.playerNameHud.textContent = state.playerName;

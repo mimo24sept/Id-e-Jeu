@@ -39,7 +39,10 @@ window.addEventListener("keyup", (event) => {
   const movementKey = movementKeyFromEvent(event);
   if (movementKey) keys.delete(movementKey);
 });
-window.addEventListener("blur", () => keys.clear());
+window.addEventListener("blur", () => {
+  keys.clear();
+  clearTouchMovement();
+});
 
 ui.shopHand.addEventListener("click", (event) => {
   const curseButton = event.target.closest("[data-curse-card]");

@@ -29,7 +29,16 @@ function defaultPlayerMeta() {
 function playerMeta(name = connectedPlayerName || "Joueur") {
   const playerName = cleanPlayerName(name) || "Joueur";
   metaProgression.players[playerName] ||= defaultPlayerMeta();
+  if (playerName === "Dev") unlockDevMeta(metaProgression.players[playerName]);
   return metaProgression.players[playerName];
+}
+
+function unlockDevMeta(meta) {
+  for (const key of metaDeckKeys()) {
+    meta.cardUpgrades[key] = MAX_CARD_UPGRADE_LEVEL;
+  }
+  meta.fragments = Math.max(meta.fragments || 0, 999999);
+  meta.packsBought = Math.max(meta.packsBought || 0, 0);
 }
 
 function metaCardKey(suit, rank) {

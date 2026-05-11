@@ -52,21 +52,85 @@
 }
 
 .meta-card-entry {
+  --card-accent: var(--line);
+  --card-soft: rgba(255, 255, 255, 0.08);
   display: grid;
   grid-template-columns: 54px 1fr;
   gap: 10px;
   min-height: 82px;
   padding: 8px;
-  border: 3px solid var(--line);
-  background: #151515;
+  position: relative;
+  overflow: hidden;
+  border: 3px solid var(--card-accent);
+  background:
+    linear-gradient(135deg, var(--card-soft), transparent 58%),
+    #151515;
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+
+.meta-card-entry.spades {
+  --card-accent: #d7dbe4;
+  --card-soft: rgba(215, 219, 228, 0.18);
+}
+
+.meta-card-entry.diamonds {
+  --card-accent: #ff8a1f;
+  --card-soft: rgba(255, 138, 31, 0.22);
+}
+
+.meta-card-entry.clubs {
+  --card-accent: #0d67ff;
+  --card-soft: rgba(13, 103, 255, 0.2);
+}
+
+.meta-card-entry.hearts {
+  --card-accent: #e8526d;
+  --card-soft: rgba(232, 82, 109, 0.22);
+}
+
+.meta-card-entry::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.meta-card-entry.level-2 {
+  box-shadow: 5px 5px 0 var(--shadow), inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+}
+
+.meta-card-entry.level-3 {
+  box-shadow: 6px 6px 0 var(--shadow), inset 0 0 18px var(--card-soft);
+}
+
+.meta-card-entry.level-4 {
+  border-width: 4px;
+  box-shadow: 7px 7px 0 var(--shadow), 0 0 0 3px rgba(255, 255, 255, 0.14), inset 0 0 24px var(--card-soft);
+}
+
+.meta-card-entry.level-4::before {
+  content: "";
+  position: absolute;
+  inset: -35%;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.24) 50%, transparent 65%);
+  transform: rotate(12deg);
+  opacity: 0.55;
 }
 
 .meta-card-face {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
-  border: 3px solid var(--line);
+  border: 3px solid var(--card-accent);
   background: #f4f4f4;
   color: #090909;
+}
+
+.meta-card-entry > div:not(.meta-card-face) {
+  position: relative;
+  z-index: 1;
 }
 
 .meta-card-face strong {
@@ -79,15 +143,54 @@
   line-height: 1;
 }
 
+.meta-card-face em {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0 4px;
+  border: 2px solid #080808;
+  background: var(--card-accent);
+  color: #080808;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 950;
+  line-height: 1;
+}
+
 .meta-card-entry h3 {
   margin: 2px 0 4px;
   font-family: "Bebas Neue", sans-serif;
   font-size: 1.4rem;
   letter-spacing: 0;
+  color: var(--card-accent);
+}
+
+.meta-level-pips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin: 0 0 6px;
+}
+
+.meta-level-pips span {
+  height: 8px;
+  border: 1px solid var(--card-accent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.meta-level-pips span.is-lit {
+  background: var(--card-accent);
+  box-shadow: 0 0 10px var(--card-accent);
 }
 
 .meta-card-entry p,
 .meta-collection-empty {
+  position: relative;
+  z-index: 1;
   margin: 0;
   color: var(--muted);
   font-size: 0.72rem;

@@ -195,15 +195,20 @@ function renderMetaCollection() {
         .map(([key, level]) => {
           const card = metaCardDataFromKey(key);
           const suit = SUITS[card.suit];
+          const pips = Array.from({ length: MAX_CARD_UPGRADE_LEVEL }, (_, index) => (
+            `<span class="${index < level ? "is-lit" : ""}"></span>`
+          )).join("");
           return `
-            <article class="meta-card-entry ${card.suit}">
+            <article class="meta-card-entry ${card.suit} level-${level}">
               <div class="meta-card-face">
                 <strong>${card.rank}</strong>
                 <span>${suit.symbol}</span>
+                <em>${cardMetaEffectBadge(card)}</em>
               </div>
               <div>
                 <span class="label">${suit.name}</span>
                 <h3>Niveau ${level}</h3>
+                <div class="meta-level-pips" aria-label="Niveau ${level} sur ${MAX_CARD_UPGRADE_LEVEL}">${pips}</div>
                 <p>${describeMetaEffectForKey(key)}</p>
               </div>
             </article>

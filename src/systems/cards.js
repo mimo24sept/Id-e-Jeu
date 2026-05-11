@@ -85,9 +85,12 @@ function metaRunBonuses() {
   const spadeStanceMultiplier = stationaryPower * spadeAceMultiplier;
   const heartAuraSizeMultiplier = 1 + levels.heartAce * 0.16;
   const clubAceMultiplier = levels.clubAce > 0 ? 2 : 1;
-  const clubJackBounces = levels.clubJack > 0 ? 1 + Math.floor(Math.max(0, levels.clubJack - 1) / 2) : 0;
-  const clubQueenBounces = levels.clubQueen > 0 ? 2 + Math.floor(Math.max(0, levels.clubQueen - 1) / 2) : 0;
-  const clubKingBounces = levels.clubKing > 0 ? 3 + Math.floor(Math.max(0, levels.clubKing - 1) / 2) : 0;
+  const clubJackBounces = levels.clubJack > 0 ? 1 : 0;
+  const clubQueenBounces = levels.clubQueen > 0 ? 2 : 0;
+  const clubKingBounces = levels.clubKing > 0 ? 3 : 0;
+  const clubJackPenalty = levels.clubJack > 0 ? 1 - Math.min(4, levels.clubJack) * 0.125 : 1;
+  const clubQueenPenalty = levels.clubQueen > 0 ? 1 - Math.min(4, levels.clubQueen) * 0.125 : 1;
+  const clubKingPenalty = levels.clubKing > 0 ? 1 - Math.min(4, levels.clubKing) * 0.125 : 1;
   return {
     levels,
     waveGold: levels.stipend * 3,
@@ -117,9 +120,9 @@ function metaRunBonuses() {
     heartChainSpeedMultiplier: 1 + levels.heartKing * 0.08,
     clubAceMultiplier,
     clubBounceCount: (clubJackBounces + clubQueenBounces + clubKingBounces) * clubAceMultiplier,
-    clubBounceSpeedMultiplier: levels.clubJack > 0 ? Math.max(0.42, 0.82 - levels.clubJack * 0.04) : 1,
-    clubBounceDamageMultiplier: levels.clubQueen > 0 ? Math.max(0.38, 0.78 - levels.clubQueen * 0.035) : 1,
-    clubBounceInaccuracy: levels.clubKing > 0 ? 0.12 + levels.clubKing * 0.08 : 0,
+    clubBounceSpeedMultiplier: levels.clubJack > 0 ? 1 - 0.36 * clubJackPenalty : 1,
+    clubBounceDamageMultiplier: levels.clubQueen > 0 ? 1 - 0.42 * clubQueenPenalty : 1,
+    clubBounceInaccuracy: levels.clubKing > 0 ? 0.46 * clubKingPenalty : 0,
   };
 }
 

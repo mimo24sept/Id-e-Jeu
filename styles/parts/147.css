@@ -8,6 +8,10 @@
   background: rgba(0, 0, 0, 0.72);
 }
 
+.meta-collection.is-hidden {
+  display: none;
+}
+
 .meta-collection-board {
   width: min(980px, 100%);
   max-height: min(760px, 92vh);

@@ -131,11 +131,13 @@ function updateSpawns(dt) {
   state.spawnTimer -= dt;
   if (state.spawnTimer <= 0) {
     let spawnBurst = 1 + Math.floor(state.wave / 5);
-    if (Math.random() < Math.min(0.12 + state.wave * 0.02, 0.68)) spawnBurst += 1;
+    if (Math.random() < Math.min(0.22 + state.wave * 0.025, 0.78)) spawnBurst += 1;
+    if (state.wave >= 4 && Math.random() < 0.28) spawnBurst += 1;
+    if (state.wave >= 7 && Math.random() < 0.22) spawnBurst += 1;
     for (let i = 0; i < spawnBurst; i += 1) {
       spawnEnemy();
     }
-    state.spawnTimer = Math.max(0.18, 0.86 - state.wave * 0.025);
+    state.spawnTimer = Math.max(0.14, 0.72 - state.wave * 0.022);
   }
 }
 

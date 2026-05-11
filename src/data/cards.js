@@ -215,7 +215,7 @@ const CURSE_PACK_DEFS = [
     id: "curse-pack",
     name: "Pack de malédictions",
     desc: "Révèle 3 malédictions. Choisis-en une à appliquer sur une carte.",
-    price: 18,
+    price: 36,
     size: 3,
   },
 ];

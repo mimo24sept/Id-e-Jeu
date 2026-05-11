@@ -62,6 +62,12 @@ function scaleShopPrice(basePrice, wave = state?.wave || 1) {
   return Math.max(1, Math.round(basePrice * shopPriceMultiplier(wave)));
 }
 
+function cursePackPrice(pack) {
+  const wave = state?.wave || 1;
+  const premium = 1 + Math.max(0, wave - 1) * 0.035 + Math.floor(Math.max(0, wave - 1) / 10) * 0.16;
+  return Math.round(scaleShopPrice(pack.price) * premium);
+}
+
 function rerollCost() {
   return 3 + (state.shopRerolls || 0) * 2 + Math.floor(state.wave / 6);
 }
@@ -116,7 +122,7 @@ function rollShopEntry(offeredCards = []) {
       ...pack,
       id: uniqueId(pack.id),
       type: "cursePack",
-      price: scaleShopPrice(pack.price),
+      price: cursePackPrice(pack),
       bought: false,
     };
   }

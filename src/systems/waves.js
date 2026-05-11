@@ -6,6 +6,10 @@ function enemyTierMultiplier(wave = state.wave) {
   return Math.pow(1.75, enemyTier(wave));
 }
 
+function enemyGoldPressureMultiplier(wave = state.wave) {
+  return Math.max(0.58, 1 - Math.min(16, wave) * 0.025);
+}
+
 function beginWave() {
   state.betweenWaves = false;
   state.packOffer = [];
@@ -17,7 +21,7 @@ function beginWave() {
   state.crateSpawnTimer = random(2.5, 4.5);
   state.pendingCratePacks = 0;
   state.wave += state.wave === 0 ? 1 : 0;
-  state.waveDuration = Math.min(18 + state.wave * 2, 58);
+  state.waveDuration = Math.min(15 + state.wave * 1.7, 54);
   state.waveTimeLeft = state.waveDuration;
   state.spawnTimer = 0;
   if (state.wave % 10 === 0) spawnBoss();
@@ -50,9 +54,10 @@ function spawnEnemy() {
   const spawnDistance = Math.max(window.innerWidth, window.innerHeight) * 0.52 + 45;
   const wave = state.wave;
   const shooter = wave >= 2 && Math.random() < Math.min(0.14 + wave * 0.018, 0.42);
-  const brute = wave >= 4 && Math.random() < Math.min(0.09 + wave * 0.014, 0.34);
+  const brute = wave >= 3 && Math.random() < Math.min(0.11 + wave * 0.016, 0.38);
   const tierMult = enemyTierMultiplier(wave);
-  const hp = (brute ? 42 + wave * 10 : shooter ? 24 + wave * 6 : 16 + wave * 4.5) * tierMult;
+  const earlyPressure = 1 + Math.min(wave, 10) * 0.035;
+  const hp = (brute ? 42 + wave * 10 : shooter ? 24 + wave * 6 : 16 + wave * 4.5) * tierMult * earlyPressure;
   const radius = brute ? 21 : shooter ? 16 : 15;
   const spawnPoint = clampToWorld(
     state.player.x + Math.cos(angle) * spawnDistance,
@@ -70,7 +75,7 @@ function spawnEnemy() {
     damage: (brute ? 19 : shooter ? 11 : 13) * Math.pow(1.35, enemyTier(wave)),
     type: brute ? "brute" : shooter ? "shooter" : "chaser",
     shootTimer: random(0.5, 1.6),
-    value: (brute ? 2.35 : shooter ? 1.55 : 0.95) * Math.pow(1.35, enemyTier(wave)),
+    value: (brute ? 2.35 : shooter ? 1.55 : 0.95) * Math.pow(1.35, enemyTier(wave)) * enemyGoldPressureMultiplier(wave),
     tier: enemyTier(wave),
   });
 }
@@ -78,6 +83,8 @@ function spawnEnemy() {
 function spawnBoss() {
   const wave = state.wave;
   const tierMult = enemyTierMultiplier(wave);
+  const bossTier = Math.max(1, enemyTier(wave));
+  const bossHp = (1400 + wave * 180) * tierMult * (1 + bossTier * 0.35);
   const radius = 46 + enemyTier(wave) * 5;
   const side = Math.floor(random(0, 4));
   const bounds = worldBounds();
@@ -101,8 +108,8 @@ function spawnBoss() {
     x,
     y,
     radius,
-    hp: (900 + wave * 120) * tierMult,
-    maxHp: (900 + wave * 120) * tierMult,
+    hp: bossHp,
+    maxHp: bossHp,
     speed: 62 + wave * 1.6,
     damage: (28 + wave * 1.8) * Math.pow(1.35, enemyTier(wave)),
     type: "boss",
@@ -111,6 +118,10 @@ function spawnBoss() {
     tier: enemyTier(wave),
     boss: true,
   });
+
+  for (let i = 0; i < 4 + bossTier * 2; i += 1) {
+    spawnEnemy();
+  }
 }
 
 function nextCrateDelay() {

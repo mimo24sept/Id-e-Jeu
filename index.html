@@ -128,6 +128,7 @@
                 </div>
               </div>
               <button id="buyMetaPack" class="primary-button" type="button" disabled>Acheter pack</button>
+              <button id="openMetaCollection" class="secondary-button" type="button">Voir cartes</button>
               <div id="metaPackResult" class="meta-pack-result"></div>
               <div id="metaUpgradeSummary" class="meta-upgrade-summary"></div>
             </section>
@@ -155,6 +156,20 @@
           <span class="label">Début de run</span>
           <h1>CHOISIS</h1>
           <div id="characterChoices" class="character-grid"></div>
+        </div>
+      </section>
+
+      <section id="metaCollection" class="meta-collection is-hidden" aria-label="Cartes améliorées">
+        <div class="meta-collection-board">
+          <header class="meta-collection-header">
+            <div>
+              <span class="label">Progression</span>
+              <h2>Cartes améliorées</h2>
+            </div>
+            <button id="closeMetaCollection" class="secondary-button" type="button">Fermer</button>
+          </header>
+          <div id="metaCollectionStats" class="meta-collection-stats"></div>
+          <div id="metaCollectionGrid" class="meta-collection-grid"></div>
         </div>
       </section>
 

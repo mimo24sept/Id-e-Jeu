@@ -84,6 +84,25 @@ function describeMetaCard(key) {
   return `${rank}${SUITS[suit].symbol}`;
 }
 
+function metaCardDataFromKey(key) {
+  const [rank, suit] = key.split("-");
+  const rankDef = RANKS.find((item) => item.label === rank);
+  return { rank, suit, value: rankDef?.value || 0 };
+}
+
+function metaCardSort(a, b) {
+  const suitOrder = Object.keys(SUITS);
+  const aCard = metaCardDataFromKey(a);
+  const bCard = metaCardDataFromKey(b);
+  return suitOrder.indexOf(aCard.suit) - suitOrder.indexOf(bCard.suit) || aCard.value - bCard.value;
+}
+
+function describeMetaEffectForKey(key) {
+  const card = metaCardDataFromKey(key);
+  if (card.value >= 2 && card.value <= 6) return "Révolution";
+  return "Effet à définir";
+}
+
 function buyMetaPack() {
   const meta = playerMeta();
   const cost = metaPackCost(meta);
@@ -121,6 +140,48 @@ function renderMetaProgression(lastPack = []) {
   ui.metaPackResult.innerHTML = lastPack
     .map((item) => `<span>${describeMetaCard(item.key)} niv.${item.before} -> ${item.after}</span>`)
     .join("");
+  if (ui.metaCollection && !ui.metaCollection.classList.contains("is-hidden")) renderMetaCollection();
+}
+
+function renderMetaCollection() {
+  if (!ui.metaCollectionGrid) return;
+  const meta = playerMeta();
+  const entries = Object.entries(meta.cardUpgrades)
+    .filter(([, level]) => level > 0)
+    .sort(([a], [b]) => metaCardSort(a, b));
+  const totalLevels = entries.reduce((sum, [, level]) => sum + level, 0);
+
+  ui.metaCollectionStats.textContent = `${entries.length}/52 cartes · ${totalLevels} niveaux · ${meta.fragments} fragments`;
+  ui.metaCollectionGrid.innerHTML = entries.length
+    ? entries
+        .map(([key, level]) => {
+          const card = metaCardDataFromKey(key);
+          const suit = SUITS[card.suit];
+          return `
+            <article class="meta-card-entry ${card.suit}">
+              <div class="meta-card-face">
+                <strong>${card.rank}</strong>
+                <span>${suit.symbol}</span>
+              </div>
+              <div>
+                <span class="label">${suit.name}</span>
+                <h3>Niveau ${level}</h3>
+                <p>${describeMetaEffectForKey(key)}</p>
+              </div>
+            </article>
+          `;
+        })
+        .join("")
+    : `<div class="meta-collection-empty">Aucune carte améliorée</div>`;
+}
+
+function openMetaCollection() {
+  renderMetaCollection();
+  ui.metaCollection.classList.remove("is-hidden");
+}
+
+function closeMetaCollection() {
+  ui.metaCollection.classList.add("is-hidden");
 }
 
 let metaProgression = loadMetaProgression();

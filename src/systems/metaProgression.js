@@ -49,9 +49,9 @@ function runFragmentReward(waveReached) {
   return Math.round(8 + wave * 7 + Math.pow(wave, 1.35) * 2.2);
 }
 
-function grantRunFragments(waveReached) {
+function grantRunFragments(waveReached, multiplier = 1) {
   const meta = playerMeta();
-  const reward = runFragmentReward(waveReached);
+  const reward = Math.round(runFragmentReward(waveReached) * Math.max(1, multiplier));
   meta.fragments += reward;
   meta.bestWave = Math.max(meta.bestWave || 0, waveReached);
   saveMetaProgression();
@@ -71,8 +71,38 @@ function cardMetaLevel(card, meta = playerMeta()) {
   return cardUpgradeLevel(cardMetaKey(card), meta);
 }
 
+function cardMetaEffectDef(card) {
+  const value = card?.value || 0;
+  if (value >= 2 && value <= 6) return CARD_META_EFFECTS.revolution;
+  if (value === 7) return CARD_META_EFFECTS.stipend;
+  if (value === 8) return CARD_META_EFFECTS.pacification;
+  if (value === 9) return CARD_META_EFFECTS.bargaining;
+  if (value === 10) return CARD_META_EFFECTS.legacy;
+  if (card?.suit === "diamonds" && value === 11) return CARD_META_EFFECTS.diamondJack;
+  if (card?.suit === "diamonds" && value === 12) return CARD_META_EFFECTS.diamondQueen;
+  if (card?.suit === "diamonds" && value === 13) return CARD_META_EFFECTS.diamondKing;
+  if (card?.suit === "diamonds" && value === 14) return CARD_META_EFFECTS.diamondAce;
+  if (card?.suit === "spades" && value === 11) return CARD_META_EFFECTS.spadeJack;
+  if (card?.suit === "spades" && value === 12) return CARD_META_EFFECTS.spadeQueen;
+  if (card?.suit === "spades" && value === 13) return CARD_META_EFFECTS.spadeKing;
+  if (card?.suit === "spades" && value === 14) return CARD_META_EFFECTS.spadeAce;
+  if (card?.suit === "hearts" && value === 11) return CARD_META_EFFECTS.heartJack;
+  if (card?.suit === "hearts" && value === 12) return CARD_META_EFFECTS.heartQueen;
+  if (card?.suit === "hearts" && value === 13) return CARD_META_EFFECTS.heartKing;
+  if (card?.suit === "hearts" && value === 14) return CARD_META_EFFECTS.heartAce;
+  if (card?.suit === "clubs" && value === 11) return CARD_META_EFFECTS.clubJack;
+  if (card?.suit === "clubs" && value === 12) return CARD_META_EFFECTS.clubQueen;
+  if (card?.suit === "clubs" && value === 13) return CARD_META_EFFECTS.clubKing;
+  if (card?.suit === "clubs" && value === 14) return CARD_META_EFFECTS.clubAce;
+  return null;
+}
+
 function cardMetaEffectName(card) {
-  return card.value >= 2 && card.value <= 6 ? "Révolution" : "";
+  return cardMetaEffectDef(card)?.name || "";
+}
+
+function cardMetaEffectBadge(card) {
+  return cardMetaEffectDef(card)?.badge || "M";
 }
 
 function upgradeableMetaCards(meta = playerMeta()) {
@@ -99,8 +129,7 @@ function metaCardSort(a, b) {
 
 function describeMetaEffectForKey(key) {
   const card = metaCardDataFromKey(key);
-  if (card.value >= 2 && card.value <= 6) return "Révolution";
-  return "Effet à définir";
+  return cardMetaEffectDef(card)?.desc || "Effet à définir";
 }
 
 function buyMetaPack() {

@@ -19,11 +19,12 @@
     pendingCurse: null,
     pendingWeapon: null,
     previewWeaponId: null,
-    player: { x: 0, y: 0, radius: 17, hp: 100, invuln: 0 },
+    player: { x: 0, y: 0, radius: 17, hp: 100, invuln: 0, stationaryTime: 0 },
     enemies: [],
     enemyBullets: [],
     projectiles: [],
     pulses: [],
+    bodyguards: [],
     floatingText: [],
     crates: [],
     crateSpawnTimer: 0,
@@ -66,6 +67,10 @@ function cursePackPrice(pack) {
   const wave = state?.wave || 1;
   const premium = 1 + Math.max(0, wave - 1) * 0.035 + Math.floor(Math.max(0, wave - 1) / 10) * 0.16;
   return Math.round(scaleShopPrice(pack.price) * premium);
+}
+
+function cardPackPrice(pack) {
+  return Math.max(1, Math.round(scaleShopPrice(pack.price) * (1 - metaRunBonuses().packDiscount)));
 }
 
 function rerollCost() {
@@ -133,7 +138,7 @@ function rollShopEntry(offeredCards = []) {
       ...pack,
       id: uniqueId(pack.id),
       type: "pack",
-      price: scaleShopPrice(pack.price),
+      price: cardPackPrice(pack),
       bought: false,
     };
   }
@@ -144,7 +149,7 @@ function rollShopEntry(offeredCards = []) {
       ...pack,
       id: uniqueId(pack.id),
       type: "pack",
-      price: scaleShopPrice(pack.price),
+      price: cardPackPrice(pack),
       bought: false,
     };
   }
@@ -155,7 +160,7 @@ function rollShopEntry(offeredCards = []) {
       ...pack,
       id: uniqueId(pack.id),
       type: "pack",
-      price: scaleShopPrice(pack.price),
+      price: cardPackPrice(pack),
       bought: false,
     };
   }
@@ -165,7 +170,7 @@ function rollShopEntry(offeredCards = []) {
     ...pack,
     id: uniqueId(pack.id),
     type: "pack",
-    price: scaleShopPrice(pack.price),
+    price: cardPackPrice(pack),
     bought: false,
   };
 }

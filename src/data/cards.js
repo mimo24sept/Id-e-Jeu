@@ -34,6 +34,114 @@ const RANKS = [
   { label: "A", value: 14 },
 ];
 
+const CARD_META_EFFECTS = {
+  revolution: {
+    name: "Révolution",
+    badge: "R",
+    desc: "Booste les autres cartes 2 à 6 en main.",
+  },
+  stipend: {
+    name: "Prime",
+    badge: "P",
+    desc: "+3 or fixe par niveau à la fin de chaque vague.",
+  },
+  pacification: {
+    name: "Pacification",
+    badge: "M",
+    desc: "-2.5% monstres par niveau pendant les vagues.",
+  },
+  bargaining: {
+    name: "Marchandage",
+    badge: "$",
+    desc: "-3% coût des packs de cartes par niveau.",
+  },
+  legacy: {
+    name: "Héritage",
+    badge: "F",
+    desc: "+5% fragments de fin de run par niveau.",
+  },
+  diamondJack: {
+    name: "Délit d'initié",
+    badge: "J$",
+    desc: "Mange 20% de ton argent au début de vague et le convertit en stat aléatoire.",
+  },
+  diamondQueen: {
+    name: "Garde royale",
+    badge: "Q$",
+    desc: "Mange 20% de ton argent au début de vague et invoque des gardes du corps.",
+  },
+  diamondKing: {
+    name: "Impôt royal",
+    badge: "K$",
+    desc: "Multiplie le bonus d'or du roi, mais mange 50% de ton argent au début de vague.",
+  },
+  diamondAce: {
+    name: "Paradis fiscal",
+    badge: "A$",
+    desc: "Divise par deux l'argent mangé par les figures de carreau.",
+  },
+  spadeJack: {
+    name: "Posture vive",
+    badge: "J♠",
+    desc: "Augmente la vitesse d'attaque quand tu restes immobile.",
+  },
+  spadeQueen: {
+    name: "Forteresse",
+    badge: "Q♠",
+    desc: "Augmente les PV et la regen quand tu restes immobile.",
+  },
+  spadeKing: {
+    name: "Ligne de tir",
+    badge: "K♠",
+    desc: "Augmente les dégâts et la portée quand tu restes immobile.",
+  },
+  spadeAce: {
+    name: "Ancrage absolu",
+    badge: "A♠",
+    desc: "Renforce les effets immobiles des figures de pique.",
+  },
+  heartJack: {
+    name: "Aura lourde",
+    badge: "J♥",
+    desc: "Crée une zone qui ralentit les ennemis et les projectiles.",
+  },
+  heartQueen: {
+    name: "Coeur ardent",
+    badge: "Q♥",
+    desc: "Crée une zone qui inflige des dégâts croissants basés sur tes PV max.",
+  },
+  heartKing: {
+    name: "Chaînes vitales",
+    badge: "K♥",
+    desc: "Crée une zone qui vole la vie des ennemis en continu, mais les accélère.",
+  },
+  heartAce: {
+    name: "Expansion",
+    badge: "A♥",
+    desc: "Augmente la taille de toutes les zones de coeur.",
+  },
+  clubJack: {
+    name: "Ricochet léger",
+    badge: "J♣",
+    desc: "+1 rebond de balle. Après chaque rebond, la balle ralentit.",
+  },
+  clubQueen: {
+    name: "Ricochet brisé",
+    badge: "Q♣",
+    desc: "+2 rebonds de balle. Après chaque rebond, les dégâts baissent.",
+  },
+  clubKing: {
+    name: "Ricochet sauvage",
+    badge: "K♣",
+    desc: "+3 rebonds de balle. Après chaque rebond, la précision baisse.",
+  },
+  clubAce: {
+    name: "Carambolage",
+    badge: "A♣",
+    desc: "Double les rebonds donnés par les figures de trèfle.",
+  },
+};
+
 const CHARACTER_DEFS = [
   {
     id: "shadow",

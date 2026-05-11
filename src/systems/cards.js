@@ -42,6 +42,87 @@ function revolutionBoostMultiplier(card) {
   return 1 + revolutionSourceLevel(card) * 0.08;
 }
 
+function metaRankLevelInHand(rankValue) {
+  if (!state?.hand) return 0;
+  return state.hand.reduce((total, card) => (card.value === rankValue ? total + cardMetaLevel(card) : total), 0);
+}
+
+function metaCardLevelInHand(rankValue, suit) {
+  if (!state?.hand) return 0;
+  return state.hand.reduce((total, card) => {
+    if (card.value !== rankValue || card.suit !== suit) return total;
+    return total + cardMetaLevel(card);
+  }, 0);
+}
+
+function metaRunBonuses() {
+  const levels = {
+    stipend: metaRankLevelInHand(7),
+    pacification: metaRankLevelInHand(8),
+    bargaining: metaRankLevelInHand(9),
+    legacy: metaRankLevelInHand(10),
+    diamondJack: metaCardLevelInHand(11, "diamonds"),
+    diamondQueen: metaCardLevelInHand(12, "diamonds"),
+    diamondKing: metaCardLevelInHand(13, "diamonds"),
+    diamondAce: metaCardLevelInHand(14, "diamonds"),
+    spadeJack: metaCardLevelInHand(11, "spades"),
+    spadeQueen: metaCardLevelInHand(12, "spades"),
+    spadeKing: metaCardLevelInHand(13, "spades"),
+    spadeAce: metaCardLevelInHand(14, "spades"),
+    heartJack: metaCardLevelInHand(11, "hearts"),
+    heartQueen: metaCardLevelInHand(12, "hearts"),
+    heartKing: metaCardLevelInHand(13, "hearts"),
+    heartAce: metaCardLevelInHand(14, "hearts"),
+    clubJack: metaCardLevelInHand(11, "clubs"),
+    clubQueen: metaCardLevelInHand(12, "clubs"),
+    clubKing: metaCardLevelInHand(13, "clubs"),
+    clubAce: metaCardLevelInHand(14, "clubs"),
+  };
+  const courtTaxMultiplier = levels.diamondAce > 0 ? 0.5 : 1;
+  const stationaryTime = Math.max(0, state?.player?.stationaryTime || 0);
+  const stationaryPower = Math.min(1, Math.max(0, stationaryTime - 0.45) / 1.55);
+  const spadeAceMultiplier = 1 + levels.spadeAce * 0.18;
+  const spadeStanceMultiplier = stationaryPower * spadeAceMultiplier;
+  const heartAuraSizeMultiplier = 1 + levels.heartAce * 0.16;
+  const clubAceMultiplier = levels.clubAce > 0 ? 2 : 1;
+  const clubJackBounces = levels.clubJack > 0 ? 1 + Math.floor(Math.max(0, levels.clubJack - 1) / 2) : 0;
+  const clubQueenBounces = levels.clubQueen > 0 ? 2 + Math.floor(Math.max(0, levels.clubQueen - 1) / 2) : 0;
+  const clubKingBounces = levels.clubKing > 0 ? 3 + Math.floor(Math.max(0, levels.clubKing - 1) / 2) : 0;
+  return {
+    levels,
+    waveGold: levels.stipend * 3,
+    enemyReduction: Math.min(0.4, levels.pacification * 0.025),
+    packDiscount: Math.min(0.45, levels.bargaining * 0.03),
+    fragmentMultiplier: 1 + Math.min(1, levels.legacy * 0.05),
+    courtTaxMultiplier,
+    diamondJackTaxRate: levels.diamondJack > 0 ? 0.2 * courtTaxMultiplier : 0,
+    diamondQueenTaxRate: levels.diamondQueen > 0 ? 0.2 * courtTaxMultiplier : 0,
+    diamondKingTaxRate: levels.diamondKing > 0 ? 0.5 * courtTaxMultiplier : 0,
+    diamondKingBonusMultiplier: levels.diamondKing > 0 ? 1 + levels.diamondKing : 1,
+    stationaryPower,
+    spadeAceMultiplier,
+    spadeAttackSpeed: levels.spadeJack * 0.08 * spadeStanceMultiplier,
+    spadeMaxHp: levels.spadeQueen * 16 * spadeStanceMultiplier,
+    spadeRegen: levels.spadeQueen * 0.18 * spadeStanceMultiplier,
+    spadeDamage: levels.spadeKing * 0.1 * spadeStanceMultiplier,
+    spadeRange: levels.spadeKing * 0.06 * spadeStanceMultiplier,
+    heartAuraSizeMultiplier,
+    heartSlowRadius: levels.heartJack > 0 ? (125 + levels.heartJack * 18) * heartAuraSizeMultiplier : 0,
+    heartSlowMultiplier: Math.max(0.38, 1 - levels.heartJack * 0.08),
+    heartDamageRadius: levels.heartQueen > 0 ? (110 + levels.heartQueen * 16) * heartAuraSizeMultiplier : 0,
+    heartDamageDpsRatio: levels.heartQueen * 0.006,
+    heartDamageRampRatio: levels.heartQueen * 0.004,
+    heartDrainRadius: levels.heartKing > 0 ? (100 + levels.heartKing * 15) * heartAuraSizeMultiplier : 0,
+    heartDrainDpsRatio: levels.heartKing * 0.0045,
+    heartChainSpeedMultiplier: 1 + levels.heartKing * 0.08,
+    clubAceMultiplier,
+    clubBounceCount: (clubJackBounces + clubQueenBounces + clubKingBounces) * clubAceMultiplier,
+    clubBounceSpeedMultiplier: levels.clubJack > 0 ? Math.max(0.42, 0.82 - levels.clubJack * 0.04) : 1,
+    clubBounceDamageMultiplier: levels.clubQueen > 0 ? Math.max(0.38, 0.78 - levels.clubQueen * 0.035) : 1,
+    clubBounceInaccuracy: levels.clubKing > 0 ? 0.12 + levels.clubKing * 0.08 : 0,
+  };
+}
+
 function characterCardMultiplier(character, suit) {
   const dynamicMultiplier = character?.getCardEffectMultiplier?.(state, suit);
   if (dynamicMultiplier !== undefined) return dynamicMultiplier;
@@ -54,7 +135,8 @@ function cardBaseEffects(card) {
   const metaMultiplier = revolutionBoostMultiplier(card);
   let effects;
   if (faceMultiplier > 0) {
-    const multiplierBonus = faceMultiplier - 1;
+    const kingMultiplier = card.suit === "diamonds" && card.value === 13 ? metaRunBonuses().diamondKingBonusMultiplier : 1;
+    const multiplierBonus = (faceMultiplier - 1) * kingMultiplier;
     if (card.suit === "spades") effects = { damage: multiplierBonus };
     else if (card.suit === "diamonds") effects = { money: multiplierBonus };
     else if (card.suit === "clubs") effects = { attackSpeed: multiplierBonus };
@@ -317,6 +399,7 @@ function applyWeaponSuitIdentityEffects(effects, weapon, suitCount) {
 function calculateStats() {
   const suits = { spades: 0, diamonds: 0, clubs: 0, hearts: 0 };
   const effects = { damage: 0, flatDamage: 0, money: 0, attackSpeed: 0, maxHp: 0, maxHpMultiplier: 0, regen: 0, cardSlots: 0, critChance: 0, moveSpeed: 0 };
+  const runBonuses = metaRunBonuses();
   state.hand.forEach((card) => {
     cardSuits(card).forEach((suit) => {
       suits[suit] += 1;
@@ -349,13 +432,15 @@ function calculateStats() {
     handMultiplier: hand.multiplier,
     handDamageBonus: hand.damageBonus,
     handPower: hand.power,
-    damageMultiplier: Math.max(0.25, 1 + hand.damageBonus + suits.spades * 0.035 + effects.damage + wealthDamageBonus(suits)),
+    damageMultiplier: Math.max(0.25, 1 + hand.damageBonus + suits.spades * 0.035 + effects.damage + wealthDamageBonus(suits) + runBonuses.spadeDamage),
     flatDamage: effects.flatDamage,
-    attackSpeedMultiplier: Math.max(0.25, 1 + suits.clubs * 0.07 + effects.attackSpeed),
+    attackSpeedMultiplier: Math.max(0.25, 1 + suits.clubs * 0.07 + effects.attackSpeed + runBonuses.spadeAttackSpeed),
     moneyMultiplier: Math.max(0.25, logarithmicMoneyMultiplier(suits, effects)),
     moveSpeed: Math.max(120, 225 + suits.clubs * 4 + effects.moveSpeed),
-    maxHp,
-    regen: Math.max(0, suits.hearts * 0.18 + hand.power * 0.05 + effects.regen),
+    maxHp: Math.round(maxHp + runBonuses.spadeMaxHp),
+    regen: Math.max(0, suits.hearts * 0.18 + hand.power * 0.05 + effects.regen + runBonuses.spadeRegen),
+    weaponRangeMultiplier: Math.max(0.5, 1 + runBonuses.spadeRange),
+    stationaryPower: runBonuses.stationaryPower,
     extraCardSlots: effects.cardSlots,
     critChance: Math.min(0.75, effects.critChance),
     mapWidth: WORLD.width,
@@ -375,6 +460,8 @@ function calculateStats() {
       moveSpeed: 420,
       maxHp: 999999,
       regen: 9999,
+      weaponRangeMultiplier: 4,
+      stationaryPower: 1,
       critChance: 1,
     };
   }

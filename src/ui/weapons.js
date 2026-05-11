@@ -1,6 +1,8 @@
 ﻿function packDetails(pack) {
   const color = pack.suit ? ` ${SUITS[pack.suit].symbol} ${SUITS[pack.suit].name}` : "";
-  return `${pack.size} cartes${color}`;
+  const discount = metaRunBonuses().packDiscount;
+  const discountText = discount > 0 ? ` · -${Math.round(discount * 100)}% Marchandage` : "";
+  return `${pack.size} cartes${color}${discountText}`;
 }
 
 function weaponStatLine(weapon) {

@@ -12,6 +12,7 @@ function renderShopRunInfo() {
   const character = state.character;
   const characterName = character?.name || "Aucun";
   const characterDesc = character?.desc || "Pas de modificateur de personnage.";
+  const runBonuses = metaRunBonuses();
   ui.shopRunInfo.innerHTML = `
     <article class="run-character">
       <span class="label">Personnage</span>
@@ -25,12 +26,22 @@ function renderShopRunInfo() {
       ${statBox("Cadence", `x${state.stats.attackSpeedMultiplier.toFixed(2)}`)}
       ${statBox("Crit", `${Math.round(state.stats.critChance * 100)}%`)}
       ${statBox("Vitesse", Math.round(state.stats.moveSpeed))}
+      ${statBox("Portée", `x${(state.stats.weaponRangeMultiplier || 1).toFixed(2)}`)}
       ${statBox("Or", `x${state.stats.moneyMultiplier.toFixed(2)}`)}
       ${statBox("Main", `${state.hand.length}/${effectiveHandSlots()}`)}
       ${statBox("Poker", state.stats.handName)}
       ${statBox("Bonus poker", `+${Math.round(state.stats.handDamageBonus * 100)}%`)}
       ${statBox("Armes", `${state.weapons.length}/${MAX_WEAPONS}`)}
       ${statBox("Caisses", cratePacksWaiting())}
+      ${statBox("Prime 7", `+$${runBonuses.waveGold}/vague`)}
+      ${statBox("Calme 8", `-${Math.round(runBonuses.enemyReduction * 100)}% monstres`)}
+      ${statBox("Packs 9", `-${Math.round(runBonuses.packDiscount * 100)}%`)}
+      ${statBox("Fragments 10", `x${runBonuses.fragmentMultiplier.toFixed(2)}`)}
+      ${statBox("Cour ♦", `J${Math.round(runBonuses.diamondJackTaxRate * 100)} Q${Math.round(runBonuses.diamondQueenTaxRate * 100)} K${Math.round(runBonuses.diamondKingTaxRate * 100)}`)}
+      ${statBox("Ancrage ♠", `${Math.round(runBonuses.stationaryPower * 100)}%`)}
+      ${statBox("Auras ♥", `x${runBonuses.heartAuraSizeMultiplier.toFixed(2)}`)}
+      ${statBox("Rebonds ♣", runBonuses.clubBounceCount)}
+      ${statBox("Gardes", state.bodyguards.length)}
       ${statBox("Map", `${state.stats.mapWidth}x${state.stats.mapHeight}`)}
     </div>
   `;

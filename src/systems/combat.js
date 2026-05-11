@@ -15,6 +15,19 @@ function weaponHasMod(weapon, id) {
   return weapon.modifiers.some((mod) => mod.id === id);
 }
 
+function findNearestEnemyFrom(origin, maxRange = Infinity) {
+  let nearest = null;
+  let nearestDistance = Infinity;
+  for (const enemy of state.enemies) {
+    const d = distance(origin, enemy);
+    if (d <= maxRange && d < nearestDistance) {
+      nearestDistance = d;
+      nearest = enemy;
+    }
+  }
+  return nearest;
+}
+
 function weaponSuitIdentityDamageBonus(weapon, suitCount) {
   if (suitCount <= 0) return 0;
   const gradeMult = weapon.grade.statMult;
@@ -49,14 +62,25 @@ function projectileEffects(weapon) {
   };
 }
 
+function projectileBounceData() {
+  const bonuses = metaRunBonuses();
+  return {
+    remaining: bonuses.clubBounceCount,
+    speedMultiplier: bonuses.clubBounceSpeedMultiplier,
+    damageMultiplier: bonuses.clubBounceDamageMultiplier,
+    inaccuracy: bonuses.clubBounceInaccuracy,
+  };
+}
+
 function fireWeapon(weapon) {
+  const weaponRange = weapon.range * (state.stats.weaponRangeMultiplier || 1);
   if (weapon.melee) {
     const hit = weaponDamage(weapon);
     state.pulses.push({
       x: state.player.x,
       y: state.player.y,
       radius: 20,
-      maxRadius: weapon.range,
+      maxRadius: weaponRange,
       damage: hit.damage,
       life: 0.38,
       hit: new Set(),
@@ -67,7 +91,7 @@ function fireWeapon(weapon) {
     return;
   }
 
-  const target = findNearestEnemy(weapon.range);
+  const target = findNearestEnemy(weaponRange);
   if (!target) return;
 
   const baseAngle = Math.atan2(target.y - state.player.y, target.x - state.player.x);
@@ -77,6 +101,7 @@ function fireWeapon(weapon) {
     const inaccuracy = random(-weapon.accuracy, weapon.accuracy);
     const angle = baseAngle + coneOffset + inaccuracy;
     const hit = weaponDamage(weapon);
+    const bounce = projectileBounceData();
     state.projectiles.push({
       x: state.player.x,
       y: state.player.y,
@@ -84,10 +109,16 @@ function fireWeapon(weapon) {
       vy: Math.sin(angle) * weapon.projectileSpeed,
       radius: pellets > 1 ? 5 : weapon.archetypeId === "sniper" ? 8 : 6,
       damage: hit.damage,
-      life: weapon.range / weapon.projectileSpeed,
+      life: weaponRange / weapon.projectileSpeed,
       color: weapon.color,
       effects: projectileEffects(weapon),
       crit: hit.crit,
+      bouncesRemaining: bounce.remaining,
+      bounceSpeedMultiplier: bounce.speedMultiplier,
+      bounceDamageMultiplier: bounce.damageMultiplier,
+      bounceInaccuracy: bounce.inaccuracy,
+      bounceIndex: 0,
+      bouncedTargets: new Set(),
     });
   }
 }
@@ -102,12 +133,14 @@ function updatePlayer(dt) {
   dx += touchMovement.x;
   dy += touchMovement.y;
 
-  const length = Math.hypot(dx, dy) || 1;
+  const inputLength = Math.hypot(dx, dy);
+  const length = inputLength || 1;
   const nextPosition = clampToWorld(
     state.player.x + (dx / length) * state.stats.moveSpeed * dt,
     state.player.y + (dy / length) * state.stats.moveSpeed * dt,
     state.player.radius,
   );
+  state.player.stationaryTime = inputLength > 0.08 ? 0 : (state.player.stationaryTime || 0) + dt;
   state.player.x = nextPosition.x;
   state.player.y = nextPosition.y;
   state.player.invuln = Math.max(0, state.player.invuln - dt);
@@ -124,6 +157,38 @@ function updateWeapons(dt) {
   }
 }
 
+function updateBodyguards(dt) {
+  state.bodyguards ||= [];
+  for (let i = 0; i < state.bodyguards.length; i += 1) {
+    const guard = state.bodyguards[i];
+    guard.angle += dt * (0.75 + (i % 4) * 0.08);
+    guard.x = state.player.x + Math.cos(guard.angle) * guard.orbit;
+    guard.y = state.player.y + Math.sin(guard.angle) * guard.orbit;
+    guard.cooldown -= dt;
+    if (guard.cooldown > 0) continue;
+
+    const target = findNearestEnemyFrom(guard, guard.range);
+    if (!target) continue;
+    const angle = Math.atan2(target.y - guard.y, target.x - guard.x);
+    state.projectiles.push({
+      x: guard.x,
+      y: guard.y,
+      vx: Math.cos(angle) * 520,
+      vy: Math.sin(angle) * 520,
+      radius: 5,
+      damage: guard.damage,
+      life: guard.range / 520,
+      color: SUITS.diamonds.color,
+      effects: {},
+      crit: false,
+      bouncesRemaining: 0,
+      bounceIndex: 0,
+      bouncedTargets: new Set(),
+    });
+    guard.cooldown = guard.fireRate;
+  }
+}
+
 function updateSpawns(dt) {
   if (state.betweenWaves || state.waveTimeLeft <= 0) return;
 
@@ -134,6 +199,8 @@ function updateSpawns(dt) {
     if (Math.random() < Math.min(0.22 + state.wave * 0.025, 0.78)) spawnBurst += 1;
     if (state.wave >= 4 && Math.random() < 0.28) spawnBurst += 1;
     if (state.wave >= 7 && Math.random() < 0.22) spawnBurst += 1;
+    const reducedBurst = spawnBurst * (1 - metaRunBonuses().enemyReduction);
+    spawnBurst = Math.max(1, Math.floor(reducedBurst) + (Math.random() < reducedBurst % 1 ? 1 : 0));
     for (let i = 0; i < spawnBurst; i += 1) {
       spawnEnemy();
     }
@@ -181,15 +248,36 @@ function damagePlayer(amount) {
     state.gameOver = true;
     updateMobileControlsVisibility();
     const waveReached = state.wave;
-    const reward = grantRunFragments(waveReached);
+    const reward = grantRunFragments(waveReached, metaRunBonuses().fragmentMultiplier);
     ui.finalScore.textContent = `Tu as tenu jusqu'à la vague ${state.wave}`;
     ui.fragmentReward.textContent = `+${reward} fragments`;
     ui.gameOver.classList.remove("is-hidden");
   }
 }
 
+function applyHeartAuras(enemy, dt, bonuses) {
+  const maxHp = state.stats?.maxHp || 100;
+  enemy.heartQueenTime = Math.max(0, (enemy.heartQueenTime || 0) - dt * 1.5);
+  enemy.heartChained = false;
+
+  if (bonuses.heartDamageRadius > 0 && distance(enemy, state.player) <= bonuses.heartDamageRadius) {
+    enemy.heartQueenTime = Math.min(6, (enemy.heartQueenTime || 0) + dt * 2.5);
+    const ramp = 1 + enemy.heartQueenTime * bonuses.heartDamageRampRatio * 10;
+    enemy.hp -= maxHp * bonuses.heartDamageDpsRatio * ramp * dt;
+  }
+
+  if (bonuses.heartDrainRadius > 0 && distance(enemy, state.player) <= bonuses.heartDrainRadius) {
+    const drain = maxHp * bonuses.heartDrainDpsRatio * dt;
+    enemy.hp -= drain;
+    state.player.hp = Math.min(state.stats.maxHp, state.player.hp + drain * 0.75);
+    enemy.heartChained = true;
+  }
+}
+
 function updateEnemies(dt) {
+  const bonuses = metaRunBonuses();
   for (const enemy of state.enemies) {
+    applyHeartAuras(enemy, dt, bonuses);
     if (enemy.burn > 0) {
       enemy.hp -= (enemy.burnDps || 0) * dt;
       enemy.burn = Math.max(0, enemy.burn - dt);
@@ -199,17 +287,29 @@ function updateEnemies(dt) {
       continue;
     }
 
-    const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
+    const guardTarget = (state.bodyguards || []).reduce(
+      (closest, guard) => {
+        const guardDistance = distance(enemy, guard);
+        return guardDistance < closest.distance ? { guard, distance: guardDistance } : closest;
+      },
+      { guard: null, distance: Infinity },
+    );
+    const target = guardTarget.guard && guardTarget.distance < distance(enemy, state.player) ? guardTarget.guard : state.player;
+    const angle = Math.atan2(target.y - enemy.y, target.x - enemy.x);
     const desiredRange = enemy.type === "shooter" ? 250 : enemy.type === "boss" ? 190 : 0;
-    const d = distance(enemy, state.player);
+    const d = distance(enemy, target);
 
+    let speedMultiplier = enemy.heartChained ? bonuses.heartChainSpeedMultiplier : 1;
+    if (bonuses.heartSlowRadius > 0 && distance(enemy, state.player) <= bonuses.heartSlowRadius) {
+      speedMultiplier *= bonuses.heartSlowMultiplier;
+    }
     if ((enemy.type !== "shooter" && enemy.type !== "boss") || d > desiredRange) {
-      enemy.x += Math.cos(angle) * enemy.speed * dt;
-      enemy.y += Math.sin(angle) * enemy.speed * dt;
+      enemy.x += Math.cos(angle) * enemy.speed * speedMultiplier * dt;
+      enemy.y += Math.sin(angle) * enemy.speed * speedMultiplier * dt;
     } else {
       const retreat = enemy.type === "boss" ? 0.12 : 0.28;
-      enemy.x -= Math.cos(angle) * enemy.speed * retreat * dt;
-      enemy.y -= Math.sin(angle) * enemy.speed * retreat * dt;
+      enemy.x -= Math.cos(angle) * enemy.speed * speedMultiplier * retreat * dt;
+      enemy.y -= Math.sin(angle) * enemy.speed * speedMultiplier * retreat * dt;
     }
 
     const clampedEnemy = clampToWorld(enemy.x, enemy.y, enemy.radius);
@@ -231,18 +331,24 @@ function updateEnemies(dt) {
             radius: enemy.type === "boss" ? 9 : 6,
             damage: (enemy.type === "boss" ? 14 + state.wave * 0.9 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0),
             life: enemy.type === "boss" ? 4 : 3,
+            target: target === state.player ? "player" : "guard",
           });
         }
         enemy.shootTimer = enemy.type === "boss" ? random(1.05, 1.5) : random(1.35, 2.2);
       }
     }
 
-    if (d < enemy.radius + state.player.radius) {
+    if (target === state.player && d < enemy.radius + state.player.radius) {
       damagePlayer(enemy.damage);
+      enemy.x -= Math.cos(angle) * 24;
+      enemy.y -= Math.sin(angle) * 24;
+    } else if (target !== state.player && d < enemy.radius + target.radius) {
+      target.hp -= enemy.damage * dt * 1.8;
       enemy.x -= Math.cos(angle) * 24;
       enemy.y -= Math.sin(angle) * 24;
     }
   }
+  state.bodyguards = (state.bodyguards || []).filter((guard) => guard.hp > 0);
 }
 
 function updateProjectiles(dt) {
@@ -253,25 +359,80 @@ function updateProjectiles(dt) {
   }
 
   for (const bullet of state.enemyBullets) {
-    bullet.x += bullet.vx * dt;
-    bullet.y += bullet.vy * dt;
+    const bonuses = metaRunBonuses();
+    const slow = bonuses.heartSlowRadius > 0 && distance(bullet, state.player) <= bonuses.heartSlowRadius ? bonuses.heartSlowMultiplier : 1;
+    bullet.x += bullet.vx * slow * dt;
+    bullet.y += bullet.vy * slow * dt;
     bullet.life -= dt;
-    if (distance(bullet, state.player) < bullet.radius + state.player.radius) {
+    if (bullet.target !== "guard" && distance(bullet, state.player) < bullet.radius + state.player.radius) {
       bullet.life = 0;
       damagePlayer(bullet.damage);
+      continue;
+    }
+    for (const guard of state.bodyguards || []) {
+      if (bullet.life <= 0) continue;
+      if (distance(bullet, guard) < bullet.radius + guard.radius) {
+        bullet.life = 0;
+        guard.hp -= bullet.damage;
+        state.floatingText.push({
+          x: guard.x,
+          y: guard.y - guard.radius,
+          text: `-${Math.round(bullet.damage)}`,
+          life: 0.45,
+          color: SUITS.diamonds.color,
+        });
+      }
     }
   }
+  state.bodyguards = (state.bodyguards || []).filter((guard) => guard.hp > 0);
 
   for (const pulse of state.pulses) {
     pulse.life -= dt;
     pulse.radius = pulse.maxRadius * (1 - pulse.life / 0.38);
   }
 
+  function bounceProjectile(projectile, enemy) {
+    projectile.bouncedTargets ||= new Set();
+    projectile.bouncedTargets.add(enemy);
+    if ((projectile.bouncesRemaining || 0) <= 0) {
+      projectile.life = 0;
+      return;
+    }
+
+    let target = null;
+    let targetDistance = Infinity;
+    for (const candidate of state.enemies) {
+      if (candidate === enemy || candidate.hp <= 0 || projectile.bouncedTargets.has(candidate)) continue;
+      const d = distance(enemy, candidate);
+      if (d < targetDistance && d <= 560) {
+        target = candidate;
+        targetDistance = d;
+      }
+    }
+
+    if (!target) {
+      projectile.life = 0;
+      return;
+    }
+
+    projectile.bouncesRemaining -= 1;
+    projectile.bounceIndex = (projectile.bounceIndex || 0) + 1;
+    projectile.damage *= projectile.bounceDamageMultiplier || 1;
+    const currentSpeed = Math.hypot(projectile.vx, projectile.vy) * (projectile.bounceSpeedMultiplier || 1);
+    const inaccuracy = (projectile.bounceInaccuracy || 0) * projectile.bounceIndex;
+    const angle = Math.atan2(target.y - enemy.y, target.x - enemy.x) + random(-inaccuracy, inaccuracy);
+    projectile.x = enemy.x;
+    projectile.y = enemy.y;
+    projectile.vx = Math.cos(angle) * currentSpeed;
+    projectile.vy = Math.sin(angle) * currentSpeed;
+    projectile.life = Math.max(projectile.life, targetDistance / Math.max(120, currentSpeed));
+  }
+
   for (const projectile of state.projectiles) {
     for (const enemy of state.enemies) {
       if (projectile.life <= 0) continue;
+      if (projectile.bouncedTargets?.has(enemy)) continue;
       if (distance(projectile, enemy) < projectile.radius + enemy.radius) {
-        projectile.life = 0;
         enemy.hp -= projectile.damage;
         applyHitEffects(enemy, projectile);
         state.floatingText.push({
@@ -281,6 +442,7 @@ function updateProjectiles(dt) {
           life: 0.55,
           color: projectile.color,
         });
+        bounceProjectile(projectile, enemy);
       }
     }
   }
@@ -364,6 +526,7 @@ function update(dt) {
   updateCrates(dt);
   updateEnemies(dt);
   updateWeapons(dt);
+  updateBodyguards(dt);
   updateProjectiles(dt);
   updateKills(dt);
   cameraShake = Math.max(0, cameraShake - dt);

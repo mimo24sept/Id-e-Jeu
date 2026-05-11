@@ -157,6 +157,27 @@ function drawCrate(crate) {
   ctx.restore();
 }
 
+function drawAura(radius, color, label) {
+  if (radius <= 0) return;
+  const p = screenPoint(state.player.x, state.player.y);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.08;
+  ctx.fill();
+  ctx.globalAlpha = 0.48;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = color;
+  ctx.stroke();
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle = color;
+  ctx.font = "900 11px Inter, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(label, p.x, p.y - radius - 8);
+  ctx.restore();
+}
+
 function renderGame() {
   ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   ctx.save();
@@ -166,6 +187,11 @@ function renderGame() {
   }
 
   drawGrid();
+
+  const runBonuses = metaRunBonuses();
+  drawAura(runBonuses.heartSlowRadius, "rgba(232,82,109,1)", "LENTEUR");
+  drawAura(runBonuses.heartDamageRadius, "rgba(240,210,75,1)", "BRULURE");
+  drawAura(runBonuses.heartDrainRadius, "rgba(255,255,255,1)", "CHAINES");
 
   for (const pulse of state.pulses) {
     const p = screenPoint(pulse.x, pulse.y);
@@ -192,6 +218,23 @@ function renderGame() {
     drawCrate(crate);
   }
 
+  for (const guard of state.bodyguards || []) {
+    const p = screenPoint(guard.x || state.player.x, guard.y || state.player.y);
+    drawCircle(p.x, p.y, guard.radius, SUITS.diamonds.color, "rgba(255,255,255,0.5)");
+    ctx.save();
+    ctx.fillStyle = "#080808";
+    ctx.font = "900 10px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("$", p.x, p.y + 1);
+    ctx.restore();
+    const hpWidth = guard.radius * 2.2;
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(p.x - hpWidth / 2, p.y - guard.radius - 10, hpWidth, 3);
+    ctx.fillStyle = "#f0d24b";
+    ctx.fillRect(p.x - hpWidth / 2, p.y - guard.radius - 10, hpWidth * Math.max(0, guard.hp / guard.maxHp), 3);
+  }
+
   for (const enemy of state.enemies) {
     const p = screenPoint(enemy.x, enemy.y);
     const fill = enemy.type === "boss" ? "#f0d24b" : enemy.type === "brute" ? "#9f5ec7" : enemy.type === "shooter" ? "#e08d4f" : "#e46363";
@@ -206,6 +249,18 @@ function renderGame() {
       ctx.lineTo(p.x + enemy.radius * 0.58, p.y);
       ctx.moveTo(p.x, p.y - enemy.radius * 0.58);
       ctx.lineTo(p.x, p.y + enemy.radius * 0.58);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if (enemy.heartChained) {
+      const player = screenPoint(state.player.x, state.player.y);
+      ctx.save();
+      ctx.strokeStyle = "rgba(232,82,109,0.72)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(player.x, player.y);
+      ctx.lineTo(p.x, p.y);
       ctx.stroke();
       ctx.restore();
     }

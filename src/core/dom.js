@@ -22,6 +22,8 @@ const ui = {
   metaCollectionGrid: document.querySelector("#metaCollectionGrid"),
   tutorial: document.querySelector("#tutorial"),
   tutorialSpotlight: document.querySelector("#tutorialSpotlight"),
+  tutorialMarker: document.querySelector("#tutorialMarker"),
+  tutorialAction: document.querySelector("#tutorialAction"),
   tutorialCard: document.querySelector("#tutorialCard"),
   tutorialKicker: document.querySelector("#tutorialKicker"),
   tutorialTitle: document.querySelector("#tutorialTitle"),

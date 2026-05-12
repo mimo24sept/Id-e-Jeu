@@ -116,6 +116,12 @@ function tutorialTarget(step) {
   return document.querySelector(step.selector);
 }
 
+function clearTutorialTarget() {
+  document.querySelectorAll(".tutorial-target-active").forEach((element) => {
+    element.classList.remove("tutorial-target-active");
+  });
+}
+
 function isVisibleElement(element) {
   if (!element || element.classList.contains("is-hidden")) return false;
   const rect = element.getBoundingClientRect();
@@ -134,6 +140,12 @@ function positionTutorialCard(step, target) {
   ui.tutorialSpotlight.style.top = `${spotTop}px`;
   ui.tutorialSpotlight.style.width = `${spotWidth}px`;
   ui.tutorialSpotlight.style.height = `${spotHeight}px`;
+
+  const markerSize = ui.tutorialMarker.getBoundingClientRect();
+  const markerLeft = clamp(spotLeft + spotWidth - markerSize.width * 0.55, 12, window.innerWidth - markerSize.width - 12);
+  const markerTop = clamp(spotTop - markerSize.height * 0.45, 12, window.innerHeight - markerSize.height - 12);
+  ui.tutorialMarker.style.left = `${markerLeft}px`;
+  ui.tutorialMarker.style.top = `${markerTop}px`;
 
   const cardRect = ui.tutorialCard.getBoundingClientRect();
   const gap = 14;
@@ -159,14 +171,18 @@ function showActiveTutorialStep() {
   if (!step || !isVisibleElement(target)) {
     activeTutorialStep = null;
     ui.tutorial.classList.add("is-hidden");
+    clearTutorialTarget();
     return;
   }
 
   ui.tutorialKicker.textContent = step.kicker;
   ui.tutorialTitle.textContent = step.title;
   ui.tutorialText.textContent = step.text;
+  ui.tutorialAction.textContent = step.action || "REGARDE";
   ui.tutorialProgress.textContent = `${tutorialSeenSteps.size + 1} / ${Object.keys(TUTORIAL_STEPS).length}`;
   ui.closeTutorial.textContent = tutorialQueue.length > 0 ? "Suivant" : "OK";
+  clearTutorialTarget();
+  target.classList.add("tutorial-target-active");
   ui.tutorial.classList.remove("is-hidden");
   requestAnimationFrame(() => positionTutorialCard(step, target));
 }
@@ -185,6 +201,7 @@ function showNextTutorialStep() {
   }
 
   ui.tutorial.classList.add("is-hidden");
+  clearTutorialTarget();
 }
 
 function queueTutorialSteps(stepIds, options = {}) {
@@ -217,6 +234,7 @@ function completeTutorialStep() {
   }
   activeTutorialStep = null;
   ui.tutorial.classList.add("is-hidden");
+  clearTutorialTarget();
   showNextTutorialStep();
 }
 
@@ -227,6 +245,7 @@ function skipTutorial() {
   tutorialQueue = [];
   activeTutorialStep = null;
   ui.tutorial.classList.add("is-hidden");
+  clearTutorialTarget();
 }
 
 function replayTutorial() {
@@ -235,7 +254,7 @@ function replayTutorial() {
   saveTutorialProgress();
   tutorialQueue = [];
   activeTutorialStep = null;
-  queueTutorialSteps(["menuName", "menuLaunch"], { force: true });
+  queueTutorialSteps(["menuName", "menuLaunch", "menuMeta", "menuCollection"], { force: true });
 }
 
 function uniqueId(prefix) {

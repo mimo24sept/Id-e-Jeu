@@ -141,7 +141,7 @@ function beginWave() {
   if (state.wave % 10 === 0) spawnBoss();
   ui.shop.classList.add("is-hidden");
   renderUI();
-  queueTutorialSteps(["waveControls", "handPanel", "weaponPanel", "crateField"]);
+  queueTutorialSteps(["waveControls", "handPanel", "pokerHands", "cardColors", "weaponPanel", "crateField", "advancedCourts"]);
 }
 
 function completeWave() {
@@ -160,7 +160,7 @@ function completeWave() {
   openNextCratePack();
   renderUI();
   ui.shop.classList.remove("is-hidden");
-  queueTutorialSteps(["shopGold", "shopHand", "shopMarket", "shopStart"]);
+  queueTutorialSteps(["shopGold", "shopHand", "shopMarket", "shopWeapons", "shopLocks", "shopStart"]);
   if (state.packOffer.length > 0) queueTutorialSteps(["packChoice"]);
 }
 

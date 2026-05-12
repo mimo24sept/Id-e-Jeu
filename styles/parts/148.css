@@ -1,0 +1,38 @@
+.tutorial-marker {
+  position: fixed;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  min-width: 92px;
+  height: 38px;
+  padding: 0 12px;
+  border: 3px solid var(--line);
+  background: var(--accent);
+  color: #080808;
+  box-shadow: 5px 5px 0 var(--line);
+  pointer-events: none;
+  transform: rotate(-2deg);
+}
+
+.tutorial-marker::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  bottom: -15px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 13px solid var(--line);
+}
+
+.tutorial-marker span {
+  font-size: 0.74rem;
+  font-weight: 950;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.tutorial.is-hidden .tutorial-marker {
+  display: none;
+}

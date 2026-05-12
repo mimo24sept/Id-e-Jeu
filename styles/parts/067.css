@@ -1,10 +1,27 @@
-﻿.tutorial-spotlight {
+.tutorial-spotlight {
   position: fixed;
   z-index: 1;
-  border: 3px solid var(--line);
-  background: rgba(13, 103, 255, 0.07);
+  border: 4px solid var(--accent);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0 8px, transparent 8px 16px),
+    rgba(13, 103, 255, 0.08);
   box-shadow:
-    0 0 0 9999px rgba(9, 9, 9, 0.64),
-    6px 6px 0 var(--accent);
+    0 0 0 9999px rgba(9, 9, 9, 0.54),
+    0 0 0 8px rgba(255, 255, 255, 0.18),
+    8px 8px 0 var(--line);
   transition: left 160ms ease, top 160ms ease, width 160ms ease, height 160ms ease;
+  animation: tutorialPulse 1s steps(2, end) infinite;
+}
+
+.tutorial-target-active {
+  position: relative;
+  z-index: 71 !important;
+  outline: 4px solid var(--accent) !important;
+  outline-offset: 4px;
+}
+
+@keyframes tutorialPulse {
+  50% {
+    filter: brightness(1.45);
+  }
 }

@@ -132,7 +132,7 @@ function initMenu() {
   ui.playerNameHud.textContent = connectedPlayerName || "-";
   renderMetaProgression();
   renderGameShell();
-  queueTutorialSteps(["menuName", "menuLaunch"]);
+  queueTutorialSteps(["menuName", "menuLaunch", "menuMeta", "menuCollection"]);
   updateMobileControlsVisibility();
 }
 

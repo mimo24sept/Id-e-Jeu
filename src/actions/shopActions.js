@@ -208,6 +208,7 @@ function buyCursePack(slot) {
   state.packContext = slot;
   state.packOffer = rollCurseChoices(slot.size || 3);
   renderUI();
+  queueTutorialSteps(["curseChoice"]);
 }
 
 function chooseCurse(index) {
@@ -221,6 +222,7 @@ function chooseCurse(index) {
   state.packOffer = [];
   state.packContext = null;
   renderUI();
+  queueTutorialSteps(["shopHand"]);
 }
 
 function applyCurseToCard(index) {

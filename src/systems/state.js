@@ -19,7 +19,7 @@
     pendingCurse: null,
     pendingWeapon: null,
     previewWeaponId: null,
-    player: { x: 0, y: 0, radius: 17, hp: 100, invuln: 0, stationaryTime: 0 },
+    player: { x: 0, y: 0, vx: 0, vy: 0, radius: 17, hp: 100, invuln: 0, stationaryTime: 0 },
     enemies: [],
     enemyBullets: [],
     projectiles: [],
@@ -80,12 +80,24 @@ function expectedShopEnemyValue(wave = state?.wave || 1) {
   const tier = Math.floor(Math.max(1, wave) / 10);
   const goldPressure = Math.max(0.58, 1 - Math.min(16, wave) * 0.025);
   const valueMult = Math.pow(1.35, tier) * goldPressure;
-  const shooterChance = wave >= 2 ? Math.min(0.14 + wave * 0.018, 0.42) : 0;
-  const bruteChance = wave >= 3 ? Math.min(0.11 + wave * 0.016, 0.38) : 0;
-  const chaserValue = 0.95 * valueMult;
-  const shooterValue = 1.55 * valueMult;
-  const bruteValue = 2.35 * valueMult;
-  return bruteChance * bruteValue + (1 - bruteChance) * shooterChance * shooterValue + (1 - bruteChance) * (1 - shooterChance) * chaserValue;
+  const chances = {
+    sprayer: wave >= 6 ? Math.min(0.06 + wave * 0.008, 0.22) : 0,
+    dasher: wave >= 4 ? Math.min(0.08 + wave * 0.01, 0.26) : 0,
+    brute: wave >= 3 ? Math.min(0.11 + wave * 0.014, 0.34) : 0,
+    shooter: wave >= 2 ? Math.min(0.14 + wave * 0.014, 0.36) : 0,
+  };
+  const sprayerChance = chances.sprayer;
+  const dasherChance = Math.min(chances.dasher, Math.max(0, 1 - sprayerChance));
+  const bruteChance = Math.min(chances.brute, Math.max(0, 1 - sprayerChance - dasherChance));
+  const shooterChance = Math.min(chances.shooter, Math.max(0, 1 - sprayerChance - dasherChance - bruteChance));
+  const chaserChance = Math.max(0, 1 - sprayerChance - dasherChance - bruteChance - shooterChance);
+  return (
+    chaserChance * 0.95 +
+    shooterChance * 1.55 +
+    bruteChance * 2.35 +
+    dasherChance * 1.75 +
+    sprayerChance * 1.9
+  ) * valueMult;
 }
 
 function expectedWaveIncome(wave = state?.wave || 1) {

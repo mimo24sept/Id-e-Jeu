@@ -300,19 +300,38 @@ function renderGame() {
 
   for (const enemy of state.enemies) {
     const p = screenPoint(enemy.x, enemy.y);
-    const fill = enemy.type === "boss" ? "#f0d24b" : enemy.type === "brute" ? "#9f5ec7" : enemy.type === "shooter" ? "#e08d4f" : "#e46363";
+    const fill = enemy.type === "boss"
+      ? "#f0d24b"
+      : enemy.type === "brute"
+        ? "#9f5ec7"
+        : enemy.type === "shooter"
+          ? "#e08d4f"
+          : enemy.type === "dasher"
+            ? "#55b8ff"
+            : enemy.type === "sprayer"
+              ? "#66e08f"
+              : "#e46363";
     drawCircle(p.x, p.y, enemy.radius, fill, "rgba(0,0,0,0.35)");
 
-    if (enemy.type === "boss") {
+    if (enemy.type === "boss" || enemy.type === "dasher") {
       ctx.save();
-      ctx.strokeStyle = "#090909";
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = enemy.type === "boss" ? "#090909" : "#f5f5f5";
+      ctx.lineWidth = enemy.type === "boss" ? 4 : 3;
       ctx.beginPath();
       ctx.moveTo(p.x - enemy.radius * 0.58, p.y);
       ctx.lineTo(p.x + enemy.radius * 0.58, p.y);
-      ctx.moveTo(p.x, p.y - enemy.radius * 0.58);
-      ctx.lineTo(p.x, p.y + enemy.radius * 0.58);
+      if (enemy.type === "boss") {
+        ctx.moveTo(p.x, p.y - enemy.radius * 0.58);
+        ctx.lineTo(p.x, p.y + enemy.radius * 0.58);
+      }
       ctx.stroke();
+      if (enemy.type === "dasher" && enemy.dashWindup > 0) {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, enemy.radius + 7, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       ctx.restore();
     }
 

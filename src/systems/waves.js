@@ -172,12 +172,31 @@ function spawnEnemy() {
   const angle = random(0, Math.PI * 2);
   const spawnDistance = Math.max(window.innerWidth, window.innerHeight) * 0.52 + 45;
   const wave = state.wave;
-  const shooter = wave >= 2 && Math.random() < Math.min(0.14 + wave * 0.018, 0.42);
-  const brute = wave >= 3 && Math.random() < Math.min(0.11 + wave * 0.016, 0.38);
+  const chances = {
+    sprayer: wave >= 6 ? Math.min(0.06 + wave * 0.008, 0.22) : 0,
+    dasher: wave >= 4 ? Math.min(0.08 + wave * 0.01, 0.26) : 0,
+    brute: wave >= 3 ? Math.min(0.11 + wave * 0.014, 0.34) : 0,
+    shooter: wave >= 2 ? Math.min(0.14 + wave * 0.014, 0.36) : 0,
+  };
+  const roll = Math.random();
+  let type = "chaser";
+  if (roll < chances.sprayer) type = "sprayer";
+  else if (roll < chances.sprayer + chances.dasher) type = "dasher";
+  else if (roll < chances.sprayer + chances.dasher + chances.brute) type = "brute";
+  else if (roll < chances.sprayer + chances.dasher + chances.brute + chances.shooter) type = "shooter";
+
+  const presets = {
+    chaser: { hp: 16 + wave * 4.5, radius: 15, speed: 118 + wave * 3.4, damage: 13, value: 0.95 },
+    shooter: { hp: 24 + wave * 6, radius: 16, speed: 92 + wave * 2.4, damage: 11, value: 1.55 },
+    brute: { hp: 42 + wave * 10, radius: 21, speed: 78 + wave * 2.4, damage: 19, value: 2.35 },
+    dasher: { hp: 30 + wave * 7, radius: 16, speed: 112 + wave * 3, damage: 17, value: 1.75 },
+    sprayer: { hp: 22 + wave * 5.5, radius: 14, speed: 146 + wave * 4.2, damage: 10, value: 1.9 },
+  };
+  const preset = presets[type];
   const tierMult = enemyTierMultiplier(wave);
   const earlyPressure = 1 + Math.min(wave, 10) * 0.035;
-  const hp = (brute ? 42 + wave * 10 : shooter ? 24 + wave * 6 : 16 + wave * 4.5) * tierMult * earlyPressure;
-  const radius = brute ? 21 : shooter ? 16 : 15;
+  const hp = preset.hp * tierMult * earlyPressure;
+  const radius = preset.radius;
   const spawnPoint = clampToWorld(
     state.player.x + Math.cos(angle) * spawnDistance,
     state.player.y + Math.sin(angle) * spawnDistance,
@@ -190,12 +209,17 @@ function spawnEnemy() {
     radius,
     hp,
     maxHp: hp,
-    speed: (brute ? 78 + wave * 2.4 : shooter ? 92 + wave * 2.4 : 118 + wave * 3.4) * Math.min(1.45, Math.pow(1.08, enemyTier(wave))),
-    damage: (brute ? 19 : shooter ? 11 : 13) * Math.pow(1.35, enemyTier(wave)),
-    type: brute ? "brute" : shooter ? "shooter" : "chaser",
+    speed: preset.speed * Math.min(1.45, Math.pow(1.08, enemyTier(wave))),
+    damage: preset.damage * Math.pow(1.35, enemyTier(wave)),
+    type,
     shootTimer: random(0.5, 1.6),
-    value: (brute ? 2.35 : shooter ? 1.55 : 0.95) * Math.pow(1.35, enemyTier(wave)) * enemyGoldPressureMultiplier(wave),
+    value: preset.value * Math.pow(1.35, enemyTier(wave)) * enemyGoldPressureMultiplier(wave),
     tier: enemyTier(wave),
+    seed: random(0, Math.PI * 2),
+    dashCooldown: random(0.8, 1.8),
+    dashWindup: 0,
+    dashTime: 0,
+    dashAngle: angle + Math.PI,
   });
 }
 

@@ -140,6 +140,8 @@ function updatePlayer(dt) {
     state.player.y + (dy / length) * state.stats.moveSpeed * dt,
     state.player.radius,
   );
+  state.player.vx = dt > 0 ? (nextPosition.x - state.player.x) / dt : 0;
+  state.player.vy = dt > 0 ? (nextPosition.y - state.player.y) / dt : 0;
   state.player.stationaryTime = inputLength > 0.08 ? 0 : (state.player.stationaryTime || 0) + dt;
   state.player.x = nextPosition.x;
   state.player.y = nextPosition.y;
@@ -274,6 +276,49 @@ function applyHeartAuras(enemy, dt, bonuses) {
   }
 }
 
+function predictiveAimAngle(enemy, target, bulletSpeed, jitter = 0) {
+  const targetSpeedX = target === state.player ? state.player.vx || 0 : target.vx || 0;
+  const targetSpeedY = target === state.player ? state.player.vy || 0 : target.vy || 0;
+  const leadTime = Math.min(0.95, distance(enemy, target) / bulletSpeed);
+  const aimX = target.x + targetSpeedX * leadTime;
+  const aimY = target.y + targetSpeedY * leadTime;
+  return Math.atan2(aimY - enemy.y, aimX - enemy.x) + random(-jitter, jitter);
+}
+
+function moveEnemy(enemy, angle, speedMultiplier, dt, factor = 1) {
+  enemy.x += Math.cos(angle) * enemy.speed * speedMultiplier * factor * dt;
+  enemy.y += Math.sin(angle) * enemy.speed * speedMultiplier * factor * dt;
+}
+
+function updateDasher(enemy, angle, d, speedMultiplier, dt) {
+  enemy.dashCooldown = Math.max(0, (enemy.dashCooldown || 0) - dt);
+  if (enemy.dashTime > 0) {
+    enemy.dashTime = Math.max(0, enemy.dashTime - dt);
+    moveEnemy(enemy, enemy.dashAngle, speedMultiplier, dt, 4.2);
+    return;
+  }
+  if (enemy.dashWindup > 0) {
+    enemy.dashWindup = Math.max(0, enemy.dashWindup - dt);
+    if (enemy.dashWindup <= 0) {
+      enemy.dashTime = 0.28;
+      enemy.dashCooldown = random(2.1, 3);
+    }
+    return;
+  }
+  if (d < 270 && enemy.dashCooldown <= 0) {
+    enemy.dashAngle = angle;
+    enemy.dashWindup = 0.38;
+    return;
+  }
+  moveEnemy(enemy, angle, speedMultiplier, dt);
+}
+
+function updateSprayer(enemy, angle, d, speedMultiplier, dt) {
+  const wobble = Math.sin(state.worldTime * 3.2 + (enemy.seed || 0)) * 1.45;
+  const farBias = d > 420 ? 0 : Math.PI * 0.5;
+  moveEnemy(enemy, angle + wobble + farBias, speedMultiplier, dt, d < 150 ? -0.45 : 1);
+}
+
 function updateEnemies(dt) {
   const bonuses = metaRunBonuses();
   for (const enemy of state.enemies) {
@@ -303,38 +348,45 @@ function updateEnemies(dt) {
     if (bonuses.heartSlowRadius > 0 && distance(enemy, state.player) <= bonuses.heartSlowRadius) {
       speedMultiplier *= bonuses.heartSlowMultiplier;
     }
-    if ((enemy.type !== "shooter" && enemy.type !== "boss") || d > desiredRange) {
-      enemy.x += Math.cos(angle) * enemy.speed * speedMultiplier * dt;
-      enemy.y += Math.sin(angle) * enemy.speed * speedMultiplier * dt;
+    if (enemy.type === "dasher") {
+      updateDasher(enemy, angle, d, speedMultiplier, dt);
+    } else if (enemy.type === "sprayer") {
+      updateSprayer(enemy, angle, d, speedMultiplier, dt);
+    } else if ((enemy.type !== "shooter" && enemy.type !== "boss") || d > desiredRange) {
+      moveEnemy(enemy, angle, speedMultiplier, dt);
     } else {
       const retreat = enemy.type === "boss" ? 0.12 : 0.28;
-      enemy.x -= Math.cos(angle) * enemy.speed * speedMultiplier * retreat * dt;
-      enemy.y -= Math.sin(angle) * enemy.speed * speedMultiplier * retreat * dt;
+      moveEnemy(enemy, angle, speedMultiplier, dt, -retreat);
     }
 
     const clampedEnemy = clampToWorld(enemy.x, enemy.y, enemy.radius);
     enemy.x = clampedEnemy.x;
     enemy.y = clampedEnemy.y;
 
-    if (enemy.type === "shooter" || enemy.type === "boss") {
+    if (enemy.type === "shooter" || enemy.type === "boss" || enemy.type === "sprayer") {
       enemy.shootTimer -= dt;
-      if (enemy.shootTimer <= 0 && d < (enemy.type === "boss" ? 880 : 680)) {
-        const shots = enemy.type === "boss" ? 7 : 1;
-        const spread = enemy.type === "boss" ? 0.78 : 0;
+      const shootRange = enemy.type === "boss" ? 880 : enemy.type === "sprayer" ? 620 : 720;
+      if (enemy.shootTimer <= 0 && d < shootRange) {
+        const shots = enemy.type === "boss" ? 7 : enemy.type === "sprayer" ? 4 : 1;
+        const spread = enemy.type === "boss" ? 0.78 : enemy.type === "sprayer" ? random(1.4, 3.1) : 0;
+        const bulletSpeed = enemy.type === "boss" ? 230 : enemy.type === "sprayer" ? 235 : 310;
+        const baseAngle = enemy.type === "shooter"
+          ? predictiveAimAngle(enemy, target, bulletSpeed, 0.035)
+          : angle + (enemy.type === "sprayer" ? random(-1.25, 1.25) : 0);
         for (let i = 0; i < shots; i += 1) {
           const offset = shots > 1 ? ((i / (shots - 1)) - 0.5) * spread : 0;
           state.enemyBullets.push({
             x: enemy.x,
             y: enemy.y,
-            vx: Math.cos(angle + offset) * (enemy.type === "boss" ? 230 : 270),
-            vy: Math.sin(angle + offset) * (enemy.type === "boss" ? 230 : 270),
-            radius: enemy.type === "boss" ? 9 : 6,
-            damage: (enemy.type === "boss" ? 14 + state.wave * 0.9 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0),
+            vx: Math.cos(baseAngle + offset) * bulletSpeed,
+            vy: Math.sin(baseAngle + offset) * bulletSpeed,
+            radius: enemy.type === "boss" ? 9 : enemy.type === "sprayer" ? 5 : 6,
+            damage: (enemy.type === "boss" ? 14 + state.wave * 0.9 : enemy.type === "sprayer" ? 6 + state.wave * 0.38 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0),
             life: enemy.type === "boss" ? 4 : 3,
             target: target === state.player ? "player" : "guard",
           });
         }
-        enemy.shootTimer = enemy.type === "boss" ? random(1.05, 1.5) : random(1.35, 2.2);
+        enemy.shootTimer = enemy.type === "boss" ? random(1.05, 1.5) : enemy.type === "sprayer" ? random(0.8, 1.25) : random(1.25, 1.9);
       }
     }
 

@@ -12,18 +12,26 @@
   animationId = requestAnimationFrame(loop);
 }
 
-function restart() {
+function showMainMenu() {
   cancelAnimationFrame(animationId);
   clearTimeout(godCloseTimeout);
   clearInterval(godCountdownInterval);
   connectedPlayerName = connectedPlayerName || state?.playerName || "Joueur";
   ui.gameOver.classList.add("is-hidden");
   ui.godMode.classList.add("is-hidden");
-  ui.mainMenu.classList.add("is-hidden");
+  ui.mainMenu.classList.remove("is-hidden");
   ui.characterSelect.classList.add("is-hidden");
   ui.shop.classList.add("is-hidden");
+  hideShopTooltip();
+  state = null;
+  renderGameShell();
+  updateMenuPanels();
+  renderMetaProgression();
   updateMobileControlsVisibility();
-  showCharacterSelect();
+}
+
+function restart() {
+  showMainMenu();
 }
 
 function randomCharacterChoices() {
@@ -98,6 +106,7 @@ function setConnectedPlayer(name) {
   ui.menuPlayerName.textContent = `Connecté: ${connectedPlayerName}`;
   ui.launchGame.disabled = false;
   ui.playerNameHud.textContent = connectedPlayerName;
+  updateMenuPanels();
   renderMetaProgression();
 }
 
@@ -127,13 +136,21 @@ function initMenu() {
   ui.mainMenu.classList.remove("is-hidden");
   ui.characterSelect.classList.add("is-hidden");
   ui.playerNameInput.value = connectedPlayerName;
-  ui.launchGame.disabled = !connectedPlayerName;
-  ui.menuPlayerName.textContent = connectedPlayerName ? `Connecté: ${connectedPlayerName}` : "Aucun joueur connecté";
   ui.playerNameHud.textContent = connectedPlayerName || "-";
+  updateMenuPanels();
   renderMetaProgression();
   renderGameShell();
   queueTutorialSteps(["menuName", "menuLaunch", "menuMeta", "menuCollection"]);
   updateMobileControlsVisibility();
+}
+
+function updateMenuPanels() {
+  const connected = Boolean(connectedPlayerName);
+  ui.loginPanel.classList.toggle("is-hidden", connected);
+  ui.playerHub.classList.toggle("is-hidden", !connected);
+  ui.launchGame.disabled = !connected;
+  ui.menuTitle.textContent = connected ? "HUB" : "ENTRÉE";
+  ui.menuPlayerName.textContent = connected ? `Connecté: ${connectedPlayerName}` : "Aucun joueur connecté";
 }
 
 function renderGameShell() {

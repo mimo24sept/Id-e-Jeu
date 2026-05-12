@@ -102,37 +102,45 @@
           </div>
         </div>
         <div id="weaponCompare" class="weapon-compare is-hidden"></div>
+        <div id="shopTooltip" class="shop-tooltip is-hidden"></div>
       </section>
 
       <section id="mainMenu" class="main-menu" aria-label="Menu principal">
         <div class="menu-board">
           <span class="label">Poker Survivor</span>
-          <h1>ENTRÉE</h1>
+          <h1 id="menuTitle">ENTRÉE</h1>
           <div class="menu-form">
-            <label for="playerNameInput">Pseudo</label>
-            <input id="playerNameInput" type="text" maxlength="18" autocomplete="nickname" placeholder="Ton pseudo" />
-            <div class="menu-actions">
-              <button id="connectPlayer" class="secondary-button" type="button">Se connecter</button>
-              <button id="launchGame" class="primary-button" type="button" disabled>Lancer partie</button>
-            </div>
-            <button id="openTutorial" class="secondary-button menu-help" type="button">Tutoriel</button>
-            <section class="meta-panel" aria-label="Progression permanente">
-              <div class="meta-header">
-                <div>
-                  <span class="label">Fragments</span>
-                  <strong id="metaFragments">0</strong>
-                </div>
-                <div>
-                  <span class="label">Pack upgrade</span>
-                  <strong id="metaPackCost">0</strong>
-                </div>
+            <div id="loginPanel" class="login-panel">
+              <label for="playerNameInput">Pseudo</label>
+              <input id="playerNameInput" type="text" maxlength="18" autocomplete="nickname" placeholder="Ton pseudo" />
+              <div class="menu-actions">
+                <button id="connectPlayer" class="primary-button" type="button">Se connecter</button>
               </div>
-              <button id="buyMetaPack" class="primary-button" type="button" disabled>Acheter pack</button>
-              <button id="openMetaCollection" class="secondary-button" type="button">Voir cartes</button>
-              <div id="metaPackResult" class="meta-pack-result"></div>
-              <div id="metaUpgradeSummary" class="meta-upgrade-summary"></div>
-            </section>
-            <p id="menuPlayerName">Aucun joueur connecté</p>
+            </div>
+
+            <div id="playerHub" class="player-hub is-hidden">
+              <p id="menuPlayerName">Aucun joueur connecté</p>
+              <div id="hubActions" class="menu-actions">
+                <button id="launchGame" class="primary-button" type="button" disabled>Lancer partie</button>
+                <button id="openTutorial" class="secondary-button menu-help" type="button">Tutoriel</button>
+              </div>
+              <section class="meta-panel" aria-label="Progression permanente">
+                <div class="meta-header">
+                  <div>
+                    <span class="label">Fragments</span>
+                    <strong id="metaFragments">0</strong>
+                  </div>
+                  <div>
+                    <span class="label">Pack upgrade</span>
+                    <strong id="metaPackCost">0</strong>
+                  </div>
+                </div>
+                <button id="buyMetaPack" class="primary-button" type="button" disabled>Acheter pack</button>
+                <button id="openMetaCollection" class="secondary-button" type="button">Voir cartes</button>
+                <div id="metaPackResult" class="meta-pack-result"></div>
+                <div id="metaUpgradeSummary" class="meta-upgrade-summary"></div>
+              </section>
+            </div>
           </div>
         </div>
       </section>
@@ -189,7 +197,7 @@
           <span class="label">Partie terminée</span>
           <h2 id="finalScore">Vague 1</h2>
           <p id="fragmentReward">+0 fragments</p>
-          <button id="restart" class="primary-button">Recommencer</button>
+          <button id="restart" class="primary-button">Retour menu</button>
         </div>
       </section>
     </main>

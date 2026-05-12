@@ -41,6 +41,13 @@ function addCardToHand(card) {
   return true;
 }
 
+function refreshStatsKeepingMaxHpGain(extraHeal = 0) {
+  const previousMaxHp = state.stats?.maxHp || calculateStats().maxHp;
+  state.stats = calculateStats();
+  const maxHpGain = Math.max(0, state.stats.maxHp - previousMaxHp);
+  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + maxHpGain + extraHeal);
+}
+
 function openNextCratePack() {
   if (state.pendingCratePacks <= 0) return false;
   state.pendingCratePacks -= 1;
@@ -69,8 +76,7 @@ function chooseCard(index) {
   if (!card) return;
   if (!addCardToHand(card)) return;
   closePackChoice();
-  state.stats = calculateStats();
-  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + 12);
+  refreshStatsKeepingMaxHpGain();
   renderUI();
   if (state.packOffer.length > 0) queueTutorialSteps(["packChoice"]);
 }
@@ -178,8 +184,7 @@ function buyShopSlot(id) {
     state.handSlots += 1;
   }
 
-  state.stats = calculateStats();
-  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + (slot.type === "slot" ? 8 : slot.type === "weapon" ? slot.healthBonus : 0));
+  refreshStatsKeepingMaxHpGain(slot.type === "slot" ? 8 : slot.type === "weapon" ? slot.healthBonus : 0);
   renderUI();
 }
 
@@ -231,8 +236,7 @@ function applyCurseToCard(index) {
   card.cursed = true;
   card.curse = state.pendingCurse.curse;
   state.pendingCurse = null;
-  state.stats = calculateStats();
-  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + 8);
+  refreshStatsKeepingMaxHpGain();
   renderUI();
 }
 

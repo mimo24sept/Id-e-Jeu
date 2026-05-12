@@ -25,7 +25,7 @@ const TUTORIAL_STEPS = {
     text: "Ton nom local sert aux scores et a la progression.",
   },
   menuLaunch: {
-    selector: ".menu-actions",
+    selector: "#hubActions",
     kicker: "Menu",
     title: "Lance ta run",
     action: "CLIQUE",

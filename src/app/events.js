@@ -83,20 +83,25 @@ ui.shopSlots.addEventListener("mouseover", (event) => {
   if (state.previewWeaponId === nextPreview) return;
   state.previewWeaponId = nextPreview;
   renderWeaponCompare(item);
+  showShopTooltip(shopSlotTooltipHTML(slot), item);
 });
 ui.shopSlots.addEventListener("mousemove", (event) => {
-  if (!state.previewWeaponId || ui.weaponCompare.classList.contains("is-hidden")) return;
   const item = event.target.closest("[data-shop-slot]");
-  if (!item || item.dataset.shopSlot !== state.previewWeaponId) return;
-  positionWeaponCompare(item);
+  if (!item) return;
+  if (state.previewWeaponId && item.dataset.shopSlot === state.previewWeaponId && !ui.weaponCompare.classList.contains("is-hidden")) {
+    positionWeaponCompare(item);
+  }
+  if (!ui.shopTooltip.classList.contains("is-hidden")) positionShopTooltip(item);
 });
 ui.shopSlots.addEventListener("mouseout", (event) => {
   const item = event.target.closest("[data-shop-slot]");
   if (!item || item.contains(event.relatedTarget)) return;
   const slot = state.shopSlots.find((entry) => entry.id === item.dataset.shopSlot);
-  if (slot?.id !== state.previewWeaponId) return;
-  state.previewWeaponId = null;
-  renderWeaponCompare();
+  if (slot?.id === state.previewWeaponId) {
+    state.previewWeaponId = null;
+    renderWeaponCompare();
+  }
+  hideShopTooltip();
 });
 window.addEventListener("scroll", () => {
   if (!state?.previewWeaponId) return;
@@ -125,6 +130,31 @@ ui.packOffer.addEventListener("click", (event) => {
   const button = event.target.closest("[data-card]");
   if (!button) return;
   chooseCard(Number(button.dataset.card));
+});
+ui.packOffer.addEventListener("mouseover", (event) => {
+  const cardButton = event.target.closest("[data-card]");
+  if (cardButton) {
+    showShopTooltip(cardTooltipHTML(state.packOffer[Number(cardButton.dataset.card)]), cardButton);
+    return;
+  }
+  const curseChoice = event.target.closest("[data-curse-choice]");
+  if (curseChoice) {
+    const curse = state.packOffer[Number(curseChoice.dataset.curseChoice)];
+    showShopTooltip(`
+      <span class="label">Malédiction</span>
+      <h3>${curse.name}</h3>
+      <p>${curse.desc}</p>
+    `, curseChoice);
+  }
+});
+ui.packOffer.addEventListener("mousemove", (event) => {
+  const anchor = event.target.closest("[data-card], [data-curse-choice]");
+  if (anchor && !ui.shopTooltip.classList.contains("is-hidden")) positionShopTooltip(anchor);
+});
+ui.packOffer.addEventListener("mouseout", (event) => {
+  const anchor = event.target.closest("[data-card], [data-curse-choice]");
+  if (!anchor || anchor.contains(event.relatedTarget)) return;
+  hideShopTooltip();
 });
 ui.startWave.addEventListener("click", beginWave);
 ui.restart.addEventListener("click", restart);

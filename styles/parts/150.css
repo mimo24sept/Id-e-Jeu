@@ -1,0 +1,56 @@
+.shop-tooltip {
+  position: fixed;
+  z-index: 64;
+  width: min(310px, calc(100vw - 24px));
+  padding: 10px;
+  border: 3px solid var(--accent);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 6px 6px 0 var(--line);
+  pointer-events: none;
+}
+
+.shop-tooltip.is-hidden {
+  display: none;
+}
+
+.shop-tooltip h3 {
+  margin: 2px 0 6px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: 0;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.shop-tooltip p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.tooltip-card-head {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.tooltip-card-head .card {
+  min-height: 70px;
+  box-shadow: none;
+}
+
+.tooltip-price {
+  display: inline-grid;
+  min-height: 28px;
+  place-items: center;
+  padding: 0 8px;
+  border: 2px solid var(--line);
+  background: var(--gold);
+  color: #080808;
+  font-size: 0.82rem;
+}

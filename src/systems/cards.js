@@ -382,12 +382,6 @@ function logarithmicMoneyMultiplier(suits, effects) {
   return 1 + Math.log1p(rawBonus * 1.4) / Math.log(2.4);
 }
 
-function wealthDamageBonus(suits) {
-  const money = Math.max(0, state?.money || 0);
-  if (money <= 0 || suits.diamonds <= 0) return 0;
-  return Math.log1p(money / 140) * (0.028 + suits.diamonds * 0.006);
-}
-
 function applyWeaponSuitIdentityEffects(effects, weapon, suitCount) {
   const gradeMult = weapon.grade.statMult;
   if (weapon.suit === "hearts") {
@@ -435,7 +429,7 @@ function calculateStats() {
     handMultiplier: hand.multiplier,
     handDamageBonus: hand.damageBonus,
     handPower: hand.power,
-    damageMultiplier: Math.max(0.25, 1 + hand.damageBonus + suits.spades * 0.035 + effects.damage + wealthDamageBonus(suits) + runBonuses.spadeDamage),
+    damageMultiplier: Math.max(0.25, 1 + hand.damageBonus + suits.spades * 0.035 + effects.damage + runBonuses.spadeDamage),
     flatDamage: effects.flatDamage,
     attackSpeedMultiplier: Math.max(0.25, 1 + suits.clubs * 0.07 + effects.attackSpeed + runBonuses.spadeAttackSpeed),
     moneyMultiplier: Math.max(0.25, logarithmicMoneyMultiplier(suits, effects)),

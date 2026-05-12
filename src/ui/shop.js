@@ -109,6 +109,85 @@ function renderWeaponCompare(anchor = null) {
   positionWeaponCompare(anchor || document.querySelector(`[data-shop-slot="${state.previewWeaponId}"]`));
 }
 
+function positionShopTooltip(anchor) {
+  if (!anchor || !ui.shopTooltip) return;
+  const anchorRect = anchor.getBoundingClientRect();
+  const tooltipRect = ui.shopTooltip.getBoundingClientRect();
+  const gap = 12;
+  const margin = 12;
+  const rightSpace = window.innerWidth - anchorRect.right;
+  const leftSpace = anchorRect.left;
+  let left = rightSpace >= tooltipRect.width + gap || rightSpace >= leftSpace
+    ? anchorRect.right + gap
+    : anchorRect.left - tooltipRect.width - gap;
+  let top = anchorRect.top;
+  left = clamp(left, margin, window.innerWidth - tooltipRect.width - margin);
+  top = clamp(top, margin, window.innerHeight - tooltipRect.height - margin);
+  ui.shopTooltip.style.left = `${left}px`;
+  ui.shopTooltip.style.top = `${top}px`;
+}
+
+function cardTooltipHTML(card, price = null) {
+  return `
+    <div class="tooltip-card-head ${card.suit}">
+      <div class="card ${card.suit}">${cardHTML(card)}</div>
+      <div>
+        <span class="label">Carte</span>
+        <h3>${card.rank}${SUITS[card.suit].symbol} ${SUITS[card.suit].name}</h3>
+        ${price !== null ? `<strong class="tooltip-price">$${price}</strong>` : ""}
+      </div>
+    </div>
+    <p>${shopCardDetails(card)}</p>
+  `;
+}
+
+function shopSlotTooltipHTML(slot) {
+  if (!slot || slot.bought || slot.type === "weapon") return "";
+  if (slot.type === "card") return cardTooltipHTML(slot.card, slot.price);
+  if (slot.type === "pack") {
+    return `
+      <span class="label">Pack</span>
+      <h3>${slot.name}</h3>
+      <strong class="tooltip-price">$${slot.price}</strong>
+      <p>${packDetails(slot)}</p>
+      <p>Ouvre ${slot.size} cartes. Tu peux en choisir une, vendre une carte pendant le choix, ou passer.</p>
+    `;
+  }
+  if (slot.type === "cursePack") {
+    return `
+      <span class="label">Malédictions</span>
+      <h3>${slot.name}</h3>
+      <strong class="tooltip-price">$${slot.price}</strong>
+      <p>${slot.desc}</p>
+      <p>Révèle 3 effets. Tu en choisis un puis tu l'appliques sur une carte non maudite.</p>
+    `;
+  }
+  return `
+    <span class="label">Offre</span>
+    <h3>${slot.name}</h3>
+    <strong class="tooltip-price">$${slot.price}</strong>
+    <p>${slot.desc || ""}</p>
+  `;
+}
+
+function showShopTooltip(html, anchor) {
+  if (!ui.shopTooltip || !html) {
+    hideShopTooltip();
+    return;
+  }
+  ui.shopTooltip.innerHTML = html;
+  ui.shopTooltip.classList.remove("is-hidden");
+  positionShopTooltip(anchor);
+}
+
+function hideShopTooltip() {
+  if (!ui.shopTooltip) return;
+  ui.shopTooltip.classList.add("is-hidden");
+  ui.shopTooltip.innerHTML = "";
+  ui.shopTooltip.style.left = "";
+  ui.shopTooltip.style.top = "";
+}
+
 function renderShopSlot(slot) {
   if (slot.bought) {
     return `

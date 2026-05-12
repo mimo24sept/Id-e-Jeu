@@ -61,7 +61,7 @@
     state.hand
       .map(
         (card, index) => `
-          <article class="shop-hand-card" ${state.pendingCurse && !card.cursed ? `data-curse-card="${index}"` : !state.pendingCurse ? `data-sell-card="${index}"` : ""}>
+          <article class="shop-hand-card ${state.pendingCurse && !card.cursed ? "is-curse-target" : ""}">
             <div class="card ${card.suit}">${cardHTML(card)}</div>
             <div>
               <strong>${card.rank}${SUITS[card.suit].symbol}</strong>
@@ -71,8 +71,8 @@
               state.pendingCurse
                 ? card.cursed
                   ? `<div class="action-pill is-disabled">Déjà</div>`
-                  : `<div class="action-pill">Appliquer</div>`
-                : `<div class="action-pill">+$${sellValue(card)}</div>`
+                  : `<button class="action-pill" type="button" data-curse-card="${index}">Appliquer</button>`
+                : `<button class="action-pill sell-card-button" type="button" data-sell-card="${index}">+$${sellValue(card)}</button>`
             }
           </article>
         `,

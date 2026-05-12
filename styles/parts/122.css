@@ -1,5 +1,5 @@
-﻿.shop-hand-card[data-sell-card],
-.shop-hand-card[data-curse-card],
+.shop-hand-card .action-pill[data-sell-card],
+.shop-hand-card .action-pill[data-curse-card],
 .market-item[data-shop-slot],
 .card[data-card],
 .weapon[data-replace-weapon],

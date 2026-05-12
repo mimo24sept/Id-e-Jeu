@@ -1,0 +1,194 @@
+@media (min-width: 901px) {
+  .shop {
+    padding: 10px;
+  }
+
+  .shop-board {
+    width: min(1360px, calc(100vw - 20px));
+    max-height: calc(100vh - 20px);
+    overflow: hidden;
+  }
+
+  .shop-header {
+    gap: 10px;
+    padding: 8px 10px;
+  }
+
+  .shop-wallet {
+    min-width: 156px;
+    padding: 6px 9px;
+  }
+
+  .shop-wallet strong {
+    font-size: 1.08rem;
+  }
+
+  .shop-actions .primary-button,
+  .shop-actions .secondary-button {
+    min-height: 36px;
+    padding: 0 10px;
+  }
+
+  .shop-grid {
+    grid-template-columns: minmax(210px, 0.62fr) minmax(560px, 1.55fr) minmax(250px, 0.75fr);
+    gap: 9px;
+    padding: 9px;
+  }
+
+  .shop-section {
+    overflow: hidden;
+  }
+
+  .shop-section h3 {
+    margin: 0 0 2px;
+  }
+
+  .shop-section > p {
+    display: none;
+  }
+
+  .shop-hand {
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 6px;
+    max-height: calc(100vh - 164px);
+    overflow-y: auto;
+    padding-right: 3px;
+  }
+
+  .shop-hand-card {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .shop-hand-card .card {
+    min-height: 52px;
+  }
+
+  .shop-hand-card p {
+    display: none;
+  }
+
+  .shop-hand-card .action-pill {
+    grid-column: 1 / -1;
+    min-height: 28px;
+    padding: 0 6px;
+    font-size: 0.66rem;
+    box-shadow: 2px 2px 0 var(--line);
+  }
+
+  .market-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .market-item {
+    min-height: 132px;
+    gap: 5px;
+    padding: 7px;
+  }
+
+  .market-item h4 {
+    font-size: 1.1rem;
+  }
+
+  .market-item p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 0.64rem;
+  }
+
+  .market-item .action-pill {
+    min-height: 30px;
+    font-size: 0.72rem;
+    box-shadow: 2px 2px 0 var(--line);
+  }
+
+  .market-card {
+    min-height: 54px;
+  }
+
+  .market-grid .weapon-offer {
+    min-height: 158px;
+  }
+
+  .market-grid .weapon-offer .weapon-top strong {
+    font-size: 1.18rem;
+  }
+
+  .market-grid .weapon-offer .scaling-bonus {
+    display: none;
+  }
+
+  .market-grid .weapon-offer .weapon-tags {
+    display: none;
+  }
+
+  .market-grid .weapon-offer .weapon-scale,
+  .market-grid .weapon-offer .stat-strip {
+    font-size: 0.62rem;
+  }
+
+  .lock-button {
+    top: 5px;
+    right: 5px;
+    min-height: 22px;
+    padding: 0 5px;
+    font-size: 0.56rem;
+  }
+
+  .pack-choice-title {
+    margin: 8px 0 4px;
+    font-size: 1rem;
+  }
+
+  .offer-row {
+    grid-template-columns: repeat(auto-fit, minmax(54px, 72px));
+    gap: 5px;
+    margin-top: 4px;
+  }
+
+  .offer-row .card {
+    min-height: 64px;
+  }
+
+  .pack-skip,
+  .curse-choice {
+    min-height: 64px;
+    padding: 6px;
+  }
+
+  .shop-run-info {
+    gap: 6px;
+    max-height: calc(100vh - 164px);
+    overflow: hidden;
+  }
+
+  .run-character {
+    padding: 7px;
+  }
+
+  .run-character p {
+    display: none;
+  }
+
+  .shop-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .stat-box {
+    padding: 4px 5px;
+  }
+
+  .stat-box span {
+    font-size: 0.55rem;
+  }
+
+  .stat-box strong {
+    font-size: 0.68rem;
+    line-height: 1.05;
+  }
+}

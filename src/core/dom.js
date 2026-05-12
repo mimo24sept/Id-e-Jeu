@@ -68,6 +68,11 @@ const ui = {
   finalScore: document.querySelector("#finalScore"),
   fragmentReward: document.querySelector("#fragmentReward"),
   restart: document.querySelector("#restart"),
+  runDecision: document.querySelector("#runDecision"),
+  runDecisionTitle: document.querySelector("#runDecisionTitle"),
+  runDecisionText: document.querySelector("#runDecisionText"),
+  cashOutRun: document.querySelector("#cashOutRun"),
+  continueRun: document.querySelector("#continueRun"),
 };
 
 

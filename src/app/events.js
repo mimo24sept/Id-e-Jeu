@@ -176,6 +176,8 @@ ui.packOffer.addEventListener("mouseout", (event) => {
 });
 ui.startWave.addEventListener("click", beginWave);
 ui.restart.addEventListener("click", restart);
+ui.cashOutRun.addEventListener("click", cashOutRun);
+ui.continueRun.addEventListener("click", continueRun);
 
 window.PokerSurvivorDebug = {
   triggerGodMode,

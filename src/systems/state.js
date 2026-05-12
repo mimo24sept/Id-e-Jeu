@@ -35,6 +35,9 @@
     spawnTimer: 0,
     godMode: false,
     godCloseEndsAt: 0,
+    fragmentStakeMultiplier: 1,
+    fragmentRiskActive: false,
+    fragmentDecisionWave: 0,
     gameOver: false,
   };
   state = initial;

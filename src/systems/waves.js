@@ -145,6 +145,7 @@ function beginWave() {
 }
 
 function completeWave() {
+  const completedWave = state.wave;
   state.betweenWaves = true;
   state.money += 18 + state.wave * 6 + metaRunBonuses().waveGold;
   state.wave += 1;
@@ -162,6 +163,9 @@ function completeWave() {
   ui.shop.classList.remove("is-hidden");
   queueTutorialSteps(["shopGold", "shopHand", "shopMarket", "shopWeapons", "shopLocks", "shopStart"]);
   if (state.packOffer.length > 0) queueTutorialSteps(["packChoice"]);
+  if (completedWave > 0 && completedWave % 10 === 0) {
+    showRunDecision(completedWave);
+  }
 }
 
 function spawnEnemy() {

@@ -18,6 +18,7 @@ function showMainMenu() {
   clearInterval(godCountdownInterval);
   connectedPlayerName = connectedPlayerName || state?.playerName || "Joueur";
   ui.gameOver.classList.add("is-hidden");
+  ui.runDecision.classList.add("is-hidden");
   ui.godMode.classList.add("is-hidden");
   ui.mainMenu.classList.remove("is-hidden");
   ui.characterSelect.classList.add("is-hidden");
@@ -62,12 +63,40 @@ function startRun(character = null) {
   ui.mainMenu.classList.add("is-hidden");
   ui.characterSelect.classList.add("is-hidden");
   ui.gameOver.classList.add("is-hidden");
+  ui.runDecision.classList.add("is-hidden");
   ui.godMode.classList.add("is-hidden");
   ui.shop.classList.add("is-hidden");
   lastTime = performance.now();
   beginWave();
   updateMobileControlsVisibility();
   animationId = requestAnimationFrame(loop);
+}
+
+function showRunDecision(completedWave) {
+  state.fragmentDecisionWave = completedWave;
+  const cashReward = runFragmentReward(completedWave) * metaRunBonuses().fragmentMultiplier * state.fragmentStakeMultiplier;
+  const nextReward = cashReward * 2;
+  ui.runDecisionTitle.textContent = `Vague ${completedWave}`;
+  ui.runDecisionText.textContent = `Encaisser ${Math.round(cashReward)} fragments, ou doubler a ${Math.round(nextReward)}. Si tu meurs, tu ne gardes que 20%.`;
+  ui.cashOutRun.textContent = `Encaisser ${Math.round(cashReward)}`;
+  ui.continueRun.textContent = `Doubler vers vague ${completedWave + 10}`;
+  ui.runDecision.classList.remove("is-hidden");
+}
+
+function cashOutRun() {
+  if (!state?.fragmentDecisionWave) return;
+  grantRunFragments(state.fragmentDecisionWave, metaRunBonuses().fragmentMultiplier * state.fragmentStakeMultiplier);
+  ui.runDecision.classList.add("is-hidden");
+  showMainMenu();
+}
+
+function continueRun() {
+  if (!state?.fragmentDecisionWave) return;
+  state.fragmentStakeMultiplier *= 2;
+  state.fragmentRiskActive = true;
+  state.fragmentDecisionWave = 0;
+  ui.runDecision.classList.add("is-hidden");
+  renderUI();
 }
 
 function showCharacterSelect() {

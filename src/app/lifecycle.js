@@ -114,6 +114,15 @@ function connectPlayer() {
   setConnectedPlayer(ui.playerNameInput.value);
 }
 
+function disconnectPlayer() {
+  connectedPlayerName = "";
+  localStorage.removeItem("pokerSurvivorName");
+  ui.playerNameInput.value = "";
+  ui.playerNameHud.textContent = "-";
+  updateMenuPanels();
+  renderMetaProgression();
+}
+
 function launchGame() {
   const typedName = cleanPlayerName(ui.playerNameInput.value);
   if (typedName && typedName !== connectedPlayerName) setConnectedPlayer(typedName);

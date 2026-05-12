@@ -11,6 +11,7 @@ const ui = {
   loginPanel: document.querySelector("#loginPanel"),
   playerHub: document.querySelector("#playerHub"),
   connectPlayer: document.querySelector("#connectPlayer"),
+  disconnectPlayer: document.querySelector("#disconnectPlayer"),
   launchGame: document.querySelector("#launchGame"),
   openTutorial: document.querySelector("#openTutorial"),
   metaFragments: document.querySelector("#metaFragments"),

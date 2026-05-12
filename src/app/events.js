@@ -3,6 +3,7 @@
   if (activeTutorialStep) showActiveTutorialStep();
 });
 ui.connectPlayer.addEventListener("click", connectPlayer);
+ui.disconnectPlayer.addEventListener("click", disconnectPlayer);
 ui.launchGame.addEventListener("click", launchGame);
 ui.openTutorial.addEventListener("click", showTutorial);
 ui.buyMetaPack.addEventListener("click", buyMetaPack);
@@ -57,6 +58,23 @@ ui.shopHand.addEventListener("click", (event) => {
   const button = event.target.closest("[data-sell-card]");
   if (!button) return;
   sellCard(Number(button.dataset.sellCard));
+});
+ui.shopHand.addEventListener("mouseover", (event) => {
+  const item = event.target.closest(".shop-hand-card");
+  if (!item || !ui.shopHand.contains(item)) return;
+  const index = Number(item.dataset.handIndex);
+  const card = state.hand[index];
+  if (!card) return;
+  showShopTooltip(cardTooltipHTML(card, sellValue(card)), item);
+});
+ui.shopHand.addEventListener("mousemove", (event) => {
+  const item = event.target.closest(".shop-hand-card");
+  if (item && !ui.shopTooltip.classList.contains("is-hidden")) positionShopTooltip(item);
+});
+ui.shopHand.addEventListener("mouseout", (event) => {
+  const item = event.target.closest(".shop-hand-card");
+  if (!item || item.contains(event.relatedTarget)) return;
+  hideShopTooltip();
 });
 ui.weapons.addEventListener("click", (event) => {
   const button = event.target.closest("[data-replace-weapon]");

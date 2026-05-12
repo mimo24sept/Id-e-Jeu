@@ -61,7 +61,7 @@
     state.hand
       .map(
         (card, index) => `
-          <article class="shop-hand-card ${state.pendingCurse && !card.cursed ? "is-curse-target" : ""}">
+          <article class="shop-hand-card ${state.pendingCurse && !card.cursed ? "is-curse-target" : ""}" data-hand-index="${index}">
             <div class="card ${card.suit}">${cardHTML(card)}</div>
             <div>
               <strong>${card.rank}${SUITS[card.suit].symbol}</strong>

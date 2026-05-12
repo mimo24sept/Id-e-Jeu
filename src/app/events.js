@@ -7,6 +7,11 @@ ui.disconnectPlayer.addEventListener("click", disconnectPlayer);
 ui.launchGame.addEventListener("click", launchGame);
 ui.openTutorial.addEventListener("click", showTutorial);
 ui.buyMetaPack.addEventListener("click", buyMetaPack);
+ui.skinGrid.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-skin-id]");
+  if (!button) return;
+  buyOrEquipSkin(button.dataset.skinId);
+});
 ui.openMetaCollection.addEventListener("click", openMetaCollection);
 ui.closeMetaCollection.addEventListener("click", closeMetaCollection);
 ui.closeTutorial.addEventListener("click", closeTutorial);

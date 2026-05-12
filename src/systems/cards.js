@@ -304,6 +304,23 @@ function completeSuitCount(cards) {
   }).length;
 }
 
+function completeSuitKeys(cards) {
+  return Object.keys(SUITS).filter((suit) => {
+    const values = new Set(cards.filter((card) => cardHasSuit(card, suit)).map((card) => card.value));
+    return RANKS.every((rank) => values.has(rank.value));
+  });
+}
+
+function unlockSuitSkins(cards) {
+  if (!state || state.gameOver) return;
+  const fullSuits = completeSuitKeys(cards);
+  for (const suit of fullSuits) {
+    unlockSkin(`perfect-${suit}`);
+  }
+  if (fullSuits.length >= 2) unlockSkin("double-complete");
+  if (fullSuits.length >= 4) unlockSkin("chromatic");
+}
+
 function specialHand(cards, best) {
   if (cards.length <= 5) return best;
 
@@ -315,6 +332,7 @@ function specialHand(cards, best) {
   const fullRankCount = groups.filter((count) => count === 4).length;
   const fullSuits = completeSuitCount(cards);
   const suits = Object.keys(SUITS);
+  unlockSuitSkins(cards);
 
   for (const suit of suits) {
     const suited = cards.filter((card) => cardHasSuit(card, suit));

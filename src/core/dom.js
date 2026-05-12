@@ -20,6 +20,7 @@ const ui = {
   openMetaCollection: document.querySelector("#openMetaCollection"),
   metaPackResult: document.querySelector("#metaPackResult"),
   metaUpgradeSummary: document.querySelector("#metaUpgradeSummary"),
+  skinGrid: document.querySelector("#skinGrid"),
   metaCollection: document.querySelector("#metaCollection"),
   closeMetaCollection: document.querySelector("#closeMetaCollection"),
   metaCollectionStats: document.querySelector("#metaCollectionStats"),

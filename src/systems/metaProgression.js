@@ -1,6 +1,22 @@
 const META_STORAGE_KEY = "pokerSurvivorMetaProgression";
 const MAX_CARD_UPGRADE_LEVEL = 4;
 
+const SKIN_DEFS = [
+  { id: "classic", name: "Classique", desc: "Rond jaune brutal.", cost: 0, shape: "circle", primary: "#f0b84b", stroke: "#151719", symbol: "" },
+  { id: "black-brut", name: "Noir Brut", desc: "Carré anguleux noir et blanc.", cost: 220, shape: "square", primary: "#f4f4f4", stroke: "#080808", symbol: "X" },
+  { id: "neon-blue", name: "Néon Bleu", desc: "Losange bleu électrique.", cost: 420, shape: "diamond", primary: "#0d67ff", stroke: "#f4f4f4", symbol: "◆" },
+  { id: "blood-royal", name: "Sang Royal", desc: "Silhouette rouge à pointes.", cost: 760, shape: "crown", primary: "#e8526d", stroke: "#080808", symbol: "♥" },
+  { id: "dirty-gold", name: "Or Sale", desc: "Hexagone or massif.", cost: 1200, shape: "hex", primary: "#ff8a1f", stroke: "#080808", symbol: "$" },
+  { id: "spectre", name: "Spectre", desc: "Forme creuse et froide.", cost: 1800, shape: "ring", primary: "#9da3ad", stroke: "#f4f4f4", symbol: "○" },
+  { id: "perfect-spades", name: "Pique Parfait", desc: "Secret: couleur complète pique.", secret: true, shape: "spade", primary: "#d7dbe4", stroke: "#080808", symbol: "♠" },
+  { id: "perfect-hearts", name: "Coeur Parfait", desc: "Secret: couleur complète coeur.", secret: true, shape: "heart", primary: "#e8526d", stroke: "#f4f4f4", symbol: "♥" },
+  { id: "perfect-clubs", name: "Trèfle Parfait", desc: "Secret: couleur complète trèfle.", secret: true, shape: "club", primary: "#0d67ff", stroke: "#f4f4f4", symbol: "♣" },
+  { id: "perfect-diamonds", name: "Carreau Parfait", desc: "Secret: couleur complète carreau.", secret: true, shape: "diamond", primary: "#ff8a1f", stroke: "#080808", symbol: "♦" },
+  { id: "double-complete", name: "Double Couleur", desc: "Secret: deux couleurs complètes.", secret: true, shape: "split", primary: "#f0d24b", stroke: "#080808", symbol: "2" },
+  { id: "chromatic", name: "Chromatique", desc: "Secret: quatre couleurs complètes.", secret: true, shape: "star", primary: "#f4f4f4", stroke: "#080808", symbol: "4" },
+  { id: "absolute", name: "Absolu", desc: "Secret: easter egg des 52 cartes.", secret: true, shape: "absolute", primary: "#f0d24b", stroke: "#f4f4f4", symbol: "∞" },
+];
+
 function emptyMetaProgression() {
   return { players: {} };
 }
@@ -22,6 +38,8 @@ function defaultPlayerMeta() {
     fragments: 0,
     packsBought: 0,
     cardUpgrades: {},
+    unlockedSkins: ["classic"],
+    equippedSkin: "classic",
     bestWave: 0,
   };
 }
@@ -29,6 +47,8 @@ function defaultPlayerMeta() {
 function playerMeta(name = connectedPlayerName || "Joueur") {
   const playerName = cleanPlayerName(name) || "Joueur";
   metaProgression.players[playerName] ||= defaultPlayerMeta();
+  metaProgression.players[playerName].unlockedSkins ||= ["classic"];
+  metaProgression.players[playerName].equippedSkin ||= "classic";
   if (playerName === "Dev") unlockDevMeta(metaProgression.players[playerName]);
   return metaProgression.players[playerName];
 }
@@ -39,6 +59,40 @@ function unlockDevMeta(meta) {
   }
   meta.fragments = Math.max(meta.fragments || 0, 999999);
   meta.packsBought = Math.max(meta.packsBought || 0, 0);
+  meta.unlockedSkins = SKIN_DEFS.map((skin) => skin.id);
+  meta.equippedSkin ||= "classic";
+}
+
+function skinDef(id = playerMeta().equippedSkin) {
+  return SKIN_DEFS.find((skin) => skin.id === id) || SKIN_DEFS[0];
+}
+
+function unlockSkin(id) {
+  const meta = playerMeta();
+  meta.unlockedSkins ||= ["classic"];
+  if (meta.unlockedSkins.includes(id)) return false;
+  meta.unlockedSkins.push(id);
+  saveMetaProgression();
+  renderMetaProgression();
+  return true;
+}
+
+function buyOrEquipSkin(id) {
+  const meta = playerMeta();
+  const skin = skinDef(id);
+  meta.unlockedSkins ||= ["classic"];
+  if (meta.unlockedSkins.includes(id)) {
+    meta.equippedSkin = id;
+    saveMetaProgression();
+    renderMetaProgression();
+    return;
+  }
+  if (skin.secret || meta.fragments < skin.cost) return;
+  meta.fragments -= skin.cost;
+  meta.unlockedSkins.push(id);
+  meta.equippedSkin = id;
+  saveMetaProgression();
+  renderMetaProgression();
 }
 
 function metaCardKey(suit, rank) {
@@ -50,7 +104,7 @@ function metaDeckKeys() {
 }
 
 function metaPackCost(meta = playerMeta()) {
-  return Math.round(35 * Math.pow(1.16, meta.packsBought));
+  return 35 + (meta.packsBought || 0) * 8;
 }
 
 function runFragmentReward(waveReached) {
@@ -178,7 +232,27 @@ function renderMetaProgression(lastPack = []) {
   ui.metaPackResult.innerHTML = lastPack
     .map((item) => `<span>${describeMetaCard(item.key)} niv.${item.before} -> ${item.after}</span>`)
     .join("");
+  renderSkinShop(meta);
   if (ui.metaCollection && !ui.metaCollection.classList.contains("is-hidden")) renderMetaCollection();
+}
+
+function renderSkinShop(meta = playerMeta()) {
+  if (!ui.skinGrid) return;
+  meta.unlockedSkins ||= ["classic"];
+  ui.skinGrid.innerHTML = SKIN_DEFS.map((skin) => {
+    const unlocked = meta.unlockedSkins.includes(skin.id);
+    const equipped = meta.equippedSkin === skin.id;
+    const disabled = skin.secret && !unlocked || (!unlocked && meta.fragments < skin.cost);
+    const action = equipped ? "Équipé" : unlocked ? "Équiper" : skin.secret ? "Secret" : `$${skin.cost}`;
+    return `
+      <button class="skin-card ${equipped ? "is-equipped" : ""}" type="button" data-skin-id="${skin.id}" ${disabled ? "disabled" : ""} style="--skin:${skin.primary}; --skin-stroke:${skin.stroke}">
+        <span class="skin-preview skin-${skin.shape}">${skin.symbol || ""}</span>
+        <strong>${skin.name}</strong>
+        <em>${skin.desc}</em>
+        <span>${action}</span>
+      </button>
+    `;
+  }).join("");
 }
 
 function renderMetaCollection() {

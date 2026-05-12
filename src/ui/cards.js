@@ -74,6 +74,7 @@ function closeGodPage() {
 
 function triggerGodMode() {
   if (state.godMode) return;
+  unlockSkin("absolute");
   state.godMode = true;
   state.godCloseEndsAt = performance.now() + 10000;
   state.money = 999999;

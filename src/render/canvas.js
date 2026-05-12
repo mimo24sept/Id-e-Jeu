@@ -75,6 +75,74 @@ function drawCircle(x, y, radius, fill, stroke) {
   }
 }
 
+function polygonPath(x, y, radius, sides, rotation = -Math.PI / 2) {
+  ctx.beginPath();
+  for (let i = 0; i < sides; i += 1) {
+    const angle = rotation + (Math.PI * 2 * i) / sides;
+    const px = x + Math.cos(angle) * radius;
+    const py = y + Math.sin(angle) * radius;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+}
+
+function drawSkinShape(x, y, radius, skin) {
+  ctx.lineWidth = 4;
+  ctx.fillStyle = skin.primary;
+  ctx.strokeStyle = skin.stroke;
+
+  if (skin.shape === "square") {
+    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+  } else if (skin.shape === "diamond") {
+    polygonPath(x, y, radius * 1.35, 4, 0);
+    ctx.fill();
+    ctx.stroke();
+  } else if (skin.shape === "hex") {
+    polygonPath(x, y, radius * 1.18, 6);
+    ctx.fill();
+    ctx.stroke();
+  } else if (skin.shape === "crown") {
+    polygonPath(x, y, radius * 1.22, 8, -Math.PI / 8);
+    ctx.fill();
+    ctx.stroke();
+  } else if (skin.shape === "ring") {
+    drawCircle(x, y, radius + 2, "rgba(0,0,0,0.15)", skin.stroke);
+    drawCircle(x, y, radius - 6, "#090909", null);
+  } else if (skin.shape === "spade" || skin.shape === "heart") {
+    drawCircle(x - radius * 0.36, y - radius * 0.22, radius * 0.62, skin.primary, skin.stroke);
+    drawCircle(x + radius * 0.36, y - radius * 0.22, radius * 0.62, skin.primary, skin.stroke);
+    polygonPath(x, y + radius * 0.18, radius * 0.95, 3, Math.PI / 2);
+    ctx.fill();
+    ctx.stroke();
+  } else if (skin.shape === "club") {
+    drawCircle(x, y - radius * 0.45, radius * 0.62, skin.primary, skin.stroke);
+    drawCircle(x - radius * 0.52, y + radius * 0.14, radius * 0.62, skin.primary, skin.stroke);
+    drawCircle(x + radius * 0.52, y + radius * 0.14, radius * 0.62, skin.primary, skin.stroke);
+  } else if (skin.shape === "split") {
+    drawCircle(x, y, radius + 3, "#f0d24b", skin.stroke);
+    ctx.fillStyle = "#0d67ff";
+    ctx.fillRect(x, y - radius, radius, radius * 2);
+  } else if (skin.shape === "star" || skin.shape === "absolute") {
+    const points = skin.shape === "absolute" ? 12 : 8;
+    ctx.beginPath();
+    for (let i = 0; i < points * 2; i += 1) {
+      const angle = -Math.PI / 2 + (Math.PI * i) / points + state.worldTime * 0.8;
+      const r = i % 2 === 0 ? radius * 1.35 : radius * 0.62;
+      const px = x + Math.cos(angle) * r;
+      const py = y + Math.sin(angle) * r;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else {
+    drawCircle(x, y, radius + 3, skin.primary, skin.stroke);
+  }
+}
+
 function strongestSuit() {
   return Object.keys(SUITS).reduce((best, suit) => {
     if (state.stats[suit] > state.stats[best]) return suit;
@@ -91,6 +159,7 @@ function drawPlayer() {
   const x = window.innerWidth / 2;
   const y = window.innerHeight / 2;
   const suit = SUITS[strongestSuit()];
+  const skin = skinDef();
   const radius = state.player.radius;
 
   ctx.save();
@@ -103,15 +172,8 @@ function drawPlayer() {
   ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
   ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 7;
-  drawCircle(x, y, radius + 3, "#f0b84b", "#151719");
+  drawSkinShape(x, y, radius, skin);
   ctx.shadowColor = "transparent";
-
-  ctx.beginPath();
-  ctx.arc(x, y, radius - 4, 0, Math.PI * 2);
-  ctx.fillStyle = "#201a10";
-  ctx.globalAlpha = 0.16;
-  ctx.fill();
-  ctx.globalAlpha = 1;
 
   ctx.strokeStyle = "#151719";
   ctx.lineWidth = 3;
@@ -126,7 +188,8 @@ function drawPlayer() {
   ctx.font = "900 14px Inter, system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(suit.symbol, x, y + radius + 12);
+  ctx.fillText(skin.symbol || suit.symbol, x, y);
+  ctx.fillText(suit.symbol, x, y + radius + 14);
   ctx.restore();
 }
 

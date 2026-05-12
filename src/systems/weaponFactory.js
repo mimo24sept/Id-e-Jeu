@@ -93,7 +93,7 @@ function createWeapon(options = {}) {
     level,
     itemPower,
     rolls,
-    price: Math.round(archetype.basePrice * grade.priceMult * (1 + level * 0.08) * ((rolls.damage + rolls.stats) / 2)),
+    price: equivalentPrice(grade.cardEquivalent || 1),
     desc: weaponDescription(archetype, suitKey, scalingType, grade, modifiers, { level, damage, cooldown, range, rolls }),
     baseCooldown: cooldown,
     damage,

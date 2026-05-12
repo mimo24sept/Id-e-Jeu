@@ -324,21 +324,22 @@ const CURSE_PACK_DEFS = [
     name: "Pack de malédictions",
     desc: "Révèle 3 malédictions. Choisis-en une à appliquer sur une carte.",
     price: 36,
+    cardEquivalent: 3,
     size: 3,
   },
 ];
 
 const PACK_DEFS = [
-  { id: "standard-4", name: "Pack standard", price: 12, size: 4, suit: null },
-  { id: "standard-6", name: "Grand pack standard", price: 20, size: 6, suit: null },
-  { id: "spades-4", name: "Pack Pique", price: 16, size: 4, suit: "spades" },
-  { id: "spades-6", name: "Grand pack Pique", price: 26, size: 6, suit: "spades" },
-  { id: "diamonds-4", name: "Pack Carreau", price: 16, size: 4, suit: "diamonds" },
-  { id: "diamonds-6", name: "Grand pack Carreau", price: 26, size: 6, suit: "diamonds" },
-  { id: "clubs-4", name: "Pack Trèfle", price: 16, size: 4, suit: "clubs" },
-  { id: "clubs-6", name: "Grand pack Trèfle", price: 26, size: 6, suit: "clubs" },
-  { id: "hearts-4", name: "Pack Coeur", price: 16, size: 4, suit: "hearts" },
-  { id: "hearts-6", name: "Grand pack Coeur", price: 26, size: 6, suit: "hearts" },
+  { id: "standard-4", name: "Pack standard", price: 16, cardEquivalent: 2, size: 4, suit: null },
+  { id: "standard-6", name: "Grand pack standard", price: 22, cardEquivalent: 2.75, size: 6, suit: null },
+  { id: "spades-4", name: "Pack Pique", price: 18, cardEquivalent: 2.25, size: 4, suit: "spades" },
+  { id: "spades-6", name: "Grand pack Pique", price: 23, cardEquivalent: 2.9, size: 6, suit: "spades" },
+  { id: "diamonds-4", name: "Pack Carreau", price: 18, cardEquivalent: 2.25, size: 4, suit: "diamonds" },
+  { id: "diamonds-6", name: "Grand pack Carreau", price: 23, cardEquivalent: 2.9, size: 6, suit: "diamonds" },
+  { id: "clubs-4", name: "Pack Trèfle", price: 18, cardEquivalent: 2.25, size: 4, suit: "clubs" },
+  { id: "clubs-6", name: "Grand pack Trèfle", price: 23, cardEquivalent: 2.9, size: 6, suit: "clubs" },
+  { id: "hearts-4", name: "Pack Coeur", price: 18, cardEquivalent: 2.25, size: 4, suit: "hearts" },
+  { id: "hearts-6", name: "Grand pack Coeur", price: 23, cardEquivalent: 2.9, size: 6, suit: "hearts" },
 ];
 
 const POKER_DAMAGE_BONUS = {

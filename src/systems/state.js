@@ -1,5 +1,5 @@
 ﻿function createState(options = {}) {
-  const hand = drawUniqueCards(5);
+  const hand = [];
   const initial = {
     playerName: options.playerName || connectedPlayerName || "Joueur",
     character: options.character || null,
@@ -45,9 +45,9 @@
 }
 
 function cardPrice(card) {
-  const rankTax = card.value >= 11 ? 3 : card.value >= 8 ? 2 : 0;
-  const curseTax = card.cursed ? (card.curse.rare ? 30 : 9) : 0;
-  return Math.max(4, scaleShopPrice(7 + rankTax + curseTax));
+  const faceTax = card.value >= 11 ? 0.2 : 0;
+  const curseTax = card.cursed ? (card.curse.rare ? 1.2 : 0.45) : 0;
+  return equivalentPrice(1 + faceTax + curseTax);
 }
 
 function sellValue(card) {
@@ -63,14 +63,45 @@ function scaleShopPrice(basePrice, wave = state?.wave || 1) {
   return Math.max(1, Math.round(basePrice * shopPriceMultiplier(wave)));
 }
 
+function expectedShopEnemyCount(wave = state?.wave || 1) {
+  const duration = Math.min(15 + wave * 1.7, 54);
+  const interval = Math.max(0.14, 0.72 - wave * 0.022);
+  let burst = 1 + Math.floor(wave / 5);
+  burst += Math.min(0.22 + wave * 0.025, 0.78);
+  if (wave >= 4) burst += 0.28;
+  if (wave >= 7) burst += 0.22;
+  return (1 + Math.floor(duration / interval)) * burst + (wave % 10 === 0 ? 6 : 0);
+}
+
+function expectedShopEnemyValue(wave = state?.wave || 1) {
+  const tier = Math.floor(Math.max(1, wave) / 10);
+  const goldPressure = Math.max(0.58, 1 - Math.min(16, wave) * 0.025);
+  const valueMult = Math.pow(1.35, tier) * goldPressure;
+  const shooterChance = wave >= 2 ? Math.min(0.14 + wave * 0.018, 0.42) : 0;
+  const bruteChance = wave >= 3 ? Math.min(0.11 + wave * 0.016, 0.38) : 0;
+  const chaserValue = 0.95 * valueMult;
+  const shooterValue = 1.55 * valueMult;
+  const bruteValue = 2.35 * valueMult;
+  return bruteChance * bruteValue + (1 - bruteChance) * shooterChance * shooterValue + (1 - bruteChance) * (1 - shooterChance) * chaserValue;
+}
+
+function expectedWaveIncome(wave = state?.wave || 1) {
+  const fixed = 18 + wave * 6;
+  const enemyGold = expectedShopEnemyCount(wave) * expectedShopEnemyValue(wave);
+  const bossGold = wave % 10 === 0 ? 70 + wave * 8 : 0;
+  return fixed + enemyGold + bossGold;
+}
+
+function equivalentPrice(cards, wave = state?.wave || 1) {
+  return Math.max(1, Math.round((expectedWaveIncome(wave) / 3) * cards));
+}
+
 function cursePackPrice(pack) {
-  const wave = state?.wave || 1;
-  const premium = 1 + Math.max(0, wave - 1) * 0.035 + Math.floor(Math.max(0, wave - 1) / 10) * 0.16;
-  return Math.round(scaleShopPrice(pack.price) * premium);
+  return equivalentPrice(pack.cardEquivalent || 3);
 }
 
 function cardPackPrice(pack) {
-  return Math.max(1, Math.round(scaleShopPrice(pack.price) * (1 - metaRunBonuses().packDiscount)));
+  return Math.max(1, Math.round(equivalentPrice(pack.cardEquivalent || (pack.size >= 6 ? 2.75 : 2)) * (1 - metaRunBonuses().packDiscount)));
 }
 
 function rerollCost() {

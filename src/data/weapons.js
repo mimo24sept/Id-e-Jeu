@@ -83,10 +83,10 @@
 ];
 
 const WEAPON_GRADES = [
-  { id: "green", name: "Verte", color: "#71d58a", weight: 58, damageMult: 1, priceMult: 1, statMult: 1, modCount: 0 },
-  { id: "blue", name: "Bleue", color: "#58b7e9", weight: 27, damageMult: 1.28, priceMult: 1.45, statMult: 1.18, modCount: 1 },
-  { id: "purple", name: "Violette", color: "#b278ff", weight: 11, damageMult: 1.68, priceMult: 2.15, statMult: 1.42, modCount: 2 },
-  { id: "yellow", name: "Jaune", color: "#f0d24b", weight: 4, damageMult: 2.25, priceMult: 3.15, statMult: 1.75, modCount: 3 },
+  { id: "green", name: "Verte", color: "#71d58a", weight: 58, damageMult: 1, priceMult: 1, cardEquivalent: 1, statMult: 1, modCount: 0 },
+  { id: "blue", name: "Bleue", color: "#58b7e9", weight: 27, damageMult: 1.28, priceMult: 1.45, cardEquivalent: 2, statMult: 1.18, modCount: 1 },
+  { id: "purple", name: "Violette", color: "#b278ff", weight: 11, damageMult: 1.68, priceMult: 2.15, cardEquivalent: 3, statMult: 1.42, modCount: 2 },
+  { id: "yellow", name: "Jaune", color: "#f0d24b", weight: 4, damageMult: 2.25, priceMult: 3.15, cardEquivalent: 3, statMult: 1.75, modCount: 3 },
 ];
 
 const WEAPON_MODIFIERS = [

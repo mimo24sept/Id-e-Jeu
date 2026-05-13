@@ -14,9 +14,18 @@
   ui.enemyCount.textContent = state.betweenWaves
     ? "Shop"
     : `${Math.ceil(state.waveTimeLeft)}s · ${state.enemies.length}`;
+  if (!state.betweenWaves && state.objective) {
+    const objective = state.objective;
+    let progress = "";
+    if (objective.type === "capture") progress = `${Math.floor((objective.progress / objective.target) * 100)}%`;
+    if (objective.type === "turrets") progress = `${objective.killed}/${objective.target}`;
+    if (objective.type === "runners") progress = `${objective.collected}/${objective.target}`;
+    if (objective.type === "kills") progress = `${objective.killed}/${objective.target}`;
+    ui.enemyCount.textContent = `${objective.title} ${progress} | ${state.enemies.length}`;
+  }
   if (state.betweenWaves && cratePacksWaiting() > 0) {
     ui.enemyCount.textContent = `Shop | ${cratePacksWaiting()} caisse`;
-  } else if (!state.betweenWaves && crateHudCount > 0) {
+  } else if (!state.betweenWaves && crateHudCount > 0 && !state.objective) {
     ui.enemyCount.textContent = `${Math.ceil(state.waveTimeLeft)}s | ${state.enemies.length} | C${crateHudCount}`;
   }
   ui.rerollShop.textContent = `Relancer - $${rerollCost()}`;

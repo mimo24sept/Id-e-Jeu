@@ -120,6 +120,115 @@ function applyDiamondCourtStartOfWave() {
   }
 }
 
+function randomWorldPoint(margin = 120) {
+  const bounds = worldBounds();
+  return {
+    x: random(bounds.left + margin, bounds.right - margin),
+    y: random(bounds.top + margin, bounds.bottom - margin),
+  };
+}
+
+function createWaveObjective() {
+  const choices = ["capture", "turrets", "runners", "kills"];
+  const type = choices[Math.floor(random(0, choices.length))];
+  if (type === "capture") {
+    const point = randomWorldPoint(250);
+    return {
+      type,
+      title: "CHARGE",
+      desc: "Reste dans la zone",
+      x: point.x,
+      y: point.y,
+      radius: 150,
+      progress: 0,
+      target: Math.max(6, 10 + state.wave * 0.35),
+      completed: false,
+    };
+  }
+  if (type === "turrets") {
+    return {
+      type,
+      title: "TOURELLES",
+      desc: "Détruis les 4 coins",
+      killed: 0,
+      target: 4,
+      completed: false,
+    };
+  }
+  if (type === "runners") {
+    return {
+      type,
+      title: "TRAQUE",
+      desc: "Ramasse 3 reliques",
+      collected: 0,
+      target: 3,
+      runnerSpawnTimer: 0,
+      completed: false,
+    };
+  }
+  return {
+    type,
+    title: "MASSACRE",
+    desc: "Tue les monstres requis",
+    killed: 0,
+    target: Math.round(14 + state.wave * 2.2),
+    completed: false,
+  };
+}
+
+function spawnObjectiveTurrets() {
+  const objective = state.objective;
+  if (!objective || objective.type !== "turrets") return;
+  const bounds = worldBounds();
+  const tier = enemyTier(state.wave);
+  const hp = (95 + state.wave * 18) * enemyTierMultiplier(state.wave);
+  const points = [
+    { x: bounds.left + 135, y: bounds.top + 135 },
+    { x: bounds.right - 135, y: bounds.top + 135 },
+    { x: bounds.left + 135, y: bounds.bottom - 135 },
+    { x: bounds.right - 135, y: bounds.bottom - 135 },
+  ];
+  for (const point of points) {
+    state.enemies.push({
+      ...point,
+      radius: 24,
+      hp,
+      maxHp: hp,
+      speed: 0,
+      damage: (13 + state.wave * 0.75) * Math.pow(1.25, tier),
+      type: "objective-turret",
+      shootTimer: random(0.2, 1),
+      value: 0,
+      tier,
+      objectiveTarget: true,
+    });
+  }
+}
+
+function spawnObjectiveRunner() {
+  const objective = state.objective;
+  if (!objective || objective.type !== "runners") return;
+  if (state.enemies.some((enemy) => enemy.type === "objective-runner" && enemy.hp > 0)) return;
+  const tier = enemyTier(state.wave);
+  const hp = (72 + state.wave * 13) * enemyTierMultiplier(state.wave);
+  const point = randomWorldPoint(170);
+  state.enemies.push({
+    x: point.x,
+    y: point.y,
+    radius: 18,
+    hp,
+    maxHp: hp,
+    speed: (145 + state.wave * 3.8) * Math.min(1.45, Math.pow(1.08, tier)),
+    damage: 0,
+    type: "objective-runner",
+    shootTimer: 999,
+    value: 0,
+    tier,
+    objectiveTarget: true,
+    seed: random(0, Math.PI * 2),
+  });
+}
+
 function beginWave() {
   state.betweenWaves = false;
   state.packOffer = [];
@@ -128,9 +237,12 @@ function beginWave() {
   state.pendingWeapon = null;
   state.previewWeaponId = null;
   state.crates = [];
+  state.objectiveItems = [];
   state.bodyguards = [];
   state.crateSpawnTimer = random(2.5, 4.5);
   state.pendingCratePacks = 0;
+  state.waveKillCount = 0;
+  state.waveGoldEarned = 0;
   state.wave += state.wave === 0 ? 1 : 0;
   state.waveDuration = Math.min(15 + state.wave * 1.7, 54);
   state.waveTimeLeft = state.waveDuration;
@@ -138,6 +250,11 @@ function beginWave() {
   state.player.stationaryTime = 0;
   applyDiamondCourtStartOfWave();
   state.stats = calculateStats();
+  const fixedWaveGold = 18 + state.wave * 6 + metaRunBonuses().waveGold;
+  state.waveGoldCap = Math.max(0, Math.round((expectedWaveIncome(state.wave) - fixedWaveGold) * state.stats.moneyMultiplier));
+  state.objective = createWaveObjective();
+  if (state.objective.type === "turrets") spawnObjectiveTurrets();
+  if (state.objective.type === "runners") spawnObjectiveRunner();
   if (state.wave % 10 === 0) spawnBoss();
   ui.shop.classList.add("is-hidden");
   renderUI();
@@ -151,6 +268,12 @@ function completeWave() {
   state.wave += 1;
   state.shopRerolls = 0;
   state.crates = [];
+  state.objective = null;
+  state.objectiveItems = [];
+  state.enemies = [];
+  state.enemyBullets = [];
+  state.projectiles = [];
+  state.pulses = [];
   state.bodyguards = [];
   state.packOffer = [];
   state.packContext = null;
@@ -185,8 +308,9 @@ function spawnEnemy() {
   else if (roll < chances.sprayer + chances.dasher + chances.brute) type = "brute";
   else if (roll < chances.sprayer + chances.dasher + chances.brute + chances.shooter) type = "shooter";
 
+  const chaserHp = wave === 1 ? 11 : 16 + wave * 4.5;
   const presets = {
-    chaser: { hp: 16 + wave * 4.5, radius: 15, speed: 118 + wave * 3.4, damage: 13, value: 0.95 },
+    chaser: { hp: chaserHp, radius: 15, speed: 118 + wave * 3.4, damage: 13, value: 0.95 },
     shooter: { hp: 24 + wave * 6, radius: 16, speed: 92 + wave * 2.4, damage: 11, value: 1.55 },
     brute: { hp: 42 + wave * 10, radius: 21, speed: 78 + wave * 2.4, damage: 19, value: 2.35 },
     dasher: { hp: 30 + wave * 7, radius: 16, speed: 112 + wave * 3, damage: 17, value: 1.75 },
@@ -229,6 +353,10 @@ function spawnBoss() {
   const bossTier = Math.max(1, enemyTier(wave));
   const bossHp = (1400 + wave * 180) * tierMult * (1 + bossTier * 0.35);
   const radius = 46 + enemyTier(wave) * 5;
+  const bossKinds = ["hearts", "spades", "clubs", "diamonds"];
+  const bossPool = bossKinds.filter((kind) => kind !== state.lastBossKind);
+  const bossKind = bossPool[Math.floor(random(0, bossPool.length))] || bossKinds[0];
+  state.lastBossKind = bossKind;
   const side = Math.floor(random(0, 4));
   const bounds = worldBounds();
   let x = state.player.x;
@@ -256,6 +384,8 @@ function spawnBoss() {
     speed: 62 + wave * 1.6,
     damage: (28 + wave * 1.8) * Math.pow(1.35, enemyTier(wave)),
     type: "boss",
+    bossKind,
+    bossAge: 0,
     shootTimer: 0.8,
     value: 70 + wave * 8,
     tier: enemyTier(wave),

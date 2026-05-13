@@ -192,8 +192,10 @@ function updateBodyguards(dt) {
 }
 
 function updateSpawns(dt) {
-  if (state.betweenWaves || state.waveTimeLeft <= 0) return;
+  if (state.betweenWaves) return;
 
+  const objectiveActive = state.objective && !state.objective.completed;
+  if (state.waveTimeLeft <= 0 && !objectiveActive) return;
   state.waveTimeLeft = Math.max(0, state.waveTimeLeft - dt);
   state.spawnTimer -= dt;
   if (state.spawnTimer <= 0) {
@@ -207,6 +209,58 @@ function updateSpawns(dt) {
       spawnEnemy();
     }
     state.spawnTimer = Math.max(0.14, 0.72 - state.wave * 0.022);
+  }
+}
+
+function completeObjective() {
+  if (!state.objective || state.objective.completed) return;
+  state.objective.completed = true;
+  state.waveTimeLeft = 0;
+  state.floatingText.push({
+    x: state.player.x,
+    y: state.player.y - 90,
+    text: "OBJECTIF OK",
+    life: 1.2,
+    color: "#f0d24b",
+  });
+}
+
+function updateObjective(dt) {
+  const objective = state.objective;
+  if (!objective || objective.completed || state.betweenWaves) return;
+
+  if (objective.type === "capture") {
+    const inside = distance(state.player, objective) <= objective.radius;
+    if (inside) {
+      objective.progress = Math.min(objective.target, objective.progress + dt);
+      if (objective.progress >= objective.target) completeObjective();
+    }
+  }
+
+  if (objective.type === "runners") {
+    objective.runnerSpawnTimer = Math.max(0, (objective.runnerSpawnTimer || 0) - dt);
+    if (objective.runnerSpawnTimer <= 0 && !state.enemies.some((enemy) => enemy.type === "objective-runner" && enemy.hp > 0)) {
+      spawnObjectiveRunner();
+      objective.runnerSpawnTimer = 15;
+    }
+
+    state.objectiveItems = (state.objectiveItems || []).filter((item) => {
+      if (distance(item, state.player) > item.radius + state.player.radius) return true;
+      objective.collected += 1;
+      state.floatingText.push({
+        x: item.x,
+        y: item.y - 24,
+        text: `${objective.collected}/${objective.target}`,
+        life: 0.9,
+        color: "#f0d24b",
+      });
+      if (objective.collected >= objective.target) completeObjective();
+      return false;
+    });
+  }
+
+  if ((objective.type === "kills" && objective.killed >= objective.target) || (objective.type === "turrets" && objective.killed >= objective.target)) {
+    completeObjective();
   }
 }
 
@@ -241,10 +295,27 @@ function updateCrates(dt) {
 
 function damagePlayer(amount) {
   if (state.godMode) return;
+  if (state.gameOver) return;
   if (state.player.invuln > 0) return;
   state.player.hp -= amount;
   state.player.invuln = 0.42;
   cameraShake = 0.18;
+  if (state.player.hp <= 0) {
+    state.player.hp = 0;
+    state.gameOver = true;
+    updateMobileControlsVisibility();
+    const waveReached = state.wave;
+    const reward = grantRunFragments(waveReached, metaRunBonuses().fragmentMultiplier * state.fragmentStakeMultiplier * 0.2);
+    ui.finalScore.textContent = `Tu as tenu jusqu'à la vague ${state.wave}`;
+    ui.fragmentReward.textContent = `+${reward} fragments · 80% perdus`;
+    ui.gameOver.classList.remove("is-hidden");
+  }
+}
+
+function damagePlayerContinuous(amount) {
+  if (state.godMode || state.gameOver) return;
+  state.player.hp -= amount;
+  cameraShake = Math.max(cameraShake, 0.06);
   if (state.player.hp <= 0) {
     state.player.hp = 0;
     state.gameOver = true;
@@ -319,6 +390,90 @@ function updateSprayer(enemy, angle, d, speedMultiplier, dt) {
   moveEnemy(enemy, angle + wobble + farBias, speedMultiplier, dt, d < 150 ? -0.45 : 1);
 }
 
+function updateObjectiveRunner(enemy, speedMultiplier, dt) {
+  const fleeAngle = Math.atan2(enemy.y - state.player.y, enemy.x - state.player.x);
+  const wobble = Math.sin(state.worldTime * 4.4 + (enemy.seed || 0)) * 0.55;
+  moveEnemy(enemy, fleeAngle + wobble, speedMultiplier, dt, 1);
+}
+
+function bossColor(enemy) {
+  if (enemy.bossKind === "hearts") return "#e8526d";
+  if (enemy.bossKind === "spades") return "#c5cbd6";
+  if (enemy.bossKind === "clubs") return "#2e8cff";
+  if (enemy.bossKind === "diamonds") return "#ff9a2e";
+  return "#f0d24b";
+}
+
+function updateBossAura(enemy, dt) {
+  if (enemy.bossKind !== "hearts") return;
+  const d = distance(enemy, state.player);
+  const outer = enemy.radius + 190;
+  const inner = enemy.radius + 95;
+  if (d > outer) return;
+  const pressure = d < inner ? 1.9 : 1;
+  damagePlayerContinuous((12 + state.wave * 0.65) * pressure * Math.pow(1.18, enemy.tier || 0) * dt);
+}
+
+function pushEnemyBullet(enemy, angle, speed, radius, damage, life, target, color) {
+  state.enemyBullets.push({
+    x: enemy.x,
+    y: enemy.y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    radius,
+    damage,
+    life,
+    target: target === state.player ? "player" : "guard",
+    color,
+  });
+}
+
+function fireBossPattern(enemy, target, angle) {
+  const tierMult = Math.pow(1.25, enemy.tier || 0);
+  const age = enemy.bossAge || 0;
+  if (enemy.bossKind === "spades") {
+    const baseAngle = predictiveAimAngle(enemy, target, 390, 0.015);
+    const damage = (24 + state.wave * 1.35) * tierMult;
+    for (let i = -1; i <= 1; i += 1) {
+      pushEnemyBullet(enemy, baseAngle + i * 0.13, 390, 8, damage, 3.2, target, bossColor(enemy));
+    }
+    enemy.shootTimer = random(0.9, 1.25);
+    return;
+  }
+
+  if (enemy.bossKind === "clubs") {
+    const shots = 18 + Math.min(10, Math.floor(state.wave / 10) * 2);
+    const spin = state.worldTime * 0.9 + (enemy.seed || 0);
+    for (let i = 0; i < shots; i += 1) {
+      const bulletAngle = spin + (i / shots) * Math.PI * 2 + random(-0.24, 0.24);
+      pushEnemyBullet(enemy, bulletAngle, random(175, 270), 5, (7 + state.wave * 0.35) * tierMult, 3.4, target, bossColor(enemy));
+    }
+    enemy.shootTimer = random(0.55, 0.85);
+    return;
+  }
+
+  if (enemy.bossKind === "diamonds") {
+    const rage = 1 + Math.min(2.2, age * 0.035);
+    const shots = 5 + Math.floor(Math.min(5, rage * 1.6));
+    const spread = 0.55 + Math.min(0.5, age * 0.01);
+    const baseAngle = predictiveAimAngle(enemy, target, 285 + rage * 18, 0.04);
+    for (let i = 0; i < shots; i += 1) {
+      const offset = shots > 1 ? ((i / (shots - 1)) - 0.5) * spread : 0;
+      pushEnemyBullet(enemy, baseAngle + offset, 285 + rage * 18, 7, (10 + state.wave * 0.7) * tierMult * rage, 3.5, target, bossColor(enemy));
+    }
+    enemy.shootTimer = Math.max(0.42, random(1.1, 1.55) / rage);
+    return;
+  }
+
+  const shots = 9;
+  const spread = 1.1;
+  for (let i = 0; i < shots; i += 1) {
+    const offset = ((i / (shots - 1)) - 0.5) * spread;
+    pushEnemyBullet(enemy, angle + offset, 215, 9, (10 + state.wave * 0.6) * tierMult, 4, target, bossColor(enemy));
+  }
+  enemy.shootTimer = random(1.25, 1.75);
+}
+
 function updateEnemies(dt) {
   const bonuses = metaRunBonuses();
   for (const enemy of state.enemies) {
@@ -341,14 +496,27 @@ function updateEnemies(dt) {
     );
     const target = guardTarget.guard && guardTarget.distance < distance(enemy, state.player) ? guardTarget.guard : state.player;
     const angle = Math.atan2(target.y - enemy.y, target.x - enemy.x);
-    const desiredRange = enemy.type === "shooter" ? 250 : enemy.type === "boss" ? 190 : 0;
+    if (enemy.type === "boss") {
+      enemy.bossAge = (enemy.bossAge || 0) + dt;
+      updateBossAura(enemy, dt);
+      if (enemy.bossKind === "diamonds") {
+        enemy.damage = Math.min(enemy.damage * (1 + dt * 0.018), (28 + state.wave * 1.8) * Math.pow(1.35, enemyTier(state.wave)) * 3.5);
+      }
+    }
+    const desiredRange = enemy.type === "shooter" || enemy.type === "objective-turret" ? 250 : enemy.type === "boss" ? (enemy.bossKind === "hearts" ? 250 : 190) : 0;
     const d = distance(enemy, target);
 
     let speedMultiplier = enemy.heartChained ? bonuses.heartChainSpeedMultiplier : 1;
     if (bonuses.heartSlowRadius > 0 && distance(enemy, state.player) <= bonuses.heartSlowRadius) {
       speedMultiplier *= bonuses.heartSlowMultiplier;
     }
-    if (enemy.type === "dasher") {
+    if (enemy.type === "objective-turret") {
+      // Objective turrets are fixed targets.
+    } else if (enemy.type === "objective-runner") {
+      updateObjectiveRunner(enemy, speedMultiplier, dt);
+    } else if (enemy.type === "boss" && enemy.bossKind === "spades") {
+      // The spade boss is a stationary turret: the fight is about dodging.
+    } else if (enemy.type === "dasher") {
       updateDasher(enemy, angle, d, speedMultiplier, dt);
     } else if (enemy.type === "sprayer") {
       updateSprayer(enemy, angle, d, speedMultiplier, dt);
@@ -363,30 +531,35 @@ function updateEnemies(dt) {
     enemy.x = clampedEnemy.x;
     enemy.y = clampedEnemy.y;
 
-    if (enemy.type === "shooter" || enemy.type === "boss" || enemy.type === "sprayer") {
+    if (enemy.type === "shooter" || enemy.type === "boss" || enemy.type === "sprayer" || enemy.type === "objective-turret") {
       enemy.shootTimer -= dt;
-      const shootRange = enemy.type === "boss" ? 880 : enemy.type === "sprayer" ? 620 : 720;
+      const shootRange = enemy.type === "boss" ? 880 : enemy.type === "sprayer" ? 620 : enemy.type === "objective-turret" ? 760 : 720;
       if (enemy.shootTimer <= 0 && d < shootRange) {
-        const shots = enemy.type === "boss" ? 7 : enemy.type === "sprayer" ? 4 : 1;
-        const spread = enemy.type === "boss" ? 0.78 : enemy.type === "sprayer" ? random(1.4, 3.1) : 0;
-        const bulletSpeed = enemy.type === "boss" ? 230 : enemy.type === "sprayer" ? 235 : 310;
-        const baseAngle = enemy.type === "shooter"
-          ? predictiveAimAngle(enemy, target, bulletSpeed, 0.035)
-          : angle + (enemy.type === "sprayer" ? random(-1.25, 1.25) : 0);
-        for (let i = 0; i < shots; i += 1) {
-          const offset = shots > 1 ? ((i / (shots - 1)) - 0.5) * spread : 0;
-          state.enemyBullets.push({
-            x: enemy.x,
-            y: enemy.y,
-            vx: Math.cos(baseAngle + offset) * bulletSpeed,
-            vy: Math.sin(baseAngle + offset) * bulletSpeed,
-            radius: enemy.type === "boss" ? 9 : enemy.type === "sprayer" ? 5 : 6,
-            damage: (enemy.type === "boss" ? 14 + state.wave * 0.9 : enemy.type === "sprayer" ? 6 + state.wave * 0.38 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0),
-            life: enemy.type === "boss" ? 4 : 3,
-            target: target === state.player ? "player" : "guard",
-          });
+        if (enemy.type === "boss") {
+          fireBossPattern(enemy, target, angle);
+        } else {
+          const shots = enemy.type === "sprayer" ? 4 : 1;
+          const spread = enemy.type === "sprayer" ? random(1.4, 3.1) : 0;
+          const bulletSpeed = enemy.type === "sprayer" ? 235 : enemy.type === "objective-turret" ? 265 : 310;
+          const baseAngle = enemy.type === "shooter" || enemy.type === "objective-turret"
+            ? predictiveAimAngle(enemy, target, bulletSpeed, 0.035)
+            : angle + (enemy.type === "sprayer" ? random(-1.25, 1.25) : 0);
+          for (let i = 0; i < shots; i += 1) {
+            const offset = shots > 1 ? ((i / (shots - 1)) - 0.5) * spread : 0;
+            state.enemyBullets.push({
+              x: enemy.x,
+              y: enemy.y,
+              vx: Math.cos(baseAngle + offset) * bulletSpeed,
+              vy: Math.sin(baseAngle + offset) * bulletSpeed,
+              radius: enemy.type === "sprayer" ? 5 : 6,
+              damage: (enemy.type === "sprayer" ? 6 + state.wave * 0.38 : enemy.type === "objective-turret" ? 8 + state.wave * 0.42 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0),
+              life: 3,
+              target: target === state.player ? "player" : "guard",
+              color: enemy.type === "objective-turret" ? "#f0d24b" : undefined,
+            });
+          }
+          enemy.shootTimer = enemy.type === "sprayer" ? random(0.8, 1.25) : enemy.type === "objective-turret" ? random(1.0, 1.45) : random(1.25, 1.9);
         }
-        enemy.shootTimer = enemy.type === "boss" ? random(1.05, 1.5) : enemy.type === "sprayer" ? random(0.8, 1.25) : random(1.25, 1.9);
       }
     }
 
@@ -540,15 +713,34 @@ function applyHitEffects(enemy, source) {
 function updateKills(dt) {
   for (const enemy of state.enemies) {
     if (enemy.hp <= 0) {
-      state.moneyDust += enemy.value * state.stats.moneyMultiplier * (1 + (enemy.goldBonus || 0));
+      if (enemy.type === "objective-runner") {
+        state.objectiveItems.push({
+          x: enemy.x,
+          y: enemy.y,
+          radius: 17,
+        });
+        if (state.objective?.type === "runners") state.objective.runnerSpawnTimer = 15;
+      }
+      if (enemy.type === "objective-turret" && state.objective?.type === "turrets") {
+        state.objective.killed += 1;
+      }
+      if (!enemy.objectiveTarget && state.objective?.type === "kills") {
+        state.objective.killed += 1;
+      }
+
+      const remainingGold = Math.max(0, (state.waveGoldCap || 0) - (state.waveGoldEarned || 0));
+      const earned = Math.min(remainingGold, enemy.value * state.stats.moneyMultiplier * (1 + (enemy.goldBonus || 0)));
+      state.moneyDust += earned;
       const gain = Math.floor(state.moneyDust);
       if (gain > 0) {
-        state.money += gain;
+        const cappedGain = Math.min(gain, Math.max(0, (state.waveGoldCap || 0) - (state.waveGoldEarned || 0)));
+        state.money += cappedGain;
+        state.waveGoldEarned = (state.waveGoldEarned || 0) + cappedGain;
         state.moneyDust -= gain;
         state.floatingText.push({
           x: enemy.x,
           y: enemy.y,
-          text: `+$${gain}`,
+          text: `+$${cappedGain}`,
           life: 0.75,
           color: SUITS.diamonds.color,
         });
@@ -563,7 +755,10 @@ function updateKills(dt) {
   }
   state.floatingText = state.floatingText.filter((text) => text.life > 0);
 
-  if (!state.betweenWaves && state.waveTimeLeft <= 0 && state.enemies.length === 0) {
+  const bossAlive = state.enemies.some((enemy) => enemy.type === "boss" && enemy.hp > 0);
+  if (!state.betweenWaves && state.objective?.completed && !bossAlive) {
+    completeWave();
+  } else if (!state.betweenWaves && !state.objective && state.waveTimeLeft <= 0 && state.enemies.length === 0) {
     completeWave();
   }
 }
@@ -576,6 +771,7 @@ function update(dt) {
   updatePlayer(dt);
   updateSpawns(dt);
   updateCrates(dt);
+  updateObjective(dt);
   updateEnemies(dt);
   updateWeapons(dt);
   updateBodyguards(dt);

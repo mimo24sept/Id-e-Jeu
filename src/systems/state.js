@@ -27,6 +27,11 @@
     bodyguards: [],
     floatingText: [],
     crates: [],
+    objective: null,
+    objectiveItems: [],
+    waveKillCount: 0,
+    waveGoldCap: 0,
+    waveGoldEarned: 0,
     crateSpawnTimer: 0,
     pendingCratePacks: 0,
     weapons: [createWeapon({ archetypeId: "rifle", gradeId: "green" })],
@@ -38,6 +43,7 @@
     fragmentStakeMultiplier: 1,
     fragmentRiskActive: false,
     fragmentDecisionWave: 0,
+    lastBossKind: null,
     gameOver: false,
   };
   state = initial;

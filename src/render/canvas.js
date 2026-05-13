@@ -274,11 +274,46 @@ function renderGame() {
 
   for (const bullet of state.enemyBullets) {
     const p = screenPoint(bullet.x, bullet.y);
-    drawCircle(p.x, p.y, bullet.radius, "#e46363", "rgba(255,255,255,0.25)");
+    drawCircle(p.x, p.y, bullet.radius, bullet.color || "#e46363", "rgba(255,255,255,0.25)");
+  }
+
+  if (!state.betweenWaves && state.objective?.type === "capture") {
+    const objective = state.objective;
+    const p = screenPoint(objective.x, objective.y);
+    const ratio = clamp(objective.progress / objective.target, 0, 1);
+    ctx.save();
+    ctx.fillStyle = "rgba(240,210,75,0.08)";
+    ctx.strokeStyle = "rgba(240,210,75,0.72)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, objective.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = "#f0d24b";
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, objective.radius + 10, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * ratio);
+    ctx.stroke();
+    ctx.restore();
   }
 
   for (const crate of state.crates) {
     drawCrate(crate);
+  }
+
+  for (const item of state.objectiveItems || []) {
+    const p = screenPoint(item.x, item.y);
+    drawCircle(p.x, p.y, item.radius, "#f0d24b", "rgba(255,255,255,0.85)");
+    ctx.save();
+    ctx.strokeStyle = "#080808";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 7, p.y);
+    ctx.lineTo(p.x + 7, p.y);
+    ctx.moveTo(p.x, p.y - 7);
+    ctx.lineTo(p.x, p.y + 7);
+    ctx.stroke();
+    ctx.restore();
   }
 
   for (const guard of state.bodyguards || []) {
@@ -301,7 +336,15 @@ function renderGame() {
   for (const enemy of state.enemies) {
     const p = screenPoint(enemy.x, enemy.y);
     const fill = enemy.type === "boss"
-      ? "#f0d24b"
+      ? enemy.bossKind === "hearts"
+        ? "#e8526d"
+        : enemy.bossKind === "spades"
+          ? "#c5cbd6"
+          : enemy.bossKind === "clubs"
+            ? "#2e8cff"
+            : enemy.bossKind === "diamonds"
+              ? "#ff9a2e"
+              : "#f0d24b"
       : enemy.type === "brute"
         ? "#9f5ec7"
         : enemy.type === "shooter"
@@ -310,8 +353,39 @@ function renderGame() {
             ? "#55b8ff"
             : enemy.type === "sprayer"
               ? "#66e08f"
-              : "#e46363";
+              : enemy.type === "objective-turret"
+                ? "#f0d24b"
+                : enemy.type === "objective-runner"
+                  ? "#ffffff"
+                  : "#e46363";
     drawCircle(p.x, p.y, enemy.radius, fill, "rgba(0,0,0,0.35)");
+
+    if (enemy.type === "boss" && enemy.bossKind === "hearts") {
+      ctx.save();
+      ctx.strokeStyle = "rgba(232,82,109,0.5)";
+      ctx.fillStyle = "rgba(232,82,109,0.08)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, enemy.radius + 190, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(232,82,109,0.85)";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, enemy.radius + 95, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if (enemy.type === "boss" && enemy.bossKind === "diamonds") {
+      const rage = 1 + Math.min(2.2, (enemy.bossAge || 0) * 0.035);
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,154,46,0.62)";
+      ctx.lineWidth = 2 + rage;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, enemy.radius + 10 + Math.sin(state.worldTime * 8) * 3, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     if (enemy.type === "boss" || enemy.type === "dasher") {
       ctx.save();
@@ -351,7 +425,7 @@ function renderGame() {
     const hpHeight = enemy.type === "boss" ? 7 : 4;
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fillRect(p.x - hpWidth / 2, p.y - enemy.radius - 14, hpWidth, hpHeight);
-    ctx.fillStyle = enemy.type === "boss" ? "#f0d24b" : "#71d58a";
+    ctx.fillStyle = enemy.type === "boss" ? fill : "#71d58a";
     ctx.fillRect(p.x - hpWidth / 2, p.y - enemy.radius - 14, hpWidth * (enemy.hp / enemy.maxHp), hpHeight);
   }
 

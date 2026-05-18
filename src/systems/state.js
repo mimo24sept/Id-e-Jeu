@@ -60,7 +60,17 @@ function cardPrice(card) {
 }
 
 function sellValue(card) {
-  return Math.max(2, Math.floor(cardPrice(card) * 0.45));
+  return Math.max(2, Math.floor(cardPrice(card) * 0.45 * (state.character?.sellMultiplier || 1)));
+}
+
+function characterShopPrice(basePrice, type) {
+  let multiplier = state.character?.shopPriceMultiplier || 1;
+  if (type === "card") multiplier *= state.character?.cardPriceMultiplier || 1;
+  if (type === "weapon") multiplier *= state.character?.weaponPriceMultiplier || 1;
+  if (type === "pack") multiplier *= state.character?.packPriceMultiplier || 1;
+  if (type === "cursePack") multiplier *= state.character?.cursePackPriceMultiplier || 1;
+  if (state.character?.gamblingPrices) multiplier *= random(0.4, 1.8);
+  return Math.max(1, Math.round(basePrice * multiplier));
 }
 
 function shopPriceMultiplier(wave = state?.wave || 1) {
@@ -118,14 +128,16 @@ function equivalentPrice(cards, wave = state?.wave || 1) {
 }
 
 function cursePackPrice(pack) {
-  return equivalentPrice(pack.cardEquivalent || 3);
+  return characterShopPrice(equivalentPrice(pack.cardEquivalent || 3), "cursePack");
 }
 
 function cardPackPrice(pack) {
-  return Math.max(1, Math.round(equivalentPrice(pack.cardEquivalent || (pack.size >= 6 ? 2.75 : 2)) * (1 - metaRunBonuses().packDiscount)));
+  const discounted = Math.max(1, Math.round(equivalentPrice(pack.cardEquivalent || (pack.size >= 6 ? 2.75 : 2)) * (1 - metaRunBonuses().packDiscount)));
+  return characterShopPrice(discounted, "pack");
 }
 
 function rerollCost() {
+  if (state.character?.freeFirstReroll && (state.shopRerolls || 0) === 0) return 0;
   return 3 + (state.shopRerolls || 0) * 2 + Math.floor(state.wave / 6);
 }
 
@@ -151,7 +163,7 @@ function pickPack({ size, specialized }) {
 }
 
 function rollShopEntry(offeredCards = []) {
-  const roll = Math.random();
+  const roll = Math.min(0.999, Math.random() + (state.character?.packBias || 0));
 
   if (roll < 0.4) {
     const card = drawCard({ exclude: new Set([...state.hand.map(cardKey), ...offeredCards.map(cardKey)]) });
@@ -161,14 +173,16 @@ function rollShopEntry(offeredCards = []) {
       type: "card",
       name: "Carte simple",
       card,
-      price: cardPrice(card),
+      price: characterShopPrice(cardPrice(card), "card"),
       bought: false,
     };
   }
 
   if (roll < 0.55) {
+    const weapon = createWeapon();
     return {
-      ...createWeapon(),
+      ...weapon,
+      price: characterShopPrice(weapon.price, "weapon"),
       bought: false,
     };
   }

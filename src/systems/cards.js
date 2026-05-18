@@ -420,10 +420,14 @@ function calculateStats() {
       suits[suit] += 1;
     });
     addEffects(effects, cardBaseEffects(card));
-    if (card.cursed) addEffects(effects, card.curse.effects);
+    if (card.cursed) {
+      const curseMultiplier = state.character?.curseEffectMultiplier || 1;
+      addEffects(effects, scaleEffects(card.curse.effects, curseMultiplier));
+    }
   });
   state.modifiers.forEach((modifier) => addEffects(effects, modifier.effects));
   if (state.character?.effects) addEffects(effects, state.character.effects);
+  if (state.character?.dynamicEffects) addEffects(effects, state.character.dynamicEffects(state, suits, effects));
   state.weapons.forEach((weapon) => {
     const suitCount = suits[weapon.suit] || 0;
     const gradeMult = weapon.grade.statMult;

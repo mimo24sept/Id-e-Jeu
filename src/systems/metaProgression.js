@@ -1,5 +1,6 @@
 const META_STORAGE_KEY = "pokerSurvivorMetaProgression";
 const MAX_CARD_UPGRADE_LEVEL = 4;
+const STARTER_CHARACTER_IDS = ["shadow", "vampire"];
 
 const SKIN_DEFS = [
   { id: "classic", name: "Classique", desc: "Rond jaune brutal.", cost: 0, shape: "circle", primary: "#f0b84b", stroke: "#151719", symbol: "" },
@@ -39,6 +40,7 @@ function defaultPlayerMeta() {
     packsBought: 0,
     cardUpgrades: {},
     unlockedSkins: ["classic"],
+    unlockedCharacters: [...STARTER_CHARACTER_IDS],
     equippedSkin: "classic",
     bestWave: 0,
   };
@@ -48,6 +50,7 @@ function playerMeta(name = connectedPlayerName || "Joueur") {
   const playerName = cleanPlayerName(name) || "Joueur";
   metaProgression.players[playerName] ||= defaultPlayerMeta();
   metaProgression.players[playerName].unlockedSkins ||= ["classic"];
+  metaProgression.players[playerName].unlockedCharacters ||= [...STARTER_CHARACTER_IDS];
   metaProgression.players[playerName].equippedSkin ||= "classic";
   if (playerName === "Dev") unlockDevMeta(metaProgression.players[playerName]);
   return metaProgression.players[playerName];
@@ -60,7 +63,64 @@ function unlockDevMeta(meta) {
   meta.fragments = Math.max(meta.fragments || 0, 999999);
   meta.packsBought = Math.max(meta.packsBought || 0, 0);
   meta.unlockedSkins = SKIN_DEFS.map((skin) => skin.id);
+  meta.unlockedCharacters = CHARACTER_DEFS.map((character) => character.id);
   meta.equippedSkin ||= "classic";
+}
+
+function upgradedCardCount(meta = playerMeta()) {
+  return Object.keys(meta.cardUpgrades || {}).length;
+}
+
+function upgradedCardLevels(meta = playerMeta()) {
+  return Object.values(meta.cardUpgrades || {}).reduce((sum, level) => sum + level, 0);
+}
+
+function upgradedSuitCount(suit, meta = playerMeta()) {
+  return Object.keys(meta.cardUpgrades || {}).filter((key) => key.endsWith(`-${suit}`)).length;
+}
+
+function characterUnlockInfo(character, meta = playerMeta()) {
+  const unlockedSkins = meta.unlockedSkins || [];
+  const rules = {
+    shadow: { text: "Disponible au départ", done: true },
+    vampire: { text: "Disponible au départ", done: true },
+    "expert-comptable": { text: "Atteins la vague 10", done: (meta.bestWave || 0) >= 10 },
+    "ange-blanc": { text: "Améliore 4 cartes Coeur", done: upgradedSuitCount("hearts", meta) >= 4 },
+    "gachette-folle": { text: "Améliore 4 cartes Trèfle", done: upgradedSuitCount("clubs", meta) >= 4 },
+    bazooka: { text: "Améliore 4 cartes Pique", done: upgradedSuitCount("spades", meta) >= 4 },
+    gigachad: { text: "Atteins la vague 20", done: (meta.bestWave || 0) >= 20 },
+    "time-breaker": { text: "Atteins la vague 30", done: (meta.bestWave || 0) >= 30 },
+    banquier: { text: "Achète 3 packs d'amélioration", done: (meta.packsBought || 0) >= 3 },
+    moine: { text: "Améliore 8 cartes Coeur", done: upgradedSuitCount("hearts", meta) >= 8 },
+    tempete: { text: "Améliore 8 cartes Trèfle", done: upgradedSuitCount("clubs", meta) >= 8 },
+    cartomancien: { text: "Améliore 12 cartes différentes", done: upgradedCardCount(meta) >= 12 },
+    deserteur: { text: "Atteins la vague 15", done: (meta.bestWave || 0) >= 15 },
+    berserker: { text: "Atteins la vague 10", done: (meta.bestWave || 0) >= 10 },
+    collectionneur: { text: "Améliore 26 cartes différentes", done: upgradedCardCount(meta) >= 26 },
+    tricheur: { text: "Achète 6 packs d'amélioration", done: (meta.packsBought || 0) >= 6 },
+    alchimiste: { text: "Cumule 24 niveaux d'amélioration", done: upgradedCardLevels(meta) >= 24 },
+    stratege: { text: "Atteins la vague 25", done: (meta.bestWave || 0) >= 25 },
+    parieur: { text: "Débloque un skin secret", done: unlockedSkins.some((id) => id !== "classic" && skinDef(id).secret) },
+  };
+  return rules[character.id] || { text: "Challenge à définir", done: false };
+}
+
+function syncCharacterUnlocks(meta = playerMeta()) {
+  meta.unlockedCharacters ||= [...STARTER_CHARACTER_IDS];
+  let changed = false;
+  for (const character of CHARACTER_DEFS) {
+    if (meta.unlockedCharacters.includes(character.id)) continue;
+    if (!characterUnlockInfo(character, meta).done) continue;
+    meta.unlockedCharacters.push(character.id);
+    changed = true;
+  }
+  if (changed) saveMetaProgression();
+  return changed;
+}
+
+function isCharacterUnlocked(id, meta = playerMeta()) {
+  syncCharacterUnlocks(meta);
+  return (meta.unlockedCharacters || []).includes(id);
 }
 
 function skinDef(id = playerMeta().equippedSkin) {
@@ -72,6 +132,7 @@ function unlockSkin(id) {
   meta.unlockedSkins ||= ["classic"];
   if (meta.unlockedSkins.includes(id)) return false;
   meta.unlockedSkins.push(id);
+  syncCharacterUnlocks(meta);
   saveMetaProgression();
   renderMetaProgression();
   return true;
@@ -114,9 +175,11 @@ function runFragmentReward(waveReached) {
 
 function grantRunFragments(waveReached, multiplier = 1) {
   const meta = playerMeta();
-  const reward = Math.round(runFragmentReward(waveReached) * Math.max(1, multiplier));
+  const characterMultiplier = state?.character?.fragmentMultiplier || 1;
+  const reward = Math.round(runFragmentReward(waveReached) * Math.max(1, multiplier * characterMultiplier));
   meta.fragments += reward;
   meta.bestWave = Math.max(meta.bestWave || 0, waveReached);
+  syncCharacterUnlocks(meta);
   saveMetaProgression();
   renderMetaProgression();
   return reward;
@@ -221,14 +284,16 @@ function buyMetaPack() {
 function renderMetaProgression(lastPack = []) {
   if (!ui.metaFragments) return;
   const meta = playerMeta();
+  syncCharacterUnlocks(meta);
   const cost = metaPackCost(meta);
   const upgradedCount = Object.keys(meta.cardUpgrades).length;
   const totalLevels = Object.values(meta.cardUpgrades).reduce((sum, level) => sum + level, 0);
+  const unlockedCharacters = (meta.unlockedCharacters || []).length;
 
   ui.metaFragments.textContent = meta.fragments;
   ui.metaPackCost.textContent = cost;
   ui.buyMetaPack.disabled = meta.fragments < cost || upgradeableMetaCards(meta).length === 0;
-  ui.metaUpgradeSummary.textContent = `${upgradedCount}/52 cartes améliorées · ${totalLevels} niveaux · best vague ${meta.bestWave || 0}`;
+  ui.metaUpgradeSummary.textContent = `${upgradedCount}/52 cartes améliorées · ${totalLevels} niveaux · ${unlockedCharacters}/${CHARACTER_DEFS.length} persos · best vague ${meta.bestWave || 0}`;
   ui.metaPackResult.innerHTML = lastPack
     .map((item) => `<span>${describeMetaCard(item.key)} niv.${item.before} -> ${item.after}</span>`)
     .join("");

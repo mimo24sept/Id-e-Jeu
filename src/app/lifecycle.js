@@ -35,13 +35,6 @@ function restart() {
   showMainMenu();
 }
 
-function randomCharacterChoices() {
-  return CHARACTER_DEFS
-    .slice()
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 3);
-}
-
 function characterBonusText(character) {
   if (character.desc) return character.desc;
   const multipliers = character.cardEffectMultipliers || {};
@@ -100,25 +93,27 @@ function continueRun() {
 }
 
 function showCharacterSelect() {
-  const choices = randomCharacterChoices();
-  if (choices.length < 3) {
-    startRun();
-    return;
-  }
+  const meta = playerMeta();
+  syncCharacterUnlocks(meta);
 
   ui.mainMenu.classList.add("is-hidden");
   ui.characterSelect.classList.remove("is-hidden");
   updateMobileControlsVisibility();
-  ui.characterChoices.innerHTML = choices
+  ui.characterChoices.innerHTML = CHARACTER_DEFS
     .map(
-      (character) => `
-        <button class="character-card" type="button" data-character-id="${character.id}">
+      (character) => {
+        const unlocked = isCharacterUnlocked(character.id, meta);
+        const unlock = characterUnlockInfo(character, meta);
+        return `
+        <button class="character-card ${unlocked ? "" : "is-locked"}" type="button" data-character-id="${character.id}" ${unlocked ? "" : "disabled"}>
           <span class="label">${character.title || "Personnage"}</span>
           <strong>${character.name}</strong>
           <p>${character.desc || ""}</p>
           <div class="stat-strip">${characterBonusText(character)}</div>
+          <span class="character-lock">${unlocked ? "Disponible" : `Bloqué · ${unlock.text}`}</span>
         </button>
-      `,
+      `;
+      },
     )
     .join("");
   queueTutorialSteps(["characterPick"]);

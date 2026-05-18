@@ -233,6 +233,133 @@ const CHARACTER_DEFS = [
       return Math.max(0.1, state.wave * 0.1);
     },
   },
+  {
+    id: "banquier",
+    name: "Le Banquier",
+    title: "Intérêts sales",
+    desc: "Carreau x1.75. Gagne 8% d'intérêts en fin de vague. Armes +25%.",
+    cardEffectMultipliers: {
+      diamonds: 1.75,
+    },
+    weaponPriceMultiplier: 1.25,
+    endWaveInterest: 0.08,
+  },
+  {
+    id: "moine",
+    name: "Le Moine",
+    title: "Sanctuaire",
+    desc: "Coeur x2. Une seule arme. +35 PV, +1 regen.",
+    cardEffectMultipliers: {
+      hearts: 2,
+    },
+    effects: { maxHp: 35, regen: 1 },
+    maxWeapons: 1,
+  },
+  {
+    id: "tempete",
+    name: "La Tempête",
+    title: "Ricochets",
+    desc: "Trèfle x1.5. +1 rebond de base, dégâts après rebond réduits.",
+    cardEffectMultipliers: {
+      clubs: 1.5,
+    },
+    extraBounces: 1,
+    bounceDamageMultiplier: 0.72,
+  },
+  {
+    id: "cartomancien",
+    name: "Le Cartomancien",
+    title: "Main longue",
+    desc: "+1 slot carte. Packs -12%. Cartes simples +15%.",
+    effects: { cardSlots: 1 },
+    packPriceMultiplier: 0.88,
+    cardPriceMultiplier: 1.15,
+  },
+  {
+    id: "deserteur",
+    name: "Le Déserteur",
+    title: "Bord de map",
+    desc: "Plus loin du centre = dégâts. Près du centre = regen.",
+    dynamicEffects(state) {
+      const d = Math.hypot(state.player.x, state.player.y);
+      const max = Math.hypot(WORLD.width / 2, WORLD.height / 2);
+      const ratio = Math.min(1, d / max);
+      return {
+        damage: ratio * 0.42,
+        regen: (1 - ratio) * 1.4,
+      };
+    },
+  },
+  {
+    id: "berserker",
+    name: "Le Berserker",
+    title: "Sang bas",
+    desc: "Moins tu as de PV, plus tu gagnes dégâts et cadence. Soins -35%.",
+    healingMultiplier: 0.65,
+    dynamicEffects(state) {
+      const maxHp = Math.max(1, state.stats?.maxHp || 100);
+      const missing = 1 - Math.max(0, state.player.hp) / maxHp;
+      return {
+        damage: missing * 0.75,
+        attackSpeed: missing * 0.55,
+      };
+    },
+  },
+  {
+    id: "collectionneur",
+    name: "Le Collectionneur",
+    title: "Valeurs uniques",
+    desc: "Chaque valeur différente en main donne un bonus. Couleurs x0.85.",
+    cardEffectMultipliers: {
+      spades: 0.85,
+      diamonds: 0.85,
+      clubs: 0.85,
+      hearts: 0.85,
+    },
+    dynamicEffects(state) {
+      const uniqueRanks = new Set(state.hand.map((card) => card.value)).size;
+      return {
+        damage: uniqueRanks * 0.018,
+        attackSpeed: uniqueRanks * 0.012,
+        money: uniqueRanks * 0.01,
+        maxHp: uniqueRanks * 3,
+      };
+    },
+  },
+  {
+    id: "tricheur",
+    name: "Le Tricheur",
+    title: "Boutique truquée",
+    desc: "Premier reroll gratuit chaque shop. Packs plus fréquents. Prix +8%.",
+    shopPriceMultiplier: 1.08,
+    freeFirstReroll: true,
+    packBias: 0.12,
+  },
+  {
+    id: "alchimiste",
+    name: "L'Alchimiste",
+    title: "Malédictions fortes",
+    desc: "Malédictions sur cartes x1.35. Packs de malédictions -20%.",
+    curseEffectMultiplier: 1.35,
+    cursePackPriceMultiplier: 0.8,
+  },
+  {
+    id: "stratege",
+    name: "Le Stratège",
+    title: "Plan froid",
+    desc: "+15% dégâts aux objectifs et boss. +10% fragments.",
+    objectiveDamageMultiplier: 1.15,
+    bossDamageMultiplier: 1.15,
+    fragmentMultiplier: 1.1,
+  },
+  {
+    id: "parieur",
+    name: "Le Parieur",
+    title: "Prix instables",
+    desc: "Prix du shop très variables. Vendre rapporte -20%.",
+    gamblingPrices: true,
+    sellMultiplier: 0.8,
+  },
 ];
 
 const CURSES = [

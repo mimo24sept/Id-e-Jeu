@@ -265,6 +265,19 @@ function completeWave() {
   const completedWave = state.wave;
   state.betweenWaves = true;
   state.money += 18 + state.wave * 6 + metaRunBonuses().waveGold;
+  if (state.character?.endWaveInterest) {
+    const interest = Math.floor(state.money * state.character.endWaveInterest);
+    if (interest > 0) {
+      state.money += interest;
+      state.floatingText.push({
+        x: state.player.x,
+        y: state.player.y - 90,
+        text: `intérêts +$${interest}`,
+        life: 1.2,
+        color: SUITS.diamonds.color,
+      });
+    }
+  }
   state.wave += 1;
   state.shopRerolls = 0;
   state.crates = [];

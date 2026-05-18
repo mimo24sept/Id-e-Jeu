@@ -120,7 +120,8 @@ function toggleShopLock(id) {
 
 function equipWeapon(weapon) {
   const equipped = { ...weapon, cooldown: 0.2 };
-  if (state.weapons.length < MAX_WEAPONS) {
+  const maxWeapons = state.character?.maxWeapons || MAX_WEAPONS;
+  if (state.weapons.length < maxWeapons) {
     state.weapons.push(equipped);
     return true;
   }

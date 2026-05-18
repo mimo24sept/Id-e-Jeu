@@ -65,9 +65,9 @@ function projectileEffects(weapon) {
 function projectileBounceData() {
   const bonuses = metaRunBonuses();
   return {
-    remaining: bonuses.clubBounceCount,
+    remaining: bonuses.clubBounceCount + (state.character?.extraBounces || 0),
     speedMultiplier: bonuses.clubBounceSpeedMultiplier,
-    damageMultiplier: bonuses.clubBounceDamageMultiplier,
+    damageMultiplier: bonuses.clubBounceDamageMultiplier * (state.character?.bounceDamageMultiplier || 1),
     inaccuracy: bonuses.clubBounceInaccuracy,
   };
 }
@@ -146,7 +146,7 @@ function updatePlayer(dt) {
   state.player.x = nextPosition.x;
   state.player.y = nextPosition.y;
   state.player.invuln = Math.max(0, state.player.invuln - dt);
-  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + state.stats.regen * dt);
+  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + state.stats.regen * (state.character?.healingMultiplier || 1) * dt);
 }
 
 function updateWeapons(dt) {
@@ -658,12 +658,17 @@ function updateProjectiles(dt) {
       if (projectile.life <= 0) continue;
       if (projectile.bouncedTargets?.has(enemy)) continue;
       if (distance(projectile, enemy) < projectile.radius + enemy.radius) {
-        enemy.hp -= projectile.damage;
+        const characterMultiplier = state.character?.objectiveDamageMultiplier && enemy.objectiveTarget
+          ? state.character.objectiveDamageMultiplier
+          : state.character?.bossDamageMultiplier && enemy.type === "boss"
+            ? state.character.bossDamageMultiplier
+            : 1;
+        enemy.hp -= projectile.damage * characterMultiplier;
         applyHitEffects(enemy, projectile);
         state.floatingText.push({
           x: enemy.x,
           y: enemy.y - enemy.radius,
-          text: projectile.crit ? `CRIT ${Math.round(projectile.damage)}` : Math.round(projectile.damage).toString(),
+          text: projectile.crit ? `CRIT ${Math.round(projectile.damage * characterMultiplier)}` : Math.round(projectile.damage * characterMultiplier).toString(),
           life: 0.55,
           color: projectile.color,
         });
@@ -677,7 +682,12 @@ function updateProjectiles(dt) {
       if (pulse.hit.has(enemy)) continue;
       if (distance(pulse, enemy) < pulse.radius + enemy.radius) {
         pulse.hit.add(enemy);
-        enemy.hp -= pulse.damage;
+        const characterMultiplier = state.character?.objectiveDamageMultiplier && enemy.objectiveTarget
+          ? state.character.objectiveDamageMultiplier
+          : state.character?.bossDamageMultiplier && enemy.type === "boss"
+            ? state.character.bossDamageMultiplier
+            : 1;
+        enemy.hp -= pulse.damage * characterMultiplier;
         applyHitEffects(enemy, pulse);
       }
     }

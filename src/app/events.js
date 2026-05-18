@@ -19,8 +19,10 @@ ui.skipTutorial.addEventListener("click", skipTutorial);
 ui.characterChoices.addEventListener("click", (event) => {
   const button = event.target.closest("[data-character-id]");
   if (!button) return;
+  if (button.disabled) return;
   const character = CHARACTER_DEFS.find((item) => item.id === button.dataset.characterId);
   if (!character) return;
+  if (!isCharacterUnlocked(character.id)) return;
   startRun(character);
 });
 ui.playerNameInput.addEventListener("keydown", (event) => {

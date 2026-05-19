@@ -322,6 +322,19 @@ function renderMetaProgression(lastPack = []) {
   ui.metaPackCost.textContent = cost;
   ui.buyMetaPack.disabled = meta.fragments < cost || upgradeableMetaCards(meta).length === 0;
   ui.metaUpgradeSummary.textContent = `${upgradedCount}/52 cartes améliorées · ${totalLevels} niveaux · ${unlockedCharacters}/${CHARACTER_DEFS.length} persos · best vague ${meta.bestWave || 0}`;
+
+  const unlockedTalents = meta.unlockedTalents || [];
+  const unlockedSet = new Set([...unlockedTalents, "origin"]);
+  const availableCount = typeof TALENT_NODES !== "undefined"
+    ? TALENT_NODES.filter(n => !unlockedSet.has(n.id) && n.connections.some(cid => unlockedSet.has(cid))).length
+    : 0;
+  if (ui.talentPanelFragments) ui.talentPanelFragments.textContent = meta.fragments;
+  if (ui.talentPanelCount) ui.talentPanelCount.textContent = unlockedTalents.length;
+  if (ui.talentPanelAvailable) {
+    ui.talentPanelAvailable.textContent = availableCount > 0
+      ? `${availableCount} talent${availableCount > 1 ? "s" : ""} disponible${availableCount > 1 ? "s" : ""} à débloquer`
+      : `${unlockedTalents.length} talent${unlockedTalents.length !== 1 ? "s" : ""} débloqué${unlockedTalents.length !== 1 ? "s" : ""}`;
+  }
   ui.metaPackResult.innerHTML = lastPack
     .map((item) => `<span>${describeMetaCard(item.key)} niv.${item.before} -> ${item.after}</span>`)
     .join("");

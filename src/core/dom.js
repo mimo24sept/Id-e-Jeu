@@ -77,6 +77,9 @@ const ui = {
   openTalentTree: document.querySelector("#openTalentTree"),
   closeTalentTree: document.querySelector("#closeTalentTree"),
   talentFragCount: document.querySelector("#talentFragCount"),
+  talentPanelFragments: document.querySelector("#talentPanelFragments"),
+  talentPanelCount: document.querySelector("#talentPanelCount"),
+  talentPanelAvailable: document.querySelector("#talentPanelAvailable"),
 };
 
 

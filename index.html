@@ -123,7 +123,6 @@
               <div id="hubActions" class="menu-actions">
                 <button id="launchGame" class="primary-button" type="button" disabled>Lancer partie</button>
                 <button id="disconnectPlayer" class="secondary-button" type="button">Se déconnecter</button>
-                <button id="openTalentTree" class="secondary-button" type="button">Arbre de talents</button>
                 <button id="openTutorial" class="secondary-button menu-help" type="button">Tutoriel</button>
               </div>
               <section class="meta-panel" aria-label="Progression permanente">
@@ -141,6 +140,20 @@
                 <button id="openMetaCollection" class="secondary-button" type="button">Voir cartes</button>
                 <div id="metaPackResult" class="meta-pack-result"></div>
                 <div id="metaUpgradeSummary" class="meta-upgrade-summary"></div>
+              </section>
+              <section class="talent-panel" aria-label="Arbre de talents">
+                <div class="meta-header">
+                  <div>
+                    <span class="label">Fragments</span>
+                    <strong id="talentPanelFragments">0</strong>
+                  </div>
+                  <div>
+                    <span class="label">Talents débloqués</span>
+                    <strong id="talentPanelCount">0</strong>
+                  </div>
+                </div>
+                <button id="openTalentTree" class="primary-button" type="button">Arbre de talents</button>
+                <p id="talentPanelAvailable" class="meta-upgrade-summary"></p>
               </section>
               <section class="skin-panel" aria-label="Skins">
                 <div class="meta-header">

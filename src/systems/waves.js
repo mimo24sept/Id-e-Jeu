@@ -210,7 +210,7 @@ function spawnObjectiveRunner() {
   if (!objective || objective.type !== "runners") return;
   if (state.enemies.some((enemy) => enemy.type === "objective-runner" && enemy.hp > 0)) return;
   const tier = enemyTier(state.wave);
-  const hp = (72 + state.wave * 13) * enemyTierMultiplier(state.wave);
+  const hp = (45 + state.wave * 9) * enemyTierMultiplier(state.wave);
   const point = randomWorldPoint(170);
   state.enemies.push({
     x: point.x,

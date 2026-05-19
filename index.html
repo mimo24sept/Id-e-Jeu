@@ -123,6 +123,7 @@
               <div id="hubActions" class="menu-actions">
                 <button id="launchGame" class="primary-button" type="button" disabled>Lancer partie</button>
                 <button id="disconnectPlayer" class="secondary-button" type="button">Se déconnecter</button>
+                <button id="openTalentTree" class="secondary-button" type="button">Arbre de talents</button>
                 <button id="openTutorial" class="secondary-button menu-help" type="button">Tutoriel</button>
               </div>
               <section class="meta-panel" aria-label="Progression permanente">
@@ -194,6 +195,19 @@
         </div>
       </section>
 
+      <section id="talentTree" class="talent-tree is-hidden" aria-label="Arbre de talents">
+        <canvas id="talentTreeCanvas"></canvas>
+        <div class="talent-tree-hud">
+          <div>
+            <span class="label">Arbre de talents</span>
+            <strong id="talentFragCount">0 fragments</strong>
+          </div>
+          <button id="closeTalentTree" class="secondary-button" type="button">Fermer</button>
+        </div>
+        <div class="talent-hint">Molette pour zoomer · Glisser pour naviguer · Clic pour débloquer</div>
+        <div id="talentTreeTooltip" class="talent-tooltip is-hidden"></div>
+      </section>
+
       <section id="godMode" class="god-mode is-hidden" aria-label="Easter egg divin">
         <div>
           <span class="label">52 / 52</span>
@@ -227,6 +241,7 @@
     <script src="src/core/dom.js"></script>
     <script src="src/data/cards.js"></script>
     <script src="src/data/weapons.js"></script>
+    <script src="src/data/talentTree.js"></script>
     <script src="src/core/runtime.js"></script>
     <script src="src/core/utils.js"></script>
     <script src="src/systems/metaProgression.js"></script>
@@ -241,11 +256,10 @@
     <script src="src/ui/weapons.js"></script>
     <script src="src/ui/shop.js"></script>
     <script src="src/ui/render.js"></script>
+    <script src="src/ui/talentTree.js"></script>
     <script src="src/actions/shopActions.js"></script>
     <script src="src/app/lifecycle.js"></script>
     <script src="src/app/mobileControls.js"></script>
     <script src="src/app/events.js"></script>
   </body>
 </html>
-
-

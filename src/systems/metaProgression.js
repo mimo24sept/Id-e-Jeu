@@ -43,7 +43,24 @@ function defaultPlayerMeta() {
     unlockedCharacters: [...STARTER_CHARACTER_IDS],
     equippedSkin: "classic",
     bestWave: 0,
+    unlockedTalents: [],
   };
+}
+
+function talentBonuses(meta = playerMeta()) {
+  const bonuses = {
+    damage: 0, flatDamage: 0, money: 0, attackSpeed: 0,
+    maxHp: 0, maxHpMultiplier: 0, regen: 0, critChance: 0,
+    moveSpeed: 0, packDiscount: 0, rerollDiscount: 0, fragmentGain: 0,
+  };
+  for (const id of (meta.unlockedTalents || [])) {
+    const node = talentNode(id);
+    if (!node) continue;
+    for (const [k, v] of Object.entries(node.effect)) {
+      if (Object.prototype.hasOwnProperty.call(bonuses, k)) bonuses[k] += v;
+    }
+  }
+  return bonuses;
 }
 
 function playerMeta(name = connectedPlayerName || "Joueur") {
@@ -176,7 +193,9 @@ function runFragmentReward(waveReached) {
 function grantRunFragments(waveReached, multiplier = 1) {
   const meta = playerMeta();
   const characterMultiplier = state?.character?.fragmentMultiplier || 1;
-  const reward = Math.round(runFragmentReward(waveReached) * Math.max(1, multiplier * characterMultiplier));
+  const tb = talentBonuses(meta);
+  const fragmentMultiplier = 1 + (tb.fragmentGain || 0);
+  const reward = Math.round(runFragmentReward(waveReached) * Math.max(1, multiplier * characterMultiplier) * fragmentMultiplier);
   meta.fragments += reward;
   meta.bestWave = Math.max(meta.bestWave || 0, waveReached);
   meta.lowHpKills = (meta.lowHpKills || 0) + (state?.lowHpKills || 0);

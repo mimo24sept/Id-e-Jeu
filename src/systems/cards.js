@@ -415,6 +415,7 @@ function calculateStats() {
   const suits = { spades: 0, diamonds: 0, clubs: 0, hearts: 0 };
   const effects = { damage: 0, flatDamage: 0, money: 0, attackSpeed: 0, maxHp: 0, maxHpMultiplier: 0, regen: 0, cardSlots: 0, critChance: 0, moveSpeed: 0 };
   const runBonuses = metaRunBonuses();
+  const tb = talentBonuses();
   state.hand.forEach((card) => {
     cardSuits(card).forEach((suit) => {
       suits[suit] += 1;
@@ -441,6 +442,16 @@ function calculateStats() {
       effects.money += goldMod.gold * 0.1 * gradeMult;
     }
   });
+  effects.damage += tb.damage;
+  effects.flatDamage += tb.flatDamage;
+  effects.money += tb.money;
+  effects.attackSpeed += tb.attackSpeed;
+  effects.maxHp += tb.maxHp;
+  effects.maxHpMultiplier += tb.maxHpMultiplier;
+  effects.regen += tb.regen;
+  effects.critChance += tb.critChance;
+  effects.moveSpeed += tb.moveSpeed;
+
   const hand = evaluateHand(state.hand);
   const baseMaxHp = 100 + suits.hearts * 10 + hand.power * 3 + effects.maxHp;
   const maxHp = Math.max(40, Math.round(baseMaxHp * Math.max(0.1, 1 + effects.maxHpMultiplier)));

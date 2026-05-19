@@ -14,6 +14,8 @@ ui.skinGrid.addEventListener("click", (event) => {
 });
 ui.openMetaCollection.addEventListener("click", openMetaCollection);
 ui.closeMetaCollection.addEventListener("click", closeMetaCollection);
+ui.openTalentTree.addEventListener("click", () => talentTreeUI.open());
+ui.closeTalentTree.addEventListener("click", () => talentTreeUI.close());
 ui.closeTutorial.addEventListener("click", closeTutorial);
 ui.skipTutorial.addEventListener("click", skipTutorial);
 ui.characterChoices.addEventListener("click", (event) => {

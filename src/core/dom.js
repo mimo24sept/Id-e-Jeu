@@ -74,6 +74,9 @@ const ui = {
   runDecisionText: document.querySelector("#runDecisionText"),
   cashOutRun: document.querySelector("#cashOutRun"),
   continueRun: document.querySelector("#continueRun"),
+  openTalentTree: document.querySelector("#openTalentTree"),
+  closeTalentTree: document.querySelector("#closeTalentTree"),
+  talentFragCount: document.querySelector("#talentFragCount"),
 };
 
 

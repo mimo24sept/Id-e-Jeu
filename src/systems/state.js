@@ -139,13 +139,16 @@ function cursePackPrice(pack) {
 }
 
 function cardPackPrice(pack) {
-  const discounted = Math.max(1, Math.round(equivalentPrice(pack.cardEquivalent || (pack.size >= 6 ? 2.75 : 2)) * (1 - metaRunBonuses().packDiscount)));
+  const tb = talentBonuses();
+  const discounted = Math.max(1, Math.round(equivalentPrice(pack.cardEquivalent || (pack.size >= 6 ? 2.75 : 2)) * (1 - metaRunBonuses().packDiscount) * (1 - (tb.packDiscount || 0))));
   return characterShopPrice(discounted, "pack");
 }
 
 function rerollCost() {
   if (state.character?.freeFirstReroll && (state.shopRerolls || 0) === 0) return 0;
-  return 3 + (state.shopRerolls || 0) * 2 + Math.floor(state.wave / 6);
+  const base = 3 + (state.shopRerolls || 0) * 2 + Math.floor(state.wave / 6);
+  const tb = talentBonuses();
+  return Math.max(1, Math.round(base * (1 - (tb.rerollDiscount || 0))));
 }
 
 function dominantHandSuits() {

@@ -105,6 +105,7 @@ function rerollShop() {
   if (state.money < cost) return;
   state.money -= cost;
   state.shopRerolls += 1;
+  state.runRerolls = (state.runRerolls || 0) + 1;
   state.previewWeaponId = null;
   state.shopSlots = rollShopSlots();
   renderUI();
@@ -123,6 +124,7 @@ function equipWeapon(weapon) {
   const maxWeapons = state.character?.maxWeapons || MAX_WEAPONS;
   if (state.weapons.length < maxWeapons) {
     state.weapons.push(equipped);
+    state.runMaxWeapons = Math.max(state.runMaxWeapons || 1, state.weapons.length);
     return true;
   }
 
@@ -236,6 +238,7 @@ function applyCurseToCard(index) {
   if (!card || !state.pendingCurse || card.cursed) return;
   card.cursed = true;
   card.curse = state.pendingCurse.curse;
+  state.runCursesApplied = (state.runCursesApplied || 0) + 1;
   state.pendingCurse = null;
   refreshStatsKeepingMaxHpGain();
   renderUI();

@@ -663,7 +663,11 @@ function updateProjectiles(dt) {
           : state.character?.bossDamageMultiplier && enemy.type === "boss"
             ? state.character.bossDamageMultiplier
             : 1;
+        const hpBefore = enemy.hp;
         enemy.hp -= projectile.damage * characterMultiplier;
+        if ((projectile.bounceIndex || 0) > 0 && hpBefore > 0 && enemy.hp <= 0) {
+          state.bounceKills = (state.bounceKills || 0) + 1;
+        }
         applyHitEffects(enemy, projectile);
         state.floatingText.push({
           x: enemy.x,
@@ -720,9 +724,23 @@ function applyHitEffects(enemy, source) {
   }
 }
 
+function updateChallengeTracking(dt) {
+  if (state.betweenWaves) return;
+  const d = Math.hypot(state.player.x, state.player.y);
+  const max = Math.hypot(WORLD.width / 2, WORLD.height / 2);
+  if (d / max >= 0.65) state.edgeTime = (state.edgeTime || 0) + dt;
+}
+
 function updateKills(dt) {
+  const maxHp = Math.max(1, state.stats?.maxHp || 100);
   for (const enemy of state.enemies) {
     if (enemy.hp <= 0) {
+      if (state.player.hp / maxHp <= 0.25) {
+        state.lowHpKills = (state.lowHpKills || 0) + 1;
+      }
+      if (enemy.type === "boss") {
+        state.bossKills = (state.bossKills || 0) + 1;
+      }
       if (enemy.type === "objective-runner") {
         state.objectiveItems.push({
           x: enemy.x,
@@ -787,6 +805,7 @@ function update(dt) {
   updateBodyguards(dt);
   updateProjectiles(dt);
   updateKills(dt);
+  updateChallengeTracking(dt);
   cameraShake = Math.max(0, cameraShake - dt);
 }
 

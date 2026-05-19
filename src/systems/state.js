@@ -45,6 +45,13 @@
     fragmentDecisionWave: 0,
     lastBossKind: null,
     gameOver: false,
+    lowHpKills: 0,
+    edgeTime: 0,
+    bounceKills: 0,
+    runRerolls: 0,
+    runCursesApplied: 0,
+    runMaxWeapons: 1,
+    bossKills: 0,
   };
   state = initial;
   state.stats = calculateStats();

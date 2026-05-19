@@ -84,22 +84,22 @@ function characterUnlockInfo(character, meta = playerMeta()) {
   const rules = {
     shadow: { text: "Disponible au départ", done: true },
     vampire: { text: "Disponible au départ", done: true },
-    "expert-comptable": { text: "Atteins la vague 10", done: (meta.bestWave || 0) >= 10 },
+    "expert-comptable": { text: "Améliore 4 cartes Carreau", done: upgradedSuitCount("diamonds", meta) >= 4 },
     "ange-blanc": { text: "Améliore 4 cartes Coeur", done: upgradedSuitCount("hearts", meta) >= 4 },
     "gachette-folle": { text: "Améliore 4 cartes Trèfle", done: upgradedSuitCount("clubs", meta) >= 4 },
     bazooka: { text: "Améliore 4 cartes Pique", done: upgradedSuitCount("spades", meta) >= 4 },
     gigachad: { text: "Atteins la vague 20", done: (meta.bestWave || 0) >= 20 },
     "time-breaker": { text: "Atteins la vague 30", done: (meta.bestWave || 0) >= 30 },
     banquier: { text: "Achète 3 packs d'amélioration", done: (meta.packsBought || 0) >= 3 },
-    moine: { text: "Améliore 8 cartes Coeur", done: upgradedSuitCount("hearts", meta) >= 8 },
-    tempete: { text: "Améliore 8 cartes Trèfle", done: upgradedSuitCount("clubs", meta) >= 8 },
+    moine: { text: "Atteins la vague 20 avec 1 seule arme", done: (meta.bestWaveOneWeapon || 0) >= 20 },
+    tempete: { text: "Tue 400 ennemis par ricochet", done: (meta.bounceKills || 0) >= 400 },
     cartomancien: { text: "Améliore 12 cartes différentes", done: upgradedCardCount(meta) >= 12 },
-    deserteur: { text: "Atteins la vague 15", done: (meta.bestWave || 0) >= 15 },
-    berserker: { text: "Atteins la vague 10", done: (meta.bestWave || 0) >= 10 },
+    deserteur: { text: "Passe 3 min aux bords de la map", done: (meta.edgeTime || 0) >= 180 },
+    berserker: { text: "Tue 150 ennemis sous 25% de PV", done: (meta.lowHpKills || 0) >= 150 },
     collectionneur: { text: "Améliore 26 cartes différentes", done: upgradedCardCount(meta) >= 26 },
-    tricheur: { text: "Achète 6 packs d'amélioration", done: (meta.packsBought || 0) >= 6 },
-    alchimiste: { text: "Cumule 24 niveaux d'amélioration", done: upgradedCardLevels(meta) >= 24 },
-    stratege: { text: "Atteins la vague 25", done: (meta.bestWave || 0) >= 25 },
+    tricheur: { text: "Reroll 30 fois en une partie", done: (meta.bestRerollsInRun || 0) >= 30 },
+    alchimiste: { text: "Applique 10 malédictions en une partie", done: (meta.bestCursesInRun || 0) >= 10 },
+    stratege: { text: "Tue 10 boss", done: (meta.bossKills || 0) >= 10 },
     parieur: { text: "Débloque un skin secret", done: unlockedSkins.some((id) => id !== "classic" && skinDef(id).secret) },
   };
   return rules[character.id] || { text: "Challenge à définir", done: false };
@@ -179,6 +179,15 @@ function grantRunFragments(waveReached, multiplier = 1) {
   const reward = Math.round(runFragmentReward(waveReached) * Math.max(1, multiplier * characterMultiplier));
   meta.fragments += reward;
   meta.bestWave = Math.max(meta.bestWave || 0, waveReached);
+  meta.lowHpKills = (meta.lowHpKills || 0) + (state?.lowHpKills || 0);
+  meta.bossKills = (meta.bossKills || 0) + (state?.bossKills || 0);
+  meta.edgeTime = (meta.edgeTime || 0) + (state?.edgeTime || 0);
+  meta.bounceKills = (meta.bounceKills || 0) + (state?.bounceKills || 0);
+  meta.bestRerollsInRun = Math.max(meta.bestRerollsInRun || 0, state?.runRerolls || 0);
+  meta.bestCursesInRun = Math.max(meta.bestCursesInRun || 0, state?.runCursesApplied || 0);
+  if ((state?.runMaxWeapons || 1) <= 1) {
+    meta.bestWaveOneWeapon = Math.max(meta.bestWaveOneWeapon || 0, waveReached);
+  }
   syncCharacterUnlocks(meta);
   saveMetaProgression();
   renderMetaProgression();

@@ -64,8 +64,9 @@ function projectileEffects(weapon) {
 
 function projectileBounceData() {
   const bonuses = metaRunBonuses();
+  const tb = talentBonuses();
   return {
-    remaining: bonuses.clubBounceCount + (state.character?.extraBounces || 0),
+    remaining: bonuses.clubBounceCount + (state.character?.extraBounces || 0) + Math.floor(tb.bounceCount || 0),
     speedMultiplier: bonuses.clubBounceSpeedMultiplier,
     damageMultiplier: bonuses.clubBounceDamageMultiplier * (state.character?.bounceDamageMultiplier || 1),
     inaccuracy: bonuses.clubBounceInaccuracy,
@@ -146,7 +147,7 @@ function updatePlayer(dt) {
   state.player.x = nextPosition.x;
   state.player.y = nextPosition.y;
   state.player.invuln = Math.max(0, state.player.invuln - dt);
-  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + state.stats.regen * (state.character?.healingMultiplier || 1) * dt);
+  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + state.stats.regen * (state.character?.healingMultiplier || 1) * (state.stats.healingMultiplier || 1) * dt);
 }
 
 function updateWeapons(dt) {

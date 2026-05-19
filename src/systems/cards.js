@@ -422,7 +422,7 @@ function calculateStats() {
     });
     addEffects(effects, cardBaseEffects(card));
     if (card.cursed) {
-      const curseMultiplier = state.character?.curseEffectMultiplier || 1;
+      const curseMultiplier = (state.character?.curseEffectMultiplier || 1) + (tb.curseBonus || 0);
       addEffects(effects, scaleEffects(card.curse.effects, curseMultiplier));
     }
   });
@@ -442,7 +442,7 @@ function calculateStats() {
       effects.money += goldMod.gold * 0.1 * gradeMult;
     }
   });
-  effects.damage += tb.damage;
+  effects.damage += tb.damage + (tb.waveScaling || 0) * (state?.wave || 1);
   effects.flatDamage += tb.flatDamage;
   effects.money += tb.money;
   effects.attackSpeed += tb.attackSpeed;
@@ -473,6 +473,7 @@ function calculateStats() {
     stationaryPower: runBonuses.stationaryPower,
     extraCardSlots: effects.cardSlots,
     critChance: Math.min(0.75, effects.critChance),
+    healingMultiplier: 1 + (tb.healingBonus || 0),
     mapWidth: WORLD.width,
     mapHeight: WORLD.height,
   };

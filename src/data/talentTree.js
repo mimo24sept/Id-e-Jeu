@@ -354,6 +354,13 @@ const TALENT_SHOP = buildRegionNodes("shop", -212, -212, -0.707, -0.707, [
   [8, 0,3,95,"Dieu du marché",     "-15% packs, -18% reroll, +8% or",{packDiscount:0.15,rerollDiscount:0.18,money:0.08}],
   [8,-1,3,90,"Braderie infinie",   "-20% prix packs",            {packDiscount:0.20}],
   [8, 1,3,90,"Maître absolu",      "-25% coût reroll",           {rerollDiscount:0.25}],
+  [9,-1,2,50,"Pacte économique",   "-8% packs, -6% reroll",      {packDiscount:0.08,rerollDiscount:0.06}],
+  [9, 0,3,92,"Runes puissantes",   "+30% effets de malédiction", {curseBonus:0.30}],
+  [9, 1,2,50,"Commerce maudit",    "-10% packs, +6% or",         {packDiscount:0.10,money:0.06}],
+  [10,-1,2,55,"Grand marché",      "-12% packs, -10% reroll",    {packDiscount:0.12,rerollDiscount:0.10}],
+  [10, 0,3,95,"Sorcellerie avancée","+50% effets de malédiction",{curseBonus:0.50}],
+  [10, 1,2,55,"Monopole maudit",   "-15% packs, +10% or",        {packDiscount:0.15,money:0.10}],
+  [11, 0,3,98,"Archimaudit",       "+80% effets de malédiction, -12% packs",{curseBonus:0.80,packDiscount:0.12}],
 ]);
 
 // Assembler tous les nœuds

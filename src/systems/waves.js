@@ -171,7 +171,7 @@ function createWaveObjective() {
     title: "MASSACRE",
     desc: "Tue les monstres requis",
     killed: 0,
-    target: Math.round(14 + state.wave * 2.2),
+    target: Math.round(6 + state.wave * 2.0),
     completed: false,
   };
 }
@@ -181,7 +181,7 @@ function spawnObjectiveTurrets() {
   if (!objective || objective.type !== "turrets") return;
   const bounds = worldBounds();
   const tier = enemyTier(state.wave);
-  const hp = (95 + state.wave * 18) * enemyTierMultiplier(state.wave);
+  const hp = (50 + state.wave * 18) * enemyTierMultiplier(state.wave);
   const points = [
     { x: bounds.left + 135, y: bounds.top + 135 },
     { x: bounds.right - 135, y: bounds.top + 135 },
@@ -195,7 +195,7 @@ function spawnObjectiveTurrets() {
       hp,
       maxHp: hp,
       speed: 0,
-      damage: (13 + state.wave * 0.75) * Math.pow(1.25, tier),
+      damage: (10 + state.wave * 0.7) * Math.pow(1.25, tier),
       type: "objective-turret",
       shootTimer: random(0.2, 1),
       value: 0,

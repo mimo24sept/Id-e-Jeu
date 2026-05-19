@@ -329,14 +329,15 @@ const TALENT_NODES_RAW = [
 // Calcul automatique des connexions par proximité
 (function buildConnections() {
   const maxDist = 210;
+  const bridgeDist = 330; // distance étendue pour relier le centre aux régions externes
   for (const a of TALENT_NODES_RAW) {
     for (const b of TALENT_NODES_RAW) {
       if (a.id >= b.id) continue;
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      const compatible = a.region === b.region
-        || a.region === "center"
-        || b.region === "center";
-      if (d <= maxDist && compatible) {
+      const sameRegion = a.region === b.region;
+      const involvesCenter = a.region === "center" || b.region === "center";
+      const limit = involvesCenter ? bridgeDist : maxDist;
+      if (d <= limit && (sameRegion || involvesCenter)) {
         a.connections.push(b.id);
         b.connections.push(a.id);
       }

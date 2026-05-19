@@ -10,18 +10,23 @@ const talentTreeUI = (() => {
   const MAX_ZOOM = 2.4;
 
   const EFFECT_META = {
-    damage:          { label: "Dégâts",            pct: true,  negGood: false },
-    flatDamage:      { label: "Dégâts plats",       pct: false, negGood: false },
-    attackSpeed:     { label: "Vitesse d'attaque",  pct: true,  negGood: false },
-    moveSpeed:       { label: "Vitesse dépl.",       pct: false, negGood: false },
-    maxHp:           { label: "PV max",             pct: false, negGood: false },
-    maxHpMultiplier: { label: "PV max",             pct: true,  negGood: false },
-    regen:           { label: "Régénération/s",     pct: false, negGood: false },
-    critChance:      { label: "Chance crit.",        pct: true,  negGood: false },
-    money:           { label: "Or",                 pct: true,  negGood: false },
-    packDiscount:    { label: "Prix packs",          pct: true,  negGood: true  },
-    rerollDiscount:  { label: "Coût reroll",         pct: true,  negGood: true  },
-    fragmentGain:    { label: "Gain fragments",      pct: true,  negGood: false },
+    damage:          { label: "Dégâts",              pct: true,  negGood: false },
+    flatDamage:      { label: "Dégâts plats",         pct: false, negGood: false },
+    attackSpeed:     { label: "Vitesse d'attaque",    pct: true,  negGood: false },
+    moveSpeed:       { label: "Vitesse dépl.",         pct: false, negGood: false },
+    maxHp:           { label: "PV max",               pct: false, negGood: false },
+    maxHpMultiplier: { label: "PV max",               pct: true,  negGood: false },
+    regen:           { label: "Régénération/s",       pct: false, negGood: false },
+    critChance:      { label: "Chance crit.",          pct: true,  negGood: false },
+    money:           { label: "Or",                   pct: true,  negGood: false },
+    packDiscount:    { label: "Prix packs",            pct: true,  negGood: true  },
+    rerollDiscount:  { label: "Coût reroll",           pct: true,  negGood: true  },
+    fragmentGain:    { label: "Gain fragments",        pct: true,  negGood: false },
+    bounceCount:     { label: "Rebonds projectiles",   pct: false, negGood: false },
+    healingBonus:    { label: "Soins reçus",           pct: true,  negGood: false },
+    interestBonus:   { label: "Intérêts fin de vague", pct: true,  negGood: false },
+    waveScaling:     { label: "Dégâts par vague",      pct: true,  negGood: false },
+    curseBonus:      { label: "Effets malédictions",   pct: true,  negGood: false },
   };
 
   function w2s(wx, wy) {

@@ -72,6 +72,13 @@ const TALENT_SPADES = buildRegionNodes("spades", -300, 0, -1, 0, [
   [8, 0,3,95,"Prédateur",          "+20% dégâts, +8% crit",     {damage:0.20,critChance:0.08}],
   [8,-1,3,90,"Frappe fatale",      "+14% crit, +8% dégâts",     {critChance:0.14,damage:0.08}],
   [8, 1,3,90,"Furie dévastatrice", "+12% dégâts, +15 plats",    {damage:0.12,flatDamage:15}],
+  [9,-1,2,50,"Endurance de combat","+9% dégâts",                 {damage:0.09}],
+  [9, 0,3,92,"Scaling Berserker",  "+0.5% dégâts par vague",    {waveScaling:0.005}],
+  [9, 1,2,50,"Coup de grâce",      "+7% dégâts, +5% crit",      {damage:0.07,critChance:0.05}],
+  [10,-1,2,55,"Force brute ultime","+10% dégâts, +5 plats",      {damage:0.10,flatDamage:5}],
+  [10, 0,3,95,"Overtime",          "+0.8% dégâts par vague",     {waveScaling:0.008}],
+  [10, 1,2,55,"Précision absolue", "+10% dégâts, +8% crit",      {damage:0.10,critChance:0.08}],
+  [11, 0,3,98,"Puissance intemporelle","+1.5% dégâts par vague, +15% dégâts",{waveScaling:0.015,damage:0.15}],
 ]);
 
 // ♥ CŒUR — Survie & Régénération — direction bas-gauche
@@ -112,6 +119,13 @@ const TALENT_HEARTS = buildRegionNodes("hearts", -150, 260, -0.5, 0.866, [
   [8, 0,3,95,"Immortel",           "+20% PV max, +0.8 regen",   {maxHpMultiplier:0.20,regen:0.8}],
   [8,-1,3,90,"Titan de guerre",    "+50 PV max",                 {maxHp:50}],
   [8, 1,3,90,"Régénérant",         "+1.2 regen",                 {regen:1.2}],
+  [9,-1,2,50,"Vitalité transcendante","+0.6 regen, +15 PV",      {regen:0.6,maxHp:15}],
+  [9, 0,3,92,"Sang régénérant",    "+25% soins reçus",            {healingBonus:0.25}],
+  [9, 1,2,50,"Bouclier vital",     "+6% PV max",                  {maxHpMultiplier:0.06}],
+  [10,-1,2,55,"Flux éternel",      "+1.0 regen, +20 PV",          {regen:1.0,maxHp:20}],
+  [10, 0,3,95,"Résurrection partielle","+45% soins reçus",        {healingBonus:0.45}],
+  [10, 1,2,55,"Corps indestructible","+8% PV max, +25 PV",        {maxHpMultiplier:0.08,maxHp:25}],
+  [11, 0,3,98,"Immortel véritable","+70% soins reçus, +12% PV max",{healingBonus:0.70,maxHpMultiplier:0.12}],
 ]);
 
 // ♦ CARREAU — Or & Fragments — direction bas-droite
@@ -152,6 +166,13 @@ const TALENT_DIAMONDS = buildRegionNodes("diamonds", 150, 260, 0.5, 0.866, [
   [8, 0,3,95,"Le Grand Baron",     "+20% or, +10% fragments",   {money:0.20,fragmentGain:0.10}],
   [8,-1,3,90,"Trésor infini",      "+18% or",                    {money:0.18}],
   [8, 1,3,90,"Héritage éternel",   "+15% fragments",             {fragmentGain:0.15}],
+  [9,-1,2,50,"Rendement solide",   "+10% or, +4% fragments",     {money:0.10,fragmentGain:0.04}],
+  [9, 0,3,92,"Intérêts composés",  "+3% intérêts fin de vague",  {interestBonus:0.03}],
+  [9, 1,2,50,"Dividendes stables", "+8% fragments",              {fragmentGain:0.08}],
+  [10,-1,2,55,"Fortune immense",   "+12% or, -6% packs",         {money:0.12,packDiscount:0.06}],
+  [10, 0,3,95,"Capitaliste absolu","+5% intérêts fin de vague",  {interestBonus:0.05}],
+  [10, 1,2,55,"Fonds d'urgence",   "+10% fragments, +8% or",     {fragmentGain:0.10,money:0.08}],
+  [11, 0,3,98,"Seigneur des marchés","+8% intérêts fin de vague, +20% or",{interestBonus:0.08,money:0.20}],
 ]);
 
 // ♣ TRÈFLE — Vitesse & Mouvement — direction droite
@@ -192,6 +213,13 @@ const TALENT_CLUBS = buildRegionNodes("clubs", 300, 0, 1, 0, [
   [8, 0,3,95,"Dieu de la vitesse", "+20% vitesse att., +30 vitesse",{attackSpeed:0.20,moveSpeed:30}],
   [8,-1,3,90,"Avalanche",          "+18% vitesse att.",          {attackSpeed:0.18}],
   [8, 1,3,90,"Vrille",             "+40 vitesse dépl.",          {moveSpeed:40}],
+  [9,-1,2,50,"Frappe rapide",      "+10% vitesse att., +12 vitesse",{attackSpeed:0.10,moveSpeed:12}],
+  [9, 0,3,92,"Premier ricochet",   "+1 rebond de projectile",    {bounceCount:1}],
+  [9, 1,2,50,"Vent vif",           "+8% vitesse att., +18 vitesse",{attackSpeed:0.08,moveSpeed:18}],
+  [10,-1,2,55,"Salve ricochets",   "+12% vitesse att.",          {attackSpeed:0.12}],
+  [10, 0,3,95,"Rebond maîtrisé",   "+1 rebond, +15% vitesse att.",{bounceCount:1,attackSpeed:0.15}],
+  [10, 1,2,55,"Tempête intérieure","+10% vitesse att., +25 vitesse",{attackSpeed:0.10,moveSpeed:25}],
+  [11, 0,3,98,"Maître des ricochets","+2 rebonds, +20% vitesse att.",{bounceCount:2,attackSpeed:0.20}],
 ]);
 
 // ⚡ POKER — Mains & Cartes — direction haut
@@ -232,6 +260,13 @@ const TALENT_POKER = buildRegionNodes("poker", 0, -300, 0, -1, [
   [8, 0,3,95,"L'Élu du poker",     "+15% dégâts, +8% crit, +5% vitesse",{damage:0.15,critChance:0.08,attackSpeed:0.05}],
   [8,-1,3,90,"Quinte royale",      "+12% dégâts, +12% crit",    {damage:0.12,critChance:0.12}],
   [8, 1,3,90,"Fortune finale",     "+15% or, +8% fragments",    {money:0.15,fragmentGain:0.08}],
+  [9,-1,2,50,"Stratège chevronné", "+8% dégâts, +4% crit",      {damage:0.08,critChance:0.04}],
+  [9, 0,3,92,"Grande main",        "+10% dégâts, +5% vitesse att.",{damage:0.10,attackSpeed:0.05}],
+  [9, 1,2,50,"Gain maximal",       "+10% or, +6% fragments",    {money:0.10,fragmentGain:0.06}],
+  [10,-1,2,55,"Professionnel du poker","+10% dégâts, +8% crit", {damage:0.10,critChance:0.08}],
+  [10, 0,3,95,"Tournoi final",     "+12% dégâts, +6% vitesse att.",{damage:0.12,attackSpeed:0.06}],
+  [10, 1,2,55,"Tapis illimité",    "+12% or, +8% fragments",    {money:0.12,fragmentGain:0.08}],
+  [11, 0,3,98,"Légende du poker",  "+15% dégâts, +10% crit, +8% vitesse att.",{damage:0.15,critChance:0.10,attackSpeed:0.08}],
 ]);
 
 // ⚔ COMBAT — Armes & Tactique — direction haut-droite
@@ -272,6 +307,13 @@ const TALENT_COMBAT = buildRegionNodes("combat", 212, -212, 0.707, -0.707, [
   [8, 0,3,95,"Dieu de la guerre",  "+18% dégâts, +10% vitesse att.",{damage:0.18,attackSpeed:0.10}],
   [8,-1,3,90,"Chasseur de géants", "+12% dégâts, +12% crit",    {damage:0.12,critChance:0.12}],
   [8, 1,3,90,"Tempête de feu",     "+20 plats, +12% vitesse att.",{flatDamage:20,attackSpeed:0.12}],
+  [9,-1,2,50,"Tactique de terrain","+9% dégâts, +5% crit",       {damage:0.09,critChance:0.05}],
+  [9, 0,3,92,"Maestro militaire",  "+12% dégâts, +6% vitesse att.",{damage:0.12,attackSpeed:0.06}],
+  [9, 1,2,50,"Arsenal perfectionné","+12 plats, +6% dégâts",     {flatDamage:12,damage:0.06}],
+  [10,-1,2,55,"Général de division","+10% dégâts, +10% crit",    {damage:0.10,critChance:0.10}],
+  [10, 0,3,95,"Art de la guerre",  "+15% dégâts, +8% vitesse att.",{damage:0.15,attackSpeed:0.08}],
+  [10, 1,2,55,"Armure balistique", "+15 plats, +8% dégâts",      {flatDamage:15,damage:0.08}],
+  [11, 0,3,98,"Dieu vivant de la guerre","+20% dégâts, +12% crit, +10% vitesse att.",{damage:0.20,critChance:0.12,attackSpeed:0.10}],
 ]);
 
 // ◆ BOUTIQUE — Shop & Rerolls — direction haut-gauche

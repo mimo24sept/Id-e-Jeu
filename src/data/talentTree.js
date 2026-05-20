@@ -1,13 +1,19 @@
 const TALENT_REGIONS = {
-  center:  { label: "Origine",   color: "#f0d24b", stroke: "#e0c040" },
-  spades:  { label: "♠ Pique",   color: "#e46363", stroke: "#c04040" },
-  hearts:  { label: "♥ Cœur",    color: "#e8889e", stroke: "#c06070" },
-  diamonds:{ label: "♦ Carreau", color: "#f0d24b", stroke: "#c0a030" },
-  clubs:   { label: "♣ Trèfle",  color: "#66e08f", stroke: "#40b060" },
-  poker:   { label: "⚡ Poker",   color: "#9b8bff", stroke: "#7060d0" },
-  combat:  { label: "⚔ Combat",  color: "#55b8ff", stroke: "#3090d0" },
-  shop:    { label: "◆ Boutique",color: "#ffb84b", stroke: "#d08030" },
-  bridge:  { label: "◈ Jonction",color: "#c8b8ff", stroke: "#9070e0" },
+  center:     { label: "Origine",      color: "#f0d24b", stroke: "#e0c040" },
+  spades:     { label: "♠ Pique",      color: "#e46363", stroke: "#c04040" },
+  hearts:     { label: "♥ Cœur",       color: "#e8889e", stroke: "#c06070" },
+  diamonds:   { label: "♦ Carreau",    color: "#f0d24b", stroke: "#c0a030" },
+  clubs:      { label: "♣ Trèfle",     color: "#66e08f", stroke: "#40b060" },
+  poker:      { label: "⚡ Poker",      color: "#9b8bff", stroke: "#7060d0" },
+  combat:     { label: "⚔ Combat",     color: "#55b8ff", stroke: "#3090d0" },
+  shop:       { label: "◆ Boutique",   color: "#ffb84b", stroke: "#d08030" },
+  bridge:     { label: "◈ Jonction",   color: "#c8b8ff", stroke: "#9070e0" },
+  guerriers:  { label: "★ Guerriers",  color: "#d44040", stroke: "#a03030" },
+  vitaux:     { label: "✚ Vitaux",     color: "#f0c8e0", stroke: "#c080a8" },
+  cameleons:  { label: "◉ Caméléons",  color: "#40d0b0", stroke: "#2090a0" },
+  negociants: { label: "✧ Négociants", color: "#d4a030", stroke: "#a07020" },
+  strateges:  { label: "⊕ Stratèges",  color: "#5090c8", stroke: "#3060a0" },
+  rapides:    { label: "⊳ Rapides",    color: "#40c8e0", stroke: "#2090b0" },
 };
 
 function buildRegionNodes(regionId, gx, gy, dx, dy, rows) {
@@ -364,6 +370,90 @@ const TALENT_SHOP = buildRegionNodes("shop", -212, -212, -0.707, -0.707, [
   [11, 0,3,98,"Archimaudit",       "+80% effets de malédiction, -12% packs",{curseBonus:0.80,packDiscount:0.12}],
 ]);
 
+// ★ GUERRIERS — Bazooka · Berserker · Shadow — 30° (entre Trèfle et Carreau)
+const TALENT_GUERRIERS = buildRegionNodes("guerriers", 572, 330, 0.866, 0.5, [
+  [1, 0, 2, 50, "Rage guerrière",        "+6% dégâts, +4 plats",                      {damage:0.06, flatDamage:4}],
+  [2,-1, 2, 55, "Instinct du Shadow",    "+5% dégâts, +4% crit",                      {damage:0.05, critChance:0.04}],
+  [2, 0, 2, 55, "Furie du Berserker",    "+5% dégâts, +5% vitesse att.",              {damage:0.05, attackSpeed:0.05}],
+  [2, 1, 2, 55, "Obus du Bazooka",       "+10 dégâts plats, +4% dégâts",             {flatDamage:10, damage:0.04}],
+  [3,-1, 3, 75, "Prédateur",             "+10% dégâts, +6% crit",                     {damage:0.10, critChance:0.06}],
+  [3, 0, 3, 75, "Berserk légendaire",    "+8% dégâts, +8% vitesse att.",             {damage:0.08, attackSpeed:0.08}],
+  [3, 1, 3, 75, "Canon",                 "+12 plats, +8% dégâts",                     {flatDamage:12, damage:0.08}],
+  [4,-1, 3, 85, "Taille noire",          "+12% dégâts, +10% crit",                   {damage:0.12, critChance:0.10}],
+  [4, 0, 3, 85, "Rage totale",           "+10% dégâts, +10% vitesse att., +5 plats", {damage:0.10, attackSpeed:0.10, flatDamage:5}],
+  [5, 0, 3, 95, "Incarnation guerrière", "+18% dégâts, +10% crit, +10 plats",        {damage:0.18, critChance:0.10, flatDamage:10}],
+]);
+
+// ✚ VITAUX — Ange Blanc · Moine · Vampire — 90° (entre Carreau et Cœur)
+const TALENT_VITAUX = buildRegionNodes("vitaux", 0, 660, 0, 1, [
+  [1, 0, 2, 50, "Vitalité profonde",     "+20 PV, +0.4 regen",                        {maxHp:20, regen:0.4}],
+  [2,-1, 2, 55, "Grâce de l'Ange",       "+0.6 regen, +15 PV",                        {regen:0.6, maxHp:15}],
+  [2, 0, 2, 55, "Sang du Vampire",       "+25% soins reçus, +15 PV",                  {healingBonus:0.25, maxHp:15}],
+  [2, 1, 2, 55, "Sanctuaire du Moine",   "+22 PV, +0.45 regen",                       {maxHp:22, regen:0.45}],
+  [3,-1, 3, 75, "Flux vital",            "+0.9 regen, +25 PV",                        {regen:0.9, maxHp:25}],
+  [3, 0, 3, 75, "Immortalité",           "+35% soins reçus, +30 PV",                  {healingBonus:0.35, maxHp:30}],
+  [3, 1, 3, 75, "Corps de titan",        "+32 PV, +0.8 regen",                        {maxHp:32, regen:0.8}],
+  [4,-1, 3, 85, "Régén absolue",         "+1.2 regen, +20 PV",                        {regen:1.2, maxHp:20}],
+  [4, 0, 3, 85, "Sang vital",            "+45% soins reçus, +25 PV",                  {healingBonus:0.45, maxHp:25}],
+  [5, 0, 3, 95, "Immortel vivant",       "+50% soins, +35 PV, +1.0 regen",            {healingBonus:0.50, maxHp:35, regen:1.0}],
+]);
+
+// ◉ CAMELEONS — GigaCHAD · Déserteur · Collectionneur — 150° (entre Cœur et Pique)
+const TALENT_CAMELEONS = buildRegionNodes("cameleons", -572, 330, -0.866, 0.5, [
+  [1, 0, 2, 50, "Polyvalence",           "+4% dégâts, +10 PV, +4% vitesse att.",      {damage:0.04, maxHp:10, attackSpeed:0.04}],
+  [2,-1, 2, 55, "Instinct du terrain",   "+5% dégâts, +20 vitesse dépl.",             {damage:0.05, moveSpeed:20}],
+  [2, 0, 2, 55, "Équilibre du CHAD",     "+5% dégâts, +12 PV, +5% vitesse att.",     {damage:0.05, maxHp:12, attackSpeed:0.05}],
+  [2, 1, 2, 55, "Croissance lente",      "+0.8% dégâts par vague, +12 PV",           {waveScaling:0.008, maxHp:12}],
+  [3,-1, 3, 75, "Adaptation",            "+8% dégâts, +20 PV, +20 vitesse dépl.",    {damage:0.08, maxHp:20, moveSpeed:20}],
+  [3, 0, 3, 75, "Transcendance",         "+10% dégâts, +1.2% par vague, +18 PV",    {damage:0.10, waveScaling:0.012, maxHp:18}],
+  [3, 1, 3, 75, "Collection infinie",    "+6% dégâts, +22 PV, +5% vitesse att.",     {damage:0.06, maxHp:22, attackSpeed:0.05}],
+  [4,-1, 3, 85, "Instinct pur",          "+10% dégâts, +25 vitesse, +12 PV",         {damage:0.10, moveSpeed:25, maxHp:12}],
+  [4, 0, 3, 85, "Évolution tardive",     "+12% dégâts, +1.5% par vague",             {damage:0.12, waveScaling:0.015}],
+  [5, 0, 3, 95, "Caméléon légendaire",   "+15% dégâts, +20 PV, +2% par vague",       {damage:0.15, maxHp:20, waveScaling:0.020}],
+]);
+
+// ✧ NEGOCIANTS — Banquier · Tricheur · Alchimiste · Parieur — 202.5° (entre Pique et Boutique)
+const TALENT_NEGOCIANTS = buildRegionNodes("negociants", -610, -252, -0.924, -0.383, [
+  [1, 0, 2, 50, "Flair commercial",      "+8% or, -4% prix packs",                    {money:0.08, packDiscount:0.04}],
+  [2,-1, 2, 55, "Intérêts du Banquier",  "+4% intérêts fin de vague",                 {interestBonus:0.04}],
+  [2, 0, 2, 55, "Commerce maîtrisé",     "+8% or, -5% packs, +3% frag",              {money:0.08, packDiscount:0.05, fragmentGain:0.03}],
+  [2, 1, 2, 55, "Revente premium",       "+30% revente cartes",                        {sellBonus:0.30}],
+  [3,-1, 3, 75, "Usure du Banquier",     "+6% intérêts fin de vague",                 {interestBonus:0.06}],
+  [3, 0, 3, 75, "Fortune absolue",       "+15% or, -8% packs, +6% frag",             {money:0.15, packDiscount:0.08, fragmentGain:0.06}],
+  [3, 1, 3, 75, "Liquidation",           "+45% revente cartes, +6% or",              {sellBonus:0.45, money:0.06}],
+  [4,-1, 3, 85, "Rentier",               "+8% intérêts fin de vague",                 {interestBonus:0.08}],
+  [4, 0, 3, 85, "Monopole",              "+18% or, -10% packs, +8% frag",            {money:0.18, packDiscount:0.10, fragmentGain:0.08}],
+  [5, 0, 3, 95, "Seigneur marchand",     "+25% or, +60% revente, -12% packs",         {money:0.25, sellBonus:0.60, packDiscount:0.12}],
+]);
+
+// ⊕ STRATEGES — Stratège · Cartomancien · Expert Comptable — 247.5° (entre Boutique et Poker)
+const TALENT_STRATEGES = buildRegionNodes("strateges", -253, -610, -0.383, -0.924, [
+  [1, 0, 2, 50, "Analyse tactique",      "+5% dégâts, +4% crit",                      {damage:0.05, critChance:0.04}],
+  [2,-1, 2, 55, "Plan du Stratège",      "+4% dégâts, +4% vitesse att., +3% crit",   {damage:0.04, attackSpeed:0.04, critChance:0.03}],
+  [2, 0, 2, 55, "Main du Cartomancien",  "+6% dégâts, +4% or, -3% packs",            {damage:0.06, money:0.04, packDiscount:0.03}],
+  [2, 1, 2, 55, "Audit du Comptable",    "+5% or, +5% fragments",                     {money:0.05, fragmentGain:0.05}],
+  [3,-1, 3, 75, "Maestro tactique",      "+10% dégâts, +8% crit, +5% vitesse att.",  {damage:0.10, critChance:0.08, attackSpeed:0.05}],
+  [3, 0, 3, 75, "Grand plan",            "+8% dégâts, +8% crit, +4% or",             {damage:0.08, critChance:0.08, money:0.04}],
+  [3, 1, 3, 75, "Rapport final",         "+12% or, +8% frag, -6% packs",             {money:0.12, fragmentGain:0.08, packDiscount:0.06}],
+  [4,-1, 3, 85, "Génie militaire",       "+12% dégâts, +12% crit",                   {damage:0.12, critChance:0.12}],
+  [4, 0, 3, 85, "Calcul parfait",        "+10% dégâts, +10% crit, +8% vitesse att.", {damage:0.10, critChance:0.10, attackSpeed:0.08}],
+  [5, 0, 3, 95, "Stratège légendaire",   "+18% dégâts, +12% crit, +10% or",          {damage:0.18, critChance:0.12, money:0.10}],
+]);
+
+// ⊳ RAPIDES — Gâchette Folle · Tempête · Time Breaker — 337.5° (entre Combat et Trèfle)
+const TALENT_RAPIDES = buildRegionNodes("rapides", 610, -252, 0.924, -0.383, [
+  [1, 0, 2, 50, "Cadence d'enfer",       "+7% vitesse att., +12 vitesse dépl.",        {attackSpeed:0.07, moveSpeed:12}],
+  [2,-1, 2, 55, "Rafale de la Tempête",  "+8% vitesse att., +1 rebond",               {attackSpeed:0.08, bounceCount:1}],
+  [2, 0, 2, 55, "Chronos brisé",         "+6% vitesse att., +15 vitesse dépl.",        {attackSpeed:0.06, moveSpeed:15}],
+  [2, 1, 2, 55, "Vent perpétuel",        "+20 vitesse dépl., +6% vitesse att.",        {moveSpeed:20, attackSpeed:0.06}],
+  [3,-1, 3, 75, "Maître du tempo",       "+12% vitesse att., +2 rebonds",              {attackSpeed:0.12, bounceCount:2}],
+  [3, 0, 3, 75, "Fusillade divine",      "+14% vitesse att., +25 vitesse dépl.",       {attackSpeed:0.14, moveSpeed:25}],
+  [3, 1, 3, 75, "Fantôme",               "+30 vitesse dépl., +8% vitesse att.",        {moveSpeed:30, attackSpeed:0.08}],
+  [4,-1, 3, 85, "Ricochet maîtrisé",     "+10% vitesse att., +2 rebonds",              {attackSpeed:0.10, bounceCount:2}],
+  [4, 0, 3, 85, "Overdrive",             "+18% vitesse att., +30 vitesse dépl.",       {attackSpeed:0.18, moveSpeed:30}],
+  [5, 0, 3, 95, "Tireur légendaire",     "+22% vitesse att., +3 rebonds, +20 vitesse", {attackSpeed:0.22, bounceCount:3, moveSpeed:20}],
+]);
+
 // ◈ JONCTION — Nœuds inter-branches (entre les étoiles + autour)
 // Zones dans le sens horaire depuis la droite :
 //   Zone 1 (30°)  Clubs ↔ Diamonds  : Rusheur  — vitesse att. + dépl.
@@ -434,20 +524,34 @@ const TALENT_NODES_RAW = [
   ...TALENT_COMBAT,
   ...TALENT_SHOP,
   ...TALENT_INTER_NODES,
+  ...TALENT_GUERRIERS,
+  ...TALENT_VITAUX,
+  ...TALENT_CAMELEONS,
+  ...TALENT_NEGOCIANTS,
+  ...TALENT_STRATEGES,
+  ...TALENT_RAPIDES,
 ];
 
-// Calcul automatique des connexions par proximité
+// Calcul automatique des connexions par proximité.
+// Règles de distance :
+//   148px  — même région hors centre : voisins orthogonaux uniquement (pas = 140, diagonale ≈ 198 → exclue)
+//   165px  — nœuds centre entre eux  : les nœuds du cluster central sont à ~150px les uns des autres
+//   330px  — connexions inter-régions : centre ↔ branches, jonctions ↔ branches et ↔ personnages
 (function buildConnections() {
-  const maxDist = 210;
+  const maxDist    = 148;
+  const centerDist = 165;
   const bridgeDist = 330;
   for (const a of TALENT_NODES_RAW) {
     for (const b of TALENT_NODES_RAW) {
       if (a.id >= b.id) continue;
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      const sameRegion = a.region === b.region;
+      const sameRegion     = a.region === b.region;
+      const bothCenter     = sameRegion && a.region === "center";
       const involvesCenter = a.region === "center" || b.region === "center";
       const involvesBridge = a.region === "bridge" || b.region === "bridge";
-      const limit = (involvesCenter || involvesBridge) ? bridgeDist : maxDist;
+      const limit = bothCenter                        ? centerDist
+                  : (involvesCenter || involvesBridge) ? bridgeDist
+                  : maxDist;
       if (d <= limit && (sameRegion || involvesCenter || involvesBridge)) {
         a.connections.push(b.id);
         b.connections.push(a.id);

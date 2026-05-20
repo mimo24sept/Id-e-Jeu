@@ -1,6 +1,6 @@
 const talentTreeUI = (() => {
   let cvs, ctx2d;
-  let camX = 0, camY = 0, camZoom = 0.65;
+  let camX = 0, camY = 0, camZoom = 0.45;
   let isPanning = false, panStartX = 0, panStartY = 0, panCamX = 0, panCamY = 0;
   let hoveredId = null;
   let raf = null;
@@ -27,6 +27,7 @@ const talentTreeUI = (() => {
     interestBonus:   { label: "Intérêts fin de vague", pct: true,  negGood: false },
     waveScaling:     { label: "Dégâts par vague",      pct: true,  negGood: false },
     curseBonus:      { label: "Effets malédictions",   pct: true,  negGood: false },
+    sellBonus:       { label: "Revente cartes",         pct: true,  negGood: false },
   };
 
   function w2s(wx, wy) {
@@ -220,17 +221,24 @@ const talentTreeUI = (() => {
     if (fade < 0.01) return;
 
     const centers = {
-      spades:   [-850, 0],
-      hearts:   [-430, 760],
-      diamonds: [430, 760],
-      clubs:    [850, 0],
-      poker:    [0, -850],
-      combat:   [710, -710],
-      shop:     [-710, -710],
+      spades:     [-850,    0],
+      hearts:     [-430,  760],
+      diamonds:   [ 430,  760],
+      clubs:      [ 850,    0],
+      poker:      [   0, -850],
+      combat:     [ 710, -710],
+      shop:       [-710, -710],
+      bridge:     [   0,    0],
+      guerriers:  [ 950,  550],
+      vitaux:     [   0, 1050],
+      cameleons:  [-950,  550],
+      negociants: [-980, -405],
+      strateges:  [-405, -980],
+      rapides:    [ 980, -405],
     };
 
     for (const [rid, reg] of Object.entries(TALENT_REGIONS)) {
-      if (rid === "center") continue;
+      if (rid === "center" || rid === "bridge") continue;
       const pos = centers[rid];
       if (!pos) continue;
       const { x: sx, y: sy } = w2s(pos[0], pos[1]);

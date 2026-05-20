@@ -7,6 +7,7 @@ const TALENT_REGIONS = {
   poker:   { label: "⚡ Poker",   color: "#9b8bff", stroke: "#7060d0" },
   combat:  { label: "⚔ Combat",  color: "#55b8ff", stroke: "#3090d0" },
   shop:    { label: "◆ Boutique",color: "#ffb84b", stroke: "#d08030" },
+  bridge:  { label: "◈ Jonction",color: "#c8b8ff", stroke: "#9070e0" },
 };
 
 function buildRegionNodes(regionId, gx, gy, dx, dy, rows) {
@@ -363,6 +364,65 @@ const TALENT_SHOP = buildRegionNodes("shop", -212, -212, -0.707, -0.707, [
   [11, 0,3,98,"Archimaudit",       "+80% effets de malédiction, -12% packs",{curseBonus:0.80,packDiscount:0.12}],
 ]);
 
+// ◈ JONCTION — Nœuds inter-branches (entre les étoiles + autour)
+// Zones dans le sens horaire depuis la droite :
+//   Zone 1 (30°)  Clubs ↔ Diamonds  : Rusheur  — vitesse att. + dépl.
+//   Zone 2 (90°)  Diamonds ↔ Hearts : Tycoon   — or + PV
+//   Zone 3 (150°) Hearts ↔ Spades   : Guerrier — dégâts + PV
+//   Zone 4 (337°) Combat ↔ Clubs    : Commando — dégâts + vitesse att.
+//   Zone 5 (292°) Poker ↔ Combat    : Stratège — dégâts + crit
+//   Zone 6 (247°) Shop ↔ Poker      : Marchand — or + réduction packs
+//   Zone 7 (202°) Spades ↔ Shop     : Revendeur — dégâts + bonus revente
+const TALENT_INTER_NODES = [
+  // Zone 1 — 30° (Clubs ↔ Diamonds)
+  { id:"br-1a", x:242,  y:140,  tier:2, cost:35, region:"bridge", connections:[],
+    name:"Ruée dévastatrice",   desc:"+4% vitesse att., +12 vitesse dépl.", effect:{attackSpeed:0.04, moveSpeed:12} },
+  { id:"br-1b", x:329,  y:190,  tier:2, cost:45, region:"bridge", connections:[],
+    name:"Torrent de vitesse",  desc:"+5% vitesse att., +18 vitesse dépl.", effect:{attackSpeed:0.05, moveSpeed:18} },
+  { id:"br-1c", x:416,  y:240,  tier:3, cost:65, region:"bridge", connections:[],
+    name:"Ouragan",             desc:"+10% vitesse att., +30 vitesse dépl.", effect:{attackSpeed:0.10, moveSpeed:30} },
+
+  // Zone 2 — 90° (Diamonds ↔ Hearts)
+  { id:"br-2a", x:0,    y:280,  tier:2, cost:35, region:"bridge", connections:[],
+    name:"Capital vital",       desc:"+5% or, +12 PV",                      effect:{money:0.05, maxHp:12} },
+  { id:"br-2b", x:0,    y:380,  tier:2, cost:45, region:"bridge", connections:[],
+    name:"Fortune et santé",    desc:"+7% or, +18 PV",                      effect:{money:0.07, maxHp:18} },
+  { id:"br-2c", x:0,    y:480,  tier:3, cost:65, region:"bridge", connections:[],
+    name:"Baron prospère",      desc:"+12% or, +30 PV",                     effect:{money:0.12, maxHp:30} },
+
+  // Zone 3 — 150° (Hearts ↔ Spades)
+  { id:"br-3a", x:-242, y:140,  tier:2, cost:35, region:"bridge", connections:[],
+    name:"Frappe résistante",   desc:"+4% dégâts, +12 PV",                  effect:{damage:0.04, maxHp:12} },
+  { id:"br-3b", x:-329, y:190,  tier:2, cost:45, region:"bridge", connections:[],
+    name:"Gladiateur",          desc:"+5% dégâts, +18 PV",                  effect:{damage:0.05, maxHp:18} },
+  { id:"br-3c", x:-416, y:240,  tier:3, cost:65, region:"bridge", connections:[],
+    name:"Champion",            desc:"+10% dégâts, +30 PV",                 effect:{damage:0.10, maxHp:30} },
+
+  // Zone 4 — 337° (Combat ↔ Clubs)
+  { id:"br-4a", x:259,  y:-107, tier:2, cost:35, region:"bridge", connections:[],
+    name:"Assaut éclair",       desc:"+4% dégâts, +5% vitesse att.",        effect:{damage:0.04, attackSpeed:0.05} },
+  { id:"br-4c", x:443,  y:-184, tier:3, cost:65, region:"bridge", connections:[],
+    name:"Commando d'élite",    desc:"+8% dégâts, +10% vitesse att.",       effect:{damage:0.08, attackSpeed:0.10} },
+
+  // Zone 5 — 292° (Poker ↔ Combat)
+  { id:"br-5a", x:107,  y:-259, tier:2, cost:35, region:"bridge", connections:[],
+    name:"Tactique implacable", desc:"+4% dégâts, +3% crit",                effect:{damage:0.04, critChance:0.03} },
+  { id:"br-5c", x:184,  y:-443, tier:3, cost:65, region:"bridge", connections:[],
+    name:"Stratège de guerre",  desc:"+8% dégâts, +8% crit",               effect:{damage:0.08, critChance:0.08} },
+
+  // Zone 6 — 247° (Shop ↔ Poker)
+  { id:"br-6a", x:-107, y:-259, tier:2, cost:35, region:"bridge", connections:[],
+    name:"Investisseur stratège",desc:"+4% or, -4% packs",                  effect:{money:0.04, packDiscount:0.04} },
+  { id:"br-6c", x:-184, y:-443, tier:3, cost:65, region:"bridge", connections:[],
+    name:"Magnat calculateur",  desc:"+8% or, -8% packs, +4% fragments",   effect:{money:0.08, packDiscount:0.08, fragmentGain:0.04} },
+
+  // Zone 7 — 202° (Spades ↔ Shop)
+  { id:"br-7a", x:-259, y:-107, tier:2, cost:35, region:"bridge", connections:[],
+    name:"Commerce sanglant",   desc:"+4% dégâts, +15% revente cartes",     effect:{damage:0.04, sellBonus:0.15} },
+  { id:"br-7c", x:-443, y:-184, tier:3, cost:65, region:"bridge", connections:[],
+    name:"Assassin marchand",   desc:"+8% dégâts, +25% revente cartes",     effect:{damage:0.08, sellBonus:0.25} },
+];
+
 // Assembler tous les nœuds
 const TALENT_NODES_RAW = [
   ...TALENT_CENTER_NODES,
@@ -373,20 +433,22 @@ const TALENT_NODES_RAW = [
   ...TALENT_POKER,
   ...TALENT_COMBAT,
   ...TALENT_SHOP,
+  ...TALENT_INTER_NODES,
 ];
 
 // Calcul automatique des connexions par proximité
 (function buildConnections() {
   const maxDist = 210;
-  const bridgeDist = 330; // distance étendue pour relier le centre aux régions externes
+  const bridgeDist = 330;
   for (const a of TALENT_NODES_RAW) {
     for (const b of TALENT_NODES_RAW) {
       if (a.id >= b.id) continue;
       const d = Math.hypot(a.x - b.x, a.y - b.y);
       const sameRegion = a.region === b.region;
       const involvesCenter = a.region === "center" || b.region === "center";
-      const limit = involvesCenter ? bridgeDist : maxDist;
-      if (d <= limit && (sameRegion || involvesCenter)) {
+      const involvesBridge = a.region === "bridge" || b.region === "bridge";
+      const limit = (involvesCenter || involvesBridge) ? bridgeDist : maxDist;
+      if (d <= limit && (sameRegion || involvesCenter || involvesBridge)) {
         a.connections.push(b.id);
         b.connections.push(a.id);
       }

@@ -52,7 +52,7 @@ function talentBonuses(meta = playerMeta()) {
     damage: 0, flatDamage: 0, money: 0, attackSpeed: 0,
     maxHp: 0, maxHpMultiplier: 0, regen: 0, critChance: 0,
     moveSpeed: 0, packDiscount: 0, rerollDiscount: 0, fragmentGain: 0,
-    bounceCount: 0, healingBonus: 0, interestBonus: 0, waveScaling: 0, curseBonus: 0,
+    bounceCount: 0, healingBonus: 0, interestBonus: 0, waveScaling: 0, curseBonus: 0, sellBonus: 0,
   };
   for (const id of (meta.unlockedTalents || [])) {
     const node = talentNode(id);

@@ -66,7 +66,8 @@ function cardPrice(card) {
 }
 
 function sellValue(card) {
-  return Math.max(2, Math.floor(cardPrice(card) * 0.45 * (state.character?.sellMultiplier || 1)));
+  const tb = talentBonuses();
+  return Math.max(2, Math.floor(cardPrice(card) * 0.45 * (state.character?.sellMultiplier || 1) * (1 + (tb.sellBonus || 0))));
 }
 
 function characterShopPrice(basePrice, type) {

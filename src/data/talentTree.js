@@ -532,30 +532,52 @@ const TALENT_NODES_RAW = [
   ...TALENT_RAPIDES,
 ];
 
-// Calcul automatique des connexions par proximité.
-// Règles de distance :
-//   148px  — même région hors centre : voisins orthogonaux uniquement (pas = 140, diagonale ≈ 198 → exclue)
-//   165px  — nœuds centre entre eux  : les nœuds du cluster central sont à ~150px les uns des autres
-//   330px  — connexions inter-régions : centre ↔ branches, jonctions ↔ branches et ↔ personnages
+// Connexions par Relative Neighborhood Graph (RNG) :
+// On crée d'abord les candidats par proximité (mêmes règles de distance qu'avant),
+// puis on conserve A↔B seulement si aucun nœud C pertinent n'est strictement plus
+// proche à la fois de A et de B — ce qui supprime les liaisons redondantes tout en
+// garantissant la connectivité du graphe.
 (function buildConnections() {
   const maxDist    = 148;
   const centerDist = 165;
   const bridgeDist = 330;
+
+  function candidateLimit(a, b) {
+    const sameRegion     = a.region === b.region;
+    const bothCenter     = sameRegion && a.region === "center";
+    const involvesCenter = a.region === "center" || b.region === "center";
+    const involvesBridge = a.region === "bridge" || b.region === "bridge";
+    if (!sameRegion && !involvesCenter && !involvesBridge) return 0;
+    if (bothCenter) return centerDist;
+    if (involvesCenter || involvesBridge) return bridgeDist;
+    return maxDist;
+  }
+
+  const candidates = [];
   for (const a of TALENT_NODES_RAW) {
     for (const b of TALENT_NODES_RAW) {
       if (a.id >= b.id) continue;
+      const limit = candidateLimit(a, b);
+      if (!limit) continue;
       const d = Math.hypot(a.x - b.x, a.y - b.y);
-      const sameRegion     = a.region === b.region;
-      const bothCenter     = sameRegion && a.region === "center";
-      const involvesCenter = a.region === "center" || b.region === "center";
-      const involvesBridge = a.region === "bridge" || b.region === "bridge";
-      const limit = bothCenter                        ? centerDist
-                  : (involvesCenter || involvesBridge) ? bridgeDist
-                  : maxDist;
-      if (d <= limit && (sameRegion || involvesCenter || involvesBridge)) {
-        a.connections.push(b.id);
-        b.connections.push(a.id);
-      }
+      if (d <= limit) candidates.push({ a, b, d });
+    }
+  }
+
+  for (const { a, b, d: dab } of candidates) {
+    let blocked = false;
+    for (const c of TALENT_NODES_RAW) {
+      if (c === a || c === b) continue;
+      // C ne peut bloquer A↔B que s'il appartient à l'une des deux régions concernées
+      if (c.region !== a.region && c.region !== b.region) continue;
+      const dac = Math.hypot(a.x - c.x, a.y - c.y);
+      if (dac >= dab) continue;
+      const dbc = Math.hypot(b.x - c.x, b.y - c.y);
+      if (dbc < dab) { blocked = true; break; }
+    }
+    if (!blocked) {
+      a.connections.push(b.id);
+      b.connections.push(a.id);
     }
   }
 })();

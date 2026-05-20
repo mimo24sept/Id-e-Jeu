@@ -289,6 +289,7 @@ function updateCrates(dt) {
         life: 0.9,
         color: "#f0d24b",
       });
+      if (activeTutorialStep === "firstCrate") completeTutorialStep();
     } else {
       remainingCrates.push(crate);
     }

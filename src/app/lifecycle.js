@@ -74,6 +74,7 @@ function showRunDecision(completedWave) {
   ui.cashOutRun.textContent = `Encaisser ${Math.round(cashReward)}`;
   ui.continueRun.textContent = `Doubler vers vague ${completedWave + 10}`;
   ui.runDecision.classList.remove("is-hidden");
+  queueTutorialSteps(["runDecision"]);
 }
 
 function cashOutRun() {
@@ -86,7 +87,6 @@ function cashOutRun() {
 function continueRun() {
   if (!state?.fragmentDecisionWave) return;
   state.fragmentStakeMultiplier *= 2;
-  state.fragmentRiskActive = true;
   state.fragmentDecisionWave = 0;
   ui.runDecision.classList.add("is-hidden");
   renderUI();
@@ -173,7 +173,7 @@ function initMenu() {
   updateMenuPanels();
   renderMetaProgression();
   renderGameShell();
-  queueTutorialSteps(["menuName", "menuLaunch", "menuMeta", "menuCollection"]);
+  queueTutorialSteps(["menuConnect", "menuPlay", "menuFragments", "menuTalents"]);
   updateMobileControlsVisibility();
 }
 

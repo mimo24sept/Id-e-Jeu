@@ -17,145 +17,141 @@ let activeTutorialStep = null;
 let tutorialSeenSteps = new Set(JSON.parse(localStorage.getItem(TUTORIAL_STEPS_STORAGE_KEY) || "[]"));
 
 const TUTORIAL_STEPS = {
-  menuName: {
+  // === MENU ===
+  menuConnect: {
     selector: "#playerNameInput",
-    kicker: "Connexion",
-    title: "Choisis ton pseudo",
-    action: "ECRIS ICI",
-    text: "Ton nom local sert aux scores et a la progression.",
+    kicker: "Bienvenue",
+    title: "Entre ton pseudo",
+    action: "ÉCRIS",
+    text: "Rien à créer — ton nom sauvegarde ta progression localement.",
   },
-  menuLaunch: {
+  menuPlay: {
     selector: "#hubActions",
-    kicker: "Menu",
-    title: "Lance ta run",
+    kicker: "Prêt ?",
+    title: "Lance ta première run",
     action: "CLIQUE",
-    text: "Connecte-toi, puis lance une partie.",
+    text: "Chaque run repart de zéro. Ce que tu gardes entre les runs, ce sont les fragments.",
   },
-  menuMeta: {
+  menuFragments: {
     selector: ".meta-panel",
-    kicker: "Progression",
-    title: "Les fragments restent",
-    action: "AMELIORE",
-    text: "Les fragments achetent des upgrades permanents.",
+    kicker: "Progression permanente",
+    title: "Les fragments durent",
+    action: "REGARDE",
+    text: "Tu gagnes des fragments en survivant. Ils améliorent des cartes qui renforcent toutes tes futures parties — même si tu meurs vague 1.",
   },
-  menuCollection: {
-    selector: "#openMetaCollection",
-    kicker: "Collection",
-    title: "Regarde tes cartes",
-    action: "OUVRE",
-    text: "Contours = couleur. Segments = niveau.",
-  },
+
+  // === PERSONNAGE ===
   characterPick: {
     selector: "#characterChoices",
-    kicker: "Personnage",
-    title: "Choisis ton modificateur",
+    kicker: "Modificateur de run",
+    title: "Un personnage = une règle changée",
     action: "CHOISIS",
-    text: "Chaque personnage change la valeur des couleurs.",
+    text: "Shadow est le plus direct pour commencer. Les autres personnages changent comment les couleurs ou l'or fonctionnent.",
   },
-  waveControls: {
-    selector: "#controlsTip",
-    kicker: "Vague",
-    title: "Bouge en continu",
-    action: "ESQUIVE",
-    text: "Clavier ou joystick tactile: evite le contact.",
-  },
-  handPanel: {
-    selector: ".panel-left",
-    kicker: "Main",
-    title: "Tu pars sans carte",
-    action: "REMPLIS",
-    text: "Ta main vide devient ton build.",
-  },
-  pokerHands: {
-    selector: ".panel-left",
-    kicker: "Poker",
-    title: "Cherche les combinaisons",
-    action: "COMBINE",
-    text: "Paires, quintes, couleurs et mains speciales augmentent tes degats.",
-  },
-  cardColors: {
-    selector: ".panel-left",
-    kicker: "Couleurs",
-    title: "Chaque couleur a son role",
-    action: "COMPARE",
-    text: "Pique tape fort, Carreau genere de l'or, Trefle accelere, Coeur soigne. Les figures ameliorees ajoutent des effets uniques.",
-  },
-  weaponPanel: {
+
+  // === VAGUE ===
+  waveStart: {
     selector: ".panel-right",
-    kicker: "Armes",
+    kicker: "Vague 1",
     title: "Tes armes tirent seules",
-    action: "SURVEILLE",
-    text: "Tu en portes deux. Remplace les mauvais rolls.",
+    action: "BOUGE",
+    text: "Tu n'appuies sur aucune touche pour tirer. WASD ou le joystick pour te déplacer — ton seul job, c'est d'esquiver.",
   },
-  crateField: {
+  firstCrate: {
     selector: "#game",
-    kicker: "Terrain",
-    title: "Ramasse les caisses",
+    kicker: "Caisse !",
+    title: "Marche dessus",
     action: "RAMASSE",
-    text: "Les caisses donnent des packs gratuits.",
+    text: "Ces caisses dorées apparaissent pendant les vagues. Passe dessus pour gagner un pack de cartes gratuit — ouvert au shop après la vague.",
   },
-  advancedCourts: {
-    selector: ".panel-left",
-    kicker: "Figures",
-    title: "Les tetes changent le gameplay",
-    action: "OBSERVE",
-    text: "Figures ameliorees: taxe, ancrage, auras, rebonds.",
+
+  // === ÉVÉNEMENT ===
+  eventWave: {
+    selector: "#enemyCount",
+    kicker: "Vague spéciale",
+    title: "Complète l'objectif",
+    action: "EXECUTE",
+    text: "Pas de timer — les ennemis spawnen en boucle jusqu'à ce que l'objectif soit rempli. Lis le HUD en haut pour voir ce qu'il faut faire.",
   },
-  shopGold: {
+
+  // === SHOP ===
+  shopIntro: {
     selector: ".shop-wallet",
-    kicker: "Boutique",
-    title: "Surveille ton or",
-    action: "COMPTE",
-    text: "Ton or finance cartes, armes, packs et rerolls.",
+    kicker: "Entre deux vagues",
+    title: "Vague passée — dépense bien",
+    action: "REGARDE",
+    text: "L'or que tu gagnes en tuant achète des cartes et des armes. Plus ton build est fort, plus les vagues suivantes sont faciles.",
   },
-  shopHand: {
+  shopBuild: {
+    selector: "#shopSlots",
+    kicker: "Le marché",
+    title: "Cartes, packs, armes",
+    action: "ACHÈTE",
+    text: "Achète des cartes pour ta main de poker, des packs pour en obtenir plusieurs d'un coup, ou des armes pour changer ton style de jeu. Survole pour voir les détails avant d'acheter.",
+  },
+  shopSell: {
     selector: "#shopHand",
-    kicker: "Main",
-    title: "Vends pour faire de la place",
+    kicker: "Ta main",
+    title: "5 cartes max — vends ce qui ne sert plus",
     action: "VENDS",
-    text: "Clique une carte ici pour liberer un slot.",
+    text: "Clique une carte ici pour la vendre contre de l'or. Garde les cartes qui forment des combos ou qui se regroupent par couleur.",
   },
-  shopMarket: {
-    selector: "#shopSlots",
-    kicker: "Marche",
-    title: "Six offres aleatoires",
-    action: "ACHETE",
-    text: "Cartes, packs, armes et maledictions tournent ici.",
+  shopReroll: {
+    selector: "#rerollShop",
+    kicker: "Pas convaincu ?",
+    title: "Relance le marché",
+    action: "RELANCE",
+    text: "Paye pour voir de nouvelles offres. Le coût augmente à chaque relance — garde-en pour les shops décisifs.",
   },
-  shopWeapons: {
-    selector: "#shopSlots",
-    kicker: "Armes",
-    title: "La rarete fixe le prix",
-    action: "COMPARE",
-    text: "Survole une arme: tes armes equipees apparaissent a cote.",
+
+  // === POKER & COULEURS ===
+  pokerCombo: {
+    selector: ".panel-left",
+    kicker: "Main de poker",
+    title: "Tes cartes forment un combo",
+    action: "OBSERVE",
+    text: "En haut à gauche : le nom de ta main de poker et son bonus de dégâts. Paire = +30%. Brelan = +60%. Quinte flush = +300%. Construis vers la meilleure combinaison possible.",
   },
-  shopLocks: {
-    selector: "#shopSlots",
-    kicker: "Lock",
-    title: "Garde une bonne offre",
-    action: "LOCK",
-    text: "Garde une offre si tu veux l'acheter plus tard.",
+  suitEffect: {
+    selector: ".panel-left",
+    kicker: "Les couleurs comptent",
+    title: "Chaque couleur amplifie un stat",
+    action: "ACCUMULE",
+    text: "♠ Pique → dégâts bruts. ♣ Trèfle → vitesse d'attaque. ♦ Carreau → or gagné. ♥ Cœur → PV max et régén. Plus tu en as de la même couleur, plus l'effet est fort.",
   },
-  shopStart: {
-    selector: ".shop-actions",
-    kicker: "Suite",
-    title: "Relance ou repars",
-    action: "DECIDE",
-    text: "Relance le marche ou lance la vague suivante.",
+
+  // === DÉCISION DE RUN ===
+  runDecision: {
+    selector: "#runDecision",
+    kicker: "Checkpoint",
+    title: "Encaisser ou doubler ?",
+    action: "DÉCIDE",
+    text: "Encaisser maintenant sécurise tes fragments définitivement. Doubler les multiplie — mais si tu meurs avant le prochain checkpoint, tu n'en gardes que 20%. À toi de juger ton build.",
   },
+
+  // === TALENT ===
+  menuTalents: {
+    selector: "#openTalentTree",
+    kicker: "Fragments dépensés",
+    title: "L'arbre de talents",
+    action: "OUVRE",
+    text: "Tes fragments s'investissent ici en bonus permanents : dégâts, PV, cadence, or. Chaque nœud débloqué renforce toutes tes futures parties.",
+  },
+
+  // === PACKS & MALÉDICTIONS ===
   packChoice: {
     selector: "#packOffer",
-    kicker: "Pack",
-    title: "Choisis ou passe",
+    kicker: "Pack ouvert",
+    title: "Choisis ce qui complète ta main",
     action: "PRENDS",
-    text: "Prends une carte, vends pour faire place, ou passe.",
+    text: "Regarde ta main en haut à gauche. Prends la carte qui forme le meilleur combo ou renforce ta couleur dominante. Tu peux aussi vendre ou passer.",
   },
   curseChoice: {
     selector: "#packOffer",
-    kicker: "Malediction",
-    title: "Applique sur une carte",
+    kicker: "Malédiction",
+    title: "Risque calculé",
     action: "APPLIQUE",
-    text: "Choisis un effet, puis cible une carte non maudite.",
+    text: "Une malédiction affaiblit une carte en échange d'un bonus amplifié. Applique-la sur une carte que tu n'utilises presque plus — ou sur ta meilleure pour les grands bonus.",
   },
 };
 

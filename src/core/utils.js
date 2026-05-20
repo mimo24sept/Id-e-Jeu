@@ -254,7 +254,7 @@ function replayTutorial() {
   saveTutorialProgress();
   tutorialQueue = [];
   activeTutorialStep = null;
-  queueTutorialSteps(["menuName", "menuLaunch", "menuMeta", "menuCollection"], { force: true });
+  queueTutorialSteps(["menuConnect", "menuPlay", "menuFragments", "menuTalents"], { force: true });
 }
 
 function uniqueId(prefix) {

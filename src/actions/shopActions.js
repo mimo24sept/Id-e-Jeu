@@ -230,7 +230,6 @@ function chooseCurse(index) {
   state.packOffer = [];
   state.packContext = null;
   renderUI();
-  queueTutorialSteps(["shopHand"]);
 }
 
 function applyCurseToCard(index) {

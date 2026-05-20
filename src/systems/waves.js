@@ -130,6 +130,7 @@ function randomWorldPoint(margin = 120) {
 
 function rollEventWave() {
   if (state.wave % 10 === 0) return true; // boss wave : toujours un événement, compteur inchangé
+  if (!isTutorialDone() && state.wave <= 3) return false; // première partie : 3 vagues de survie garanties
   const chance = Math.min(1, 0.10 * Math.pow(2, state.eventWaveMisses));
   const isEvent = Math.random() < chance;
   if (isEvent) {
@@ -256,9 +257,8 @@ function beginWave() {
   state.waveKillCount = 0;
   state.waveGoldEarned = 0;
   state.wave += state.wave === 0 ? 1 : 0;
-  state.waveDuration = Math.min(15 + state.wave * 1.7, 54);
   const isEvent = rollEventWave();
-  state.waveTimeLeft = isEvent ? 0 : state.waveDuration;
+  state.waveTimeLeft = isEvent ? 0 : Math.min(15 + state.wave * 1.7, 54);
   state.spawnTimer = 0;
   state.player.stationaryTime = 0;
   applyDiamondCourtStartOfWave();
@@ -271,7 +271,8 @@ function beginWave() {
   if (state.wave % 10 === 0) spawnBoss();
   ui.shop.classList.add("is-hidden");
   renderUI();
-  queueTutorialSteps(["waveControls", "handPanel", "pokerHands", "cardColors", "weaponPanel", "crateField", "advancedCourts"]);
+  queueTutorialSteps(["waveStart"]);
+  if (isEvent) queueTutorialSteps(["eventWave"]);
 }
 
 function completeWave() {
@@ -311,7 +312,7 @@ function completeWave() {
   openNextCratePack();
   renderUI();
   ui.shop.classList.remove("is-hidden");
-  queueTutorialSteps(["shopGold", "shopHand", "shopMarket", "shopWeapons", "shopLocks", "shopStart"]);
+  queueTutorialSteps(["shopIntro", "shopBuild", "shopSell", "shopReroll", "pokerCombo", "suitEffect"]);
   if (state.packOffer.length > 0) queueTutorialSteps(["packChoice"]);
   if (completedWave > 0 && completedWave % 10 === 0) {
     showRunDecision(completedWave);
@@ -457,6 +458,7 @@ function spawnCrate() {
     y: cratePoint.y,
     radius: CRATE_RADIUS,
   });
+  queueTutorialSteps(["firstCrate"]);
 }
 
 

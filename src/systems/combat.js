@@ -266,14 +266,16 @@ function updateObjective(dt) {
 }
 
 function updateCrates(dt) {
-  if (state.betweenWaves || state.waveTimeLeft <= 0) return;
+  if (state.betweenWaves) return;
 
-  state.crateSpawnTimer -= dt;
-  if (state.crateSpawnTimer <= 0) {
-    if (state.crates.length < MAX_CRATES_ON_MAP && state.pendingCratePacks < 1) {
-      spawnCrate();
+  if (state.waveTimeLeft > 0) {
+    state.crateSpawnTimer -= dt;
+    if (state.crateSpawnTimer <= 0) {
+      if (state.crates.length < MAX_CRATES_ON_MAP && state.pendingCratePacks < 1) {
+        spawnCrate();
+      }
+      state.crateSpawnTimer = nextCrateDelay();
     }
-    state.crateSpawnTimer = nextCrateDelay();
   }
 
   const remainingCrates = [];
@@ -787,7 +789,7 @@ function updateKills(dt) {
   const bossAlive = state.enemies.some((enemy) => enemy.type === "boss" && enemy.hp > 0);
   if (!state.betweenWaves && state.objective?.completed && !bossAlive) {
     completeWave();
-  } else if (!state.betweenWaves && !state.objective && state.waveTimeLeft <= 0 && state.enemies.length === 0) {
+  } else if (!state.betweenWaves && !state.objective && state.waveTimeLeft <= 0) {
     completeWave();
   }
 }

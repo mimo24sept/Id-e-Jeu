@@ -11,22 +11,20 @@
   ui.shopGold.textContent = `$${state.money}`;
   ui.shopGoldMultiplier.textContent = `OR x${state.stats.moneyMultiplier.toFixed(2)}`;
   const crateHudCount = state.pendingCratePacks + state.crates.length;
-  ui.enemyCount.textContent = state.betweenWaves
-    ? "Shop"
-    : `${Math.ceil(state.waveTimeLeft)}s · ${state.enemies.length}`;
-  if (!state.betweenWaves && state.objective) {
+  if (state.betweenWaves) {
+    ui.enemyCount.textContent = cratePacksWaiting() > 0 ? `Shop | ${cratePacksWaiting()} caisse` : "Shop";
+  } else if (state.objective) {
     const objective = state.objective;
     let progress = "";
     if (objective.type === "capture") progress = `${Math.floor((objective.progress / objective.target) * 100)}%`;
     if (objective.type === "turrets") progress = `${objective.killed}/${objective.target}`;
     if (objective.type === "runners") progress = `${objective.collected}/${objective.target}`;
     if (objective.type === "kills") progress = `${objective.killed}/${objective.target}`;
-    ui.enemyCount.textContent = `${objective.title} ${progress} | ${state.enemies.length}`;
-  }
-  if (state.betweenWaves && cratePacksWaiting() > 0) {
-    ui.enemyCount.textContent = `Shop | ${cratePacksWaiting()} caisse`;
-  } else if (!state.betweenWaves && crateHudCount > 0 && !state.objective) {
-    ui.enemyCount.textContent = `${Math.ceil(state.waveTimeLeft)}s | ${state.enemies.length} | C${crateHudCount}`;
+    const crateStr = crateHudCount > 0 ? ` | C${crateHudCount}` : "";
+    ui.enemyCount.textContent = `${objective.title} ${progress} | ${state.enemies.length}${crateStr}`;
+  } else {
+    const crateStr = crateHudCount > 0 ? ` | C${crateHudCount}` : "";
+    ui.enemyCount.textContent = `${Math.ceil(state.waveTimeLeft)}s · ${state.enemies.length}${crateStr}`;
   }
   ui.rerollShop.textContent = `Relancer - $${rerollCost()}`;
   ui.rerollShop.disabled = !state.betweenWaves || state.money < rerollCost() || state.pendingCurse || state.pendingWeapon || state.packOffer.length > 0;

@@ -52,6 +52,7 @@
     runCursesApplied: 0,
     runMaxWeapons: 1,
     bossKills: 0,
+    eventWaveMisses: 0,
   };
   state = initial;
   state.stats = calculateStats();

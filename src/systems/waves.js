@@ -128,6 +128,18 @@ function randomWorldPoint(margin = 120) {
   };
 }
 
+function rollEventWave() {
+  if (state.wave % 10 === 0) return true; // boss wave : toujours un événement, compteur inchangé
+  const chance = Math.min(1, 0.10 * Math.pow(2, state.eventWaveMisses));
+  const isEvent = Math.random() < chance;
+  if (isEvent) {
+    state.eventWaveMisses = 0;
+  } else {
+    state.eventWaveMisses += 1;
+  }
+  return isEvent;
+}
+
 function createWaveObjective() {
   const choices = ["capture", "turrets", "runners", "kills"];
   const type = choices[Math.floor(random(0, choices.length))];
@@ -245,16 +257,17 @@ function beginWave() {
   state.waveGoldEarned = 0;
   state.wave += state.wave === 0 ? 1 : 0;
   state.waveDuration = Math.min(15 + state.wave * 1.7, 54);
-  state.waveTimeLeft = state.waveDuration;
+  const isEvent = rollEventWave();
+  state.waveTimeLeft = isEvent ? 0 : state.waveDuration;
   state.spawnTimer = 0;
   state.player.stationaryTime = 0;
   applyDiamondCourtStartOfWave();
   state.stats = calculateStats();
   const fixedWaveGold = 18 + state.wave * 6 + metaRunBonuses().waveGold;
   state.waveGoldCap = Math.max(0, Math.round((expectedWaveIncome(state.wave) - fixedWaveGold) * state.stats.moneyMultiplier));
-  state.objective = createWaveObjective();
-  if (state.objective.type === "turrets") spawnObjectiveTurrets();
-  if (state.objective.type === "runners") spawnObjectiveRunner();
+  state.objective = isEvent ? createWaveObjective() : null;
+  if (state.objective?.type === "turrets") spawnObjectiveTurrets();
+  if (state.objective?.type === "runners") spawnObjectiveRunner();
   if (state.wave % 10 === 0) spawnBoss();
   ui.shop.classList.add("is-hidden");
   renderUI();

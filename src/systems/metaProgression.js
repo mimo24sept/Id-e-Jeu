@@ -85,6 +85,33 @@ function unlockDevMeta(meta) {
   meta.equippedSkin ||= "classic";
 }
 
+function autoUnlockTalents(meta = playerMeta()) {
+  if (typeof TALENT_NODES === "undefined") return 0;
+  const unlockedSet = new Set([...(meta.unlockedTalents || []), "origin"]);
+  let totalUnlocked = 0;
+
+  while (true) {
+    const available = TALENT_NODES.filter(n =>
+      !unlockedSet.has(n.id) &&
+      n.connections.some(cid => unlockedSet.has(cid)) &&
+      n.cost <= (meta.fragments || 0)
+    );
+    if (available.length === 0) break;
+    const pick = available[Math.floor(Math.random() * available.length)];
+    meta.fragments -= pick.cost;
+    meta.unlockedTalents = meta.unlockedTalents || [];
+    meta.unlockedTalents.push(pick.id);
+    unlockedSet.add(pick.id);
+    totalUnlocked++;
+  }
+
+  if (totalUnlocked > 0) {
+    saveMetaProgression();
+    renderMetaProgression();
+  }
+  return totalUnlocked;
+}
+
 function upgradedCardCount(meta = playerMeta()) {
   return Object.keys(meta.cardUpgrades || {}).length;
 }

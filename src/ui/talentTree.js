@@ -354,6 +354,23 @@ const talentTreeUI = (() => {
     const meta = getMeta();
     const count = (meta?.unlockedTalents || []).length;
     el.textContent = `${meta?.fragments || 0} fragments · ${count} talents débloqués`;
+
+    const autoBtn = document.getElementById("autoUnlockTalents");
+    if (autoBtn) {
+      const unlockedSet = new Set([...(meta?.unlockedTalents || []), "origin"]);
+      const canAfford = typeof TALENT_NODES !== "undefined" &&
+        TALENT_NODES.some(n =>
+          !unlockedSet.has(n.id) &&
+          n.connections.some(cid => unlockedSet.has(cid)) &&
+          n.cost <= (meta?.fragments || 0)
+        );
+      autoBtn.disabled = !canAfford;
+    }
+  }
+
+  function onAutoUnlock() {
+    if (typeof autoUnlockTalents === "function") autoUnlockTalents();
+    updateHUD();
   }
 
   function onMouseMove(e) {
@@ -440,6 +457,7 @@ const talentTreeUI = (() => {
     window.addEventListener("mouseup", onMouseUp);
     cvs.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("keydown", onKeyDown);
+    document.getElementById("autoUnlockTalents")?.addEventListener("click", onAutoUnlock);
 
     updateHUD();
     raf = requestAnimationFrame(frame);
@@ -457,6 +475,7 @@ const talentTreeUI = (() => {
       cvs.removeEventListener("wheel", onWheel);
     }
     window.removeEventListener("keydown", onKeyDown);
+    document.getElementById("autoUnlockTalents")?.removeEventListener("click", onAutoUnlock);
   }
 
   return { open, close };

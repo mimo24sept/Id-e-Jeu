@@ -110,6 +110,7 @@ function fireWeapon(weapon) {
       vy: Math.sin(angle) * weapon.projectileSpeed,
       radius: pellets > 1 ? 5 : weapon.archetypeId === "sniper" ? 8 : 6,
       damage: hit.damage,
+      hp: hit.damage,
       life: weaponRange / weapon.projectileSpeed,
       color: weapon.color,
       effects: projectileEffects(weapon),
@@ -426,6 +427,7 @@ function pushEnemyBullet(enemy, angle, speed, radius, damage, life, target, colo
     vy: Math.sin(angle) * speed,
     radius,
     damage,
+    hp: damage,
     life,
     target: target === state.player ? "player" : "guard",
     color,
@@ -537,7 +539,7 @@ function updateEnemies(dt) {
 
     if (enemy.type === "shooter" || enemy.type === "boss" || enemy.type === "sprayer" || enemy.type === "objective-turret") {
       enemy.shootTimer -= dt;
-      const shootRange = enemy.type === "boss" ? 880 : enemy.type === "sprayer" ? 620 : enemy.type === "objective-turret" ? 760 : 720;
+      const shootRange = enemy.type === "boss" ? 880 : enemy.type === "sprayer" ? 620 : enemy.type === "objective-turret" ? 760 : enemy.type === "shooter" ? 420 : 720;
       if (enemy.shootTimer <= 0 && d < shootRange) {
         if (enemy.type === "boss") {
           fireBossPattern(enemy, target, angle);
@@ -545,18 +547,22 @@ function updateEnemies(dt) {
           const shots = enemy.type === "sprayer" ? 4 : 1;
           const spread = enemy.type === "sprayer" ? random(1.4, 3.1) : 0;
           const bulletSpeed = enemy.type === "sprayer" ? 235 : enemy.type === "objective-turret" ? 265 : 310;
-          const baseAngle = enemy.type === "shooter" || enemy.type === "objective-turret"
-            ? predictiveAimAngle(enemy, target, bulletSpeed, 0.035)
-            : angle + (enemy.type === "sprayer" ? random(-1.25, 1.25) : 0);
+          const baseAngle = enemy.type === "shooter"
+            ? predictiveAimAngle(enemy, target, bulletSpeed, 0.14)
+            : enemy.type === "objective-turret"
+              ? predictiveAimAngle(enemy, target, bulletSpeed, 0.035)
+              : angle + (enemy.type === "sprayer" ? random(-1.25, 1.25) : 0);
           for (let i = 0; i < shots; i += 1) {
             const offset = shots > 1 ? ((i / (shots - 1)) - 0.5) * spread : 0;
+            const bulletDamage = (enemy.type === "sprayer" ? 6 + state.wave * 0.38 : enemy.type === "objective-turret" ? 8 + state.wave * 0.42 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0);
             state.enemyBullets.push({
               x: enemy.x,
               y: enemy.y,
               vx: Math.cos(baseAngle + offset) * bulletSpeed,
               vy: Math.sin(baseAngle + offset) * bulletSpeed,
               radius: enemy.type === "sprayer" ? 5 : 6,
-              damage: (enemy.type === "sprayer" ? 6 + state.wave * 0.38 : enemy.type === "objective-turret" ? 8 + state.wave * 0.42 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0),
+              damage: bulletDamage,
+              hp: bulletDamage,
               life: 3,
               target: target === state.player ? "player" : "guard",
               color: enemy.type === "objective-turret" ? "#f0d24b" : undefined,
@@ -614,6 +620,25 @@ function updateProjectiles(dt) {
     }
   }
   state.bodyguards = (state.bodyguards || []).filter((guard) => guard.hp > 0);
+
+  for (const projectile of state.projectiles) {
+    if (projectile.life <= 0) continue;
+    for (const bullet of state.enemyBullets) {
+      if (bullet.life <= 0) continue;
+      if (distance(projectile, bullet) < projectile.radius + bullet.radius) {
+        if (projectile.hp > bullet.hp) {
+          projectile.hp -= bullet.hp;
+          bullet.life = 0;
+        } else if (bullet.hp > projectile.hp) {
+          bullet.hp -= projectile.hp;
+          projectile.life = 0;
+        } else {
+          projectile.life = 0;
+          bullet.life = 0;
+        }
+      }
+    }
+  }
 
   for (const pulse of state.pulses) {
     pulse.life -= dt;

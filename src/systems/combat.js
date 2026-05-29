@@ -77,7 +77,7 @@ function fireWeapon(weapon) {
   const weaponRange = weapon.range * (state.stats.weaponRangeMultiplier || 1);
   if (weapon.melee) {
     const hit = weaponDamage(weapon);
-    state.pulses.push({
+    const pulse = {
       x: state.player.x,
       y: state.player.y,
       radius: 20,
@@ -88,7 +88,22 @@ function fireWeapon(weapon) {
       color: weapon.color,
       effects: projectileEffects(weapon),
       crit: hit.crit,
-    });
+    };
+    if (weapon.id === "katana") {
+      const nearest = findNearestEnemy();
+      const vx = state.player.vx || 0;
+      const vy = state.player.vy || 0;
+      if (nearest) {
+        pulse.angle = Math.atan2(nearest.y - state.player.y, nearest.x - state.player.x);
+      } else if (Math.hypot(vx, vy) > 1) {
+        pulse.angle = Math.atan2(vy, vx);
+      } else {
+        pulse.angle = 0;
+      }
+      pulse.arcAngle = Math.PI / 6;
+      pulse.deflectedBullets = new Set();
+    }
+    state.pulses.push(pulse);
     return;
   }
 
@@ -207,6 +222,12 @@ function updateSpawns(dt) {
     if (state.wave >= 7 && Math.random() < 0.22) spawnBurst += 1;
     const reducedBurst = spawnBurst * (1 - metaRunBonuses().enemyReduction);
     spawnBurst = Math.max(1, Math.floor(reducedBurst) + (Math.random() < reducedBurst % 1 ? 1 : 0));
+    const isBossWave = state.wave % 10 === 0;
+    if (isBossWave || state.objective) {
+      const regularCount = state.enemies.filter((e) => !e.boss && !e.objectiveTarget).length;
+      const cap = isBossWave ? 60 : 100;
+      spawnBurst = Math.min(spawnBurst, Math.max(0, cap - regularCount));
+    }
     for (let i = 0; i < spawnBurst; i += 1) {
       spawnEnemy();
     }
@@ -625,16 +646,34 @@ function updateProjectiles(dt) {
     if (projectile.life <= 0) continue;
     for (const bullet of state.enemyBullets) {
       if (bullet.life <= 0) continue;
-      if (distance(projectile, bullet) < projectile.radius + bullet.radius) {
-        if (projectile.hp > bullet.hp) {
-          projectile.hp -= bullet.hp;
+      const projHp = projectile.hp ?? projectile.damage;
+      const bulHp = bullet.hp ?? bullet.damage;
+      const prevProjX = projectile.x - projectile.vx * dt;
+      const prevProjY = projectile.y - projectile.vy * dt;
+      const prevBulX = bullet.x - bullet.vx * dt;
+      const prevBulY = bullet.y - bullet.vy * dt;
+      const midProjX = (projectile.x + prevProjX) / 2;
+      const midProjY = (projectile.y + prevProjY) / 2;
+      const midBulX = (bullet.x + prevBulX) / 2;
+      const midBulY = (bullet.y + prevBulY) / 2;
+      const collisionRadius = projectile.radius + bullet.radius;
+      const hit = distance(projectile, bullet) < collisionRadius
+        || Math.hypot(midProjX - midBulX, midProjY - midBulY) < collisionRadius;
+      if (hit) {
+        const cx = (projectile.x + bullet.x) / 2;
+        const cy = (projectile.y + bullet.y) / 2;
+        state.floatingText.push({ x: cx, y: cy, text: "✦", life: 0.28, color: "#ffffff" });
+        if (projHp > bulHp) {
+          projectile.hp = projHp - bulHp;
           bullet.life = 0;
-        } else if (bullet.hp > projectile.hp) {
-          bullet.hp -= projectile.hp;
+        } else if (bulHp > projHp) {
+          bullet.hp = bulHp - projHp;
           projectile.life = 0;
+          break;
         } else {
           projectile.life = 0;
           bullet.life = 0;
+          break;
         }
       }
     }
@@ -714,6 +753,11 @@ function updateProjectiles(dt) {
     for (const enemy of state.enemies) {
       if (pulse.hit.has(enemy)) continue;
       if (distance(pulse, enemy) < pulse.radius + enemy.radius) {
+        if (pulse.arcAngle !== undefined) {
+          const enemyAngle = Math.atan2(enemy.y - pulse.y, enemy.x - pulse.x);
+          const diff = Math.atan2(Math.sin(enemyAngle - pulse.angle), Math.cos(enemyAngle - pulse.angle));
+          if (Math.abs(diff) > pulse.arcAngle) continue;
+        }
         pulse.hit.add(enemy);
         const characterMultiplier = state.character?.objectiveDamageMultiplier && enemy.objectiveTarget
           ? state.character.objectiveDamageMultiplier
@@ -722,6 +766,34 @@ function updateProjectiles(dt) {
             : 1;
         enemy.hp -= pulse.damage * characterMultiplier;
         applyHitEffects(enemy, pulse);
+      }
+    }
+    if (pulse.deflectedBullets) {
+      for (const bullet of state.enemyBullets) {
+        if (bullet.life <= 0) continue;
+        if (pulse.deflectedBullets.has(bullet)) continue;
+        if (distance(pulse, bullet) < pulse.radius + bullet.radius) {
+          const bulletAngle = Math.atan2(bullet.y - pulse.y, bullet.x - pulse.x);
+          const diff = Math.atan2(Math.sin(bulletAngle - pulse.angle), Math.cos(bulletAngle - pulse.angle));
+          if (Math.abs(diff) > pulse.arcAngle) continue;
+          pulse.deflectedBullets.add(bullet);
+          state.projectiles.push({
+            x: bullet.x,
+            y: bullet.y,
+            vx: -bullet.vx,
+            vy: -bullet.vy,
+            radius: bullet.radius,
+            damage: bullet.damage,
+            hp: bullet.damage,
+            life: 3,
+            color: "#c8f0ff",
+            effects: {},
+            bouncesRemaining: 0,
+            bouncedTargets: new Set(),
+            bounceIndex: 0,
+          });
+          bullet.life = 0;
+        }
       }
     }
   }

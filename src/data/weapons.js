@@ -58,7 +58,7 @@
     basePrice: 33,
     baseCooldown: 0.56,
     damage: 21,
-    range: 92,
+    range: 130,
     projectileSpeed: 0,
     accuracy: 0,
     healthBonus: 34,

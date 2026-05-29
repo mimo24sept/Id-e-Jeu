@@ -258,12 +258,27 @@ function renderGame() {
 
   for (const pulse of state.pulses) {
     const p = screenPoint(pulse.x, pulse.y);
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, pulse.radius, 0, Math.PI * 2);
-    ctx.strokeStyle = pulse.color;
-    ctx.globalAlpha = Math.max(0.1, pulse.life / 0.38);
+    const alpha = Math.max(0.1, pulse.life / 0.38);
     ctx.lineWidth = 4;
-    ctx.stroke();
+    ctx.strokeStyle = pulse.color;
+    if (pulse.arcAngle !== undefined) {
+      const startAngle = pulse.angle - pulse.arcAngle;
+      const endAngle = pulse.angle + pulse.arcAngle;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.arc(p.x, p.y, pulse.radius, startAngle, endAngle);
+      ctx.closePath();
+      ctx.globalAlpha = alpha * 0.22;
+      ctx.fillStyle = pulse.color;
+      ctx.fill();
+      ctx.globalAlpha = alpha;
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, pulse.radius, 0, Math.PI * 2);
+      ctx.globalAlpha = alpha;
+      ctx.stroke();
+    }
     ctx.globalAlpha = 1;
   }
 

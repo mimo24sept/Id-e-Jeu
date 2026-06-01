@@ -256,6 +256,33 @@ function renderGame() {
   drawAura(runBonuses.heartDamageRadius, "rgba(240,210,75,1)", "BRULURE");
   drawAura(runBonuses.heartDrainRadius, "rgba(255,255,255,1)", "CHAINES");
 
+  // Sanctuaire du roi de carreau
+  if (state.diamondKingSanctuary) {
+    const s = state.diamondKingSanctuary;
+    const sp = screenPoint(s.x, s.y);
+    const pulse = Math.sin(state.worldTime * 1.4) * 0.04 + 0.13;
+    ctx.save();
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = "#ff8a1f";
+    ctx.beginPath();
+    ctx.arc(sp.x, sp.y, s.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = pulse * 2.2;
+    ctx.strokeStyle = "#ff8a1f";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Boucliers pique
+  for (const shield of state.spadeShields || []) {
+    const sp = screenPoint(shield.x, shield.y);
+    ctx.save();
+    ctx.globalAlpha = 0.82;
+    drawCircle(sp.x, sp.y, shield.radius, "#9da3ad", "#d7dbe4");
+    ctx.restore();
+  }
+
   for (const pulse of state.pulses) {
     const p = screenPoint(pulse.x, pulse.y);
     const alpha = Math.max(0.1, pulse.life / 0.38);

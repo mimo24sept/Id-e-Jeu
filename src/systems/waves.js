@@ -109,14 +109,24 @@ function applyDiamondCourtStartOfWave() {
   summonBodyguards(queenSpent, bonuses.levels.diamondQueen);
 
   const kingSpent = spendCourtMoneyAmount(startingMoney * bonuses.diamondKingTaxRate);
-  if (kingSpent > 0) {
+  if (kingSpent > 0 && bonuses.levels.diamondKing > 0) {
+    const sanctuaryRadius = Math.min(480, 60 + kingSpent * 0.85);
+    const sanctuaryReduction = Math.min(0.65, kingSpent / (kingSpent + 200));
+    state.diamondKingSanctuary = {
+      x: state.player.x,
+      y: state.player.y,
+      radius: sanctuaryRadius,
+      damageReduction: sanctuaryReduction,
+    };
     state.floatingText.push({
       x: state.player.x,
       y: state.player.y - 106,
-      text: `impôt -$${kingSpent}`,
-      life: 1.4,
+      text: `sanctuaire -$${kingSpent} (${Math.round(sanctuaryReduction * 100)}% réduction)`,
+      life: 1.8,
       color: SUITS.diamonds.color,
     });
+  } else {
+    state.diamondKingSanctuary = null;
   }
 }
 
@@ -184,7 +194,7 @@ function createWaveObjective() {
     title: "MASSACRE",
     desc: "Tue les monstres requis",
     killed: 0,
-    target: Math.round(240 + state.wave * 45),
+    target: Math.round(50 + state.wave * 40),
     completed: false,
   };
 }
@@ -294,6 +304,7 @@ function completeWave() {
     }
   }
   state.wave += 1;
+  state.diamondKingSanctuary = null;
   state.shopRerolls = 0;
   state.crates = [];
   state.objective = null;

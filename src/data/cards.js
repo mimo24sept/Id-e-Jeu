@@ -71,9 +71,9 @@ const CARD_META_EFFECTS = {
     desc: "Mange 20% de ton argent au début de vague et invoque des gardes du corps.",
   },
   diamondKing: {
-    name: "Impôt royal",
+    name: "Sanctuaire",
     badge: "K$",
-    desc: "Multiplie le bonus d'or du roi, mais mange 50% de ton argent au début de vague.",
+    desc: "Mange 50% de ton argent au début de vague et crée une zone de protection. Plus tu paies, plus la zone est grande et réduit les dégâts.",
   },
   diamondAce: {
     name: "Paradis fiscal",
@@ -91,9 +91,9 @@ const CARD_META_EFFECTS = {
     desc: "Augmente les PV et la regen quand tu restes immobile.",
   },
   spadeKing: {
-    name: "Ligne de tir",
+    name: "Rempart tournant",
     badge: "K♠",
-    desc: "Augmente les dégâts et la portée quand tu restes immobile.",
+    desc: "Fait orbiter des boucliers autour de toi quand tu restes immobile. Ils bloquent les balles et repoussent les ennemis.",
   },
   spadeAce: {
     name: "Ancrage absolu",

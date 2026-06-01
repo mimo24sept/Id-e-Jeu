@@ -326,7 +326,10 @@ function damagePlayer(amount) {
   if (state.godMode) return;
   if (state.gameOver) return;
   if (state.player.invuln > 0) return;
-  state.player.hp -= amount;
+  const sanctuary = state.diamondKingSanctuary;
+  const reducedAmount = sanctuary && distance(state.player, sanctuary) < sanctuary.radius
+    ? amount * (1 - sanctuary.damageReduction) : amount;
+  state.player.hp -= reducedAmount;
   state.player.invuln = 0.42;
   cameraShake = 0.18;
   if (state.player.hp <= 0) {
@@ -343,7 +346,10 @@ function damagePlayer(amount) {
 
 function damagePlayerContinuous(amount) {
   if (state.godMode || state.gameOver) return;
-  state.player.hp -= amount;
+  const sanctuary = state.diamondKingSanctuary;
+  const reduced = sanctuary && distance(state.player, sanctuary) < sanctuary.radius
+    ? amount * (1 - sanctuary.damageReduction) : amount;
+  state.player.hp -= reduced;
   cameraShake = Math.max(cameraShake, 0.06);
   if (state.player.hp <= 0) {
     state.player.hp = 0;
@@ -645,6 +651,15 @@ function updateEnemies(dt) {
     const clampedEnemy = clampToWorld(enemy.x, enemy.y, enemy.radius);
     enemy.x = clampedEnemy.x;
     enemy.y = clampedEnemy.y;
+    for (const shield of state.spadeShields || []) {
+      const dShield = distance(enemy, shield);
+      const minDist = enemy.radius + shield.radius;
+      if (dShield < minDist && dShield > 0) {
+        const pushAngle = Math.atan2(enemy.y - shield.y, enemy.x - shield.x);
+        enemy.x = shield.x + Math.cos(pushAngle) * minDist;
+        enemy.y = shield.y + Math.sin(pushAngle) * minDist;
+      }
+    }
 
     if (enemy.type === "shooter" || enemy.type === "boss" || enemy.type === "sprayer" || enemy.type === "objective-turret") {
       enemy.shootTimer -= dt;
@@ -767,6 +782,12 @@ function updateProjectiles(dt) {
           life: 0.45,
           color: SUITS.diamonds.color,
         });
+      }
+    }
+    for (const shield of state.spadeShields || []) {
+      if (bullet.life <= 0) break;
+      if (distance(bullet, shield) < bullet.radius + shield.radius) {
+        bullet.life = 0;
       }
     }
   }
@@ -1042,12 +1063,27 @@ function updateKills(dt) {
   }
 }
 
+function updateSpadeShields() {
+  const count = metaRunBonuses().spadeShieldCount || 0;
+  state.spadeShields = [];
+  if (count <= 0) return;
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i / count) + state.worldTime * 1.8;
+    state.spadeShields.push({
+      x: state.player.x + Math.cos(angle) * 62,
+      y: state.player.y + Math.sin(angle) * 62,
+      radius: 14,
+    });
+  }
+}
+
 function update(dt) {
   if (state.gameOver || state.betweenWaves) return;
   state.worldTime += dt;
   state.stats = calculateStats();
   if (state.player.hp > state.stats.maxHp) state.player.hp = state.stats.maxHp;
   updatePlayer(dt);
+  updateSpadeShields();
   updateSpawns(dt);
   updateCrates(dt);
   updateObjective(dt);

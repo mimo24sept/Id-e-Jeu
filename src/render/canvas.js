@@ -291,15 +291,24 @@ function renderGame() {
     if (pulse.arcAngle !== undefined) {
       const startAngle = pulse.angle - pulse.arcAngle;
       const endAngle = pulse.angle + pulse.arcAngle;
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.arc(p.x, p.y, pulse.radius, startAngle, endAngle);
-      ctx.closePath();
-      ctx.globalAlpha = alpha * 0.22;
-      ctx.fillStyle = pulse.color;
-      ctx.fill();
+      ctx.save();
+      ctx.lineCap = "round";
+      // Arc principal — la lame
       ctx.globalAlpha = alpha;
+      ctx.strokeStyle = pulse.color;
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, pulse.radius, startAngle, endAngle);
       ctx.stroke();
+      // Arc intérieur légèrement décalé — traîne de la lame
+      if (pulse.radius > 18) {
+        ctx.globalAlpha = alpha * 0.32;
+        ctx.lineWidth = 14;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pulse.radius * 0.7, startAngle, endAngle);
+        ctx.stroke();
+      }
+      ctx.restore();
     } else {
       ctx.beginPath();
       ctx.arc(p.x, p.y, pulse.radius, 0, Math.PI * 2);

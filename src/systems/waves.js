@@ -279,6 +279,30 @@ function beginWave() {
   if (state.objective?.type === "turrets") spawnObjectiveTurrets();
   if (state.objective?.type === "runners") spawnObjectiveRunner();
   if (state.wave % 10 === 0) spawnBoss();
+
+  // Vague monotype (~12% de chance, pas sur les vagues boss)
+  state.monoTypeWave = null;
+  if (state.wave % 10 !== 0 && Math.random() < 0.12) {
+    const pool = ["chaser", "shooter", "brute", "dasher", "sprayer", "sniper", "healer", "bomber", "splitter", "blocker"];
+    state.monoTypeWave = pool[Math.floor(Math.random() * pool.length)];
+    const monoLabels = {
+      chaser: "CHASSEURS", shooter: "TIREURS", brute: "BRUTES",
+      dasher: "DASHERS", sprayer: "ARROSEURS", sniper: "SNIPERS",
+      healer: "GUÉRISSEURS", bomber: "BOMBARDIERS", splitter: "DIVISEURS", blocker: "BLOQUEURS",
+    };
+    const monoColors = {
+      chaser: "#e46363", shooter: "#e08d4f", brute: "#9f5ec7",
+      dasher: "#55b8ff", sprayer: "#66e08f", sniper: "#c03050",
+      healer: "#4dcc7a", bomber: "#ffe020", splitter: "#e87fac", blocker: "#7b8fa1",
+    };
+    state.floatingText.push({
+      x: state.player.x, y: state.player.y - 80,
+      text: `VAGUE ${monoLabels[state.monoTypeWave] || state.monoTypeWave.toUpperCase()} !`,
+      life: 2.8,
+      color: monoColors[state.monoTypeWave] || "#ffffff",
+    });
+  }
+
   ui.shop.classList.add("is-hidden");
   renderUI();
   queueTutorialSteps(["waveStart"]);
@@ -305,6 +329,7 @@ function completeWave() {
   }
   state.wave += 1;
   state.diamondKingSanctuary = null;
+  state.monoTypeWave = null;
   state.shopRerolls = 0;
   state.crates = [];
   state.objective = null;
@@ -351,6 +376,14 @@ function spawnEnemy() {
   for (const [t, c] of Object.entries(chances)) {
     cum += c;
     if (roll < cum) { type = t; break; }
+  }
+
+  if (state.monoTypeWave) type = state.monoTypeWave;
+
+  const typeCaps = { sniper: 3, healer: 20, blocker: 30, bomber: 5 };
+  if (!state.monoTypeWave && typeCaps[type] !== undefined) {
+    const count = state.enemies.filter((e) => e.type === type).length;
+    if (count >= typeCaps[type]) type = "chaser";
   }
 
   const chaserHp = wave === 1 ? 11 : 16 + wave * 4.5;

@@ -372,7 +372,17 @@ function renderGame() {
                 ? "#f0d24b"
                 : enemy.type === "objective-runner"
                   ? "#ffffff"
-                  : "#e46363";
+                  : enemy.type === "sniper"
+                    ? "#c03050"
+                    : enemy.type === "healer"
+                      ? "#4dcc7a"
+                      : enemy.type === "bomber"
+                        ? "#ffe020"
+                        : enemy.type === "splitter"
+                          ? "#e87fac"
+                          : enemy.type === "blocker"
+                            ? "#7b8fa1"
+                            : "#e46363";
     drawCircle(p.x, p.y, enemy.radius, fill, "rgba(0,0,0,0.35)");
 
     if (enemy.type === "boss" && enemy.bossKind === "hearts") {
@@ -433,6 +443,79 @@ function renderGame() {
       ctx.moveTo(player.x, player.y);
       ctx.lineTo(p.x, p.y);
       ctx.stroke();
+      ctx.restore();
+    }
+
+    // Sniper: laser telegraph during charge
+    if (enemy.type === "sniper" && (enemy.sniperCharging || 0) > 0) {
+      const pp = screenPoint(state.player.x, state.player.y);
+      const chargeRatio = 1 - enemy.sniperCharging / 1.2;
+      ctx.save();
+      ctx.globalAlpha = 0.18 + chargeRatio * 0.62;
+      ctx.strokeStyle = "#c03050";
+      ctx.lineWidth = 1.5 + chargeRatio * 1.5;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(pp.x, pp.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    // Healer: cross symbol
+    if (enemy.type === "healer") {
+      ctx.save();
+      ctx.strokeStyle = "#080808";
+      ctx.lineWidth = 2.5;
+      const s = enemy.radius * 0.52;
+      ctx.beginPath();
+      ctx.moveTo(p.x - s, p.y); ctx.lineTo(p.x + s, p.y);
+      ctx.moveTo(p.x, p.y - s); ctx.lineTo(p.x, p.y + s);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Bomber: pulsing danger ring when close to player
+    if (enemy.type === "bomber") {
+      const dToPlayer = distance(enemy, state.player);
+      if (dToPlayer < 220) {
+        const pulse = Math.abs(Math.sin(state.worldTime * 7));
+        ctx.save();
+        ctx.globalAlpha = pulse * 0.35 * (1 - dToPlayer / 220);
+        ctx.strokeStyle = "#ffe020";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, enemy.radius + 10 + pulse * 6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // Splitter: two diagonal lines showing it will split
+    if (enemy.type === "splitter" && !enemy.isMini) {
+      ctx.save();
+      ctx.strokeStyle = "#080808";
+      ctx.lineWidth = 2;
+      const s = enemy.radius * 0.45;
+      ctx.beginPath();
+      ctx.moveTo(p.x - s, p.y - s); ctx.lineTo(p.x,     p.y + s);
+      ctx.moveTo(p.x,     p.y - s); ctx.lineTo(p.x + s, p.y + s);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Blocker: thick border ring showing its slow field
+    if (enemy.type === "blocker") {
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = "#7b8fa1";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 6]);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, enemy.radius + 65, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
       ctx.restore();
     }
 

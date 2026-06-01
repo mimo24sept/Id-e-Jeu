@@ -90,17 +90,20 @@ function fireWeapon(weapon) {
       crit: hit.crit,
     };
     if (weapon.id === "katana") {
-      const nearest = findNearestEnemy();
       const vx = state.player.vx || 0;
       const vy = state.player.vy || 0;
-      if (nearest) {
-        pulse.angle = Math.atan2(nearest.y - state.player.y, nearest.x - state.player.x);
-      } else if (Math.hypot(vx, vy) > 1) {
+      const nearestInRange = findNearestEnemy(weaponRange * 1.8);
+      if (nearestInRange) {
+        pulse.angle = Math.atan2(nearestInRange.y - state.player.y, nearestInRange.x - state.player.x);
+      } else if (Math.hypot(vx, vy) > 8) {
         pulse.angle = Math.atan2(vy, vx);
       } else {
-        pulse.angle = 0;
+        const globalNearest = findNearestEnemy();
+        pulse.angle = globalNearest
+          ? Math.atan2(globalNearest.y - state.player.y, globalNearest.x - state.player.x)
+          : 0;
       }
-      pulse.arcAngle = Math.PI / 6;
+      pulse.arcAngle = Math.PI / 3;
       pulse.deflectedBullets = new Set();
     }
     state.pulses.push(pulse);
@@ -417,9 +420,29 @@ function updateSprayer(enemy, angle, d, speedMultiplier, dt) {
 }
 
 function updateObjectiveRunner(enemy, speedMultiplier, dt) {
-  const fleeAngle = Math.atan2(enemy.y - state.player.y, enemy.x - state.player.x);
-  const wobble = Math.sin(state.worldTime * 4.4 + (enemy.seed || 0)) * 0.55;
-  moveEnemy(enemy, fleeAngle + wobble, speedMultiplier, dt, 1);
+  const bounds = worldBounds();
+  const margin = 240;
+
+  // Direction de fuite de base
+  let fx = enemy.x - state.player.x;
+  let fy = enemy.y - state.player.y;
+  const fleeDist = Math.hypot(fx, fy) || 1;
+  fx /= fleeDist;
+  fy /= fleeDist;
+
+  // Répulsion des bords : plus on est proche, plus la force est grande
+  const dLeft   = enemy.x - bounds.left;
+  const dRight  = bounds.right - enemy.x;
+  const dTop    = enemy.y - bounds.top;
+  const dBottom = bounds.bottom - enemy.y;
+  if (dLeft   < margin) fx += (1 - dLeft   / margin) * 2.2;
+  if (dRight  < margin) fx -= (1 - dRight  / margin) * 2.2;
+  if (dTop    < margin) fy += (1 - dTop    / margin) * 2.2;
+  if (dBottom < margin) fy -= (1 - dBottom / margin) * 2.2;
+
+  const len = Math.hypot(fx, fy) || 1;
+  const wobble = Math.sin(state.worldTime * 4.4 + (enemy.seed || 0)) * 0.38;
+  moveEnemy(enemy, Math.atan2(fy / len, fx / len) + wobble, speedMultiplier, dt, 1);
 }
 
 function bossColor(enemy) {
@@ -501,6 +524,65 @@ function fireBossPattern(enemy, target, angle) {
   enemy.shootTimer = random(1.25, 1.75);
 }
 
+function bomberExplode(bomber) {
+  if (bomber.exploded) return;
+  bomber.exploded = true;
+  const radius = 125;
+  cameraShake = Math.max(cameraShake, 0.28);
+  if (distance(bomber, state.player) < radius + state.player.radius) {
+    damagePlayer(bomber.damage * 2.8);
+  }
+  for (const other of state.enemies) {
+    if (other === bomber) continue;
+    if (distance(bomber, other) < radius + other.radius) {
+      other.hp -= bomber.damage * 1.8;
+    }
+  }
+  state.pulses.push({
+    x: bomber.x, y: bomber.y,
+    radius: 22, maxRadius: radius,
+    damage: 0, life: 0.38,
+    hit: new Set(), color: "#ffe020", effects: {}, crit: false,
+  });
+}
+
+function updateHealer(enemy, target, speedMultiplier, dt) {
+  let healTarget = null;
+  let maxInjury = 0;
+  for (const ally of state.enemies) {
+    if (ally === enemy || ally.hp >= ally.maxHp || ally.type === "healer") continue;
+    if (distance(enemy, ally) > 380) continue;
+    const injury = 1 - ally.hp / ally.maxHp;
+    if (injury > maxInjury) { maxInjury = injury; healTarget = ally; }
+  }
+  if (healTarget) {
+    const d = distance(enemy, healTarget);
+    if (d > 36) {
+      moveEnemy(enemy, Math.atan2(healTarget.y - enemy.y, healTarget.x - enemy.x), speedMultiplier, dt);
+    } else {
+      healTarget.hp = Math.min(healTarget.maxHp, healTarget.hp + (6 + state.wave * 0.35) * dt);
+    }
+  } else {
+    moveEnemy(enemy, Math.atan2(target.y - enemy.y, target.x - enemy.x), speedMultiplier * 0.55, dt);
+  }
+}
+
+function updateBlocker(enemy, target, speedMultiplier, dt) {
+  let nearestAlly = null;
+  let nearestDist = Infinity;
+  for (const ally of state.enemies) {
+    if (ally === enemy || ally.hp <= 0) continue;
+    const d = distance(enemy, ally);
+    if (d < nearestDist) { nearestDist = d; nearestAlly = ally; }
+  }
+  let goalX = target.x, goalY = target.y;
+  if (nearestAlly && nearestDist < 500) {
+    goalX = (target.x + nearestAlly.x) / 2;
+    goalY = (target.y + nearestAlly.y) / 2;
+  }
+  moveEnemy(enemy, Math.atan2(goalY - enemy.y, goalX - enemy.x), speedMultiplier, dt);
+}
+
 function updateEnemies(dt) {
   const bonuses = metaRunBonuses();
   for (const enemy of state.enemies) {
@@ -530,7 +612,7 @@ function updateEnemies(dt) {
         enemy.damage = Math.min(enemy.damage * (1 + dt * 0.018), (28 + state.wave * 1.8) * Math.pow(1.35, enemyTier(state.wave)) * 3.5);
       }
     }
-    const desiredRange = enemy.type === "shooter" || enemy.type === "objective-turret" ? 250 : enemy.type === "boss" ? (enemy.bossKind === "hearts" ? 250 : 190) : 0;
+    const desiredRange = enemy.type === "shooter" || enemy.type === "objective-turret" ? 250 : enemy.type === "sniper" ? 380 : enemy.type === "boss" ? (enemy.bossKind === "hearts" ? 250 : 190) : 0;
     const d = distance(enemy, target);
 
     let speedMultiplier = enemy.heartChained ? bonuses.heartChainSpeedMultiplier : 1;
@@ -547,7 +629,13 @@ function updateEnemies(dt) {
       updateDasher(enemy, angle, d, speedMultiplier, dt);
     } else if (enemy.type === "sprayer") {
       updateSprayer(enemy, angle, d, speedMultiplier, dt);
-    } else if ((enemy.type !== "shooter" && enemy.type !== "boss") || d > desiredRange) {
+    } else if (enemy.type === "sniper" && (enemy.sniperCharging || 0) > 0) {
+      // locked during charge — don't move
+    } else if (enemy.type === "healer") {
+      updateHealer(enemy, target, speedMultiplier, dt);
+    } else if (enemy.type === "blocker") {
+      updateBlocker(enemy, target, speedMultiplier, dt);
+    } else if ((enemy.type !== "shooter" && enemy.type !== "boss" && enemy.type !== "sniper") || d > desiredRange) {
       moveEnemy(enemy, angle, speedMultiplier, dt);
     } else {
       const retreat = enemy.type === "boss" ? 0.12 : 0.28;
@@ -594,11 +682,46 @@ function updateEnemies(dt) {
       }
     }
 
-    if (target === state.player && d < enemy.radius + state.player.radius) {
+    // Sniper two-phase shoot
+    if (enemy.type === "sniper") {
+      if ((enemy.sniperCharging || 0) > 0) {
+        enemy.sniperCharging -= dt;
+        if (enemy.sniperCharging <= 0) {
+          enemy.sniperCharging = 0;
+          if (d < 950) {
+            const sniperAngle = predictiveAimAngle(enemy, target, 760, 0.008);
+            const bulletDamage = (22 + state.wave * 0.85) * Math.pow(1.25, enemy.tier || 0);
+            state.enemyBullets.push({
+              x: enemy.x, y: enemy.y,
+              vx: Math.cos(sniperAngle) * 760,
+              vy: Math.sin(sniperAngle) * 760,
+              radius: 5, damage: bulletDamage, hp: bulletDamage,
+              life: 2.6,
+              target: target === state.player ? "player" : "guard",
+              color: "#c03050",
+            });
+          }
+          enemy.shootTimer = random(2.0, 3.4);
+        }
+      } else {
+        enemy.shootTimer -= dt;
+        if (enemy.shootTimer <= 0 && d < 950) {
+          enemy.sniperCharging = 1.2;
+        }
+      }
+    }
+
+    // Bomber explodes on contact
+    if (enemy.type === "bomber" && !enemy.exploded && d < enemy.radius + state.player.radius + 4) {
+      bomberExplode(enemy);
+      enemy.hp = 0;
+    }
+
+    if (enemy.type !== "bomber" && target === state.player && d < enemy.radius + state.player.radius) {
       damagePlayer(enemy.damage);
       enemy.x -= Math.cos(angle) * 24;
       enemy.y -= Math.sin(angle) * 24;
-    } else if (target !== state.player && d < enemy.radius + target.radius) {
+    } else if (enemy.type !== "bomber" && target !== state.player && d < enemy.radius + target.radius) {
       target.hp -= enemy.damage * dt * 1.8;
       enemy.x -= Math.cos(angle) * 24;
       enemy.y -= Math.sin(angle) * 24;
@@ -612,6 +735,13 @@ function updateProjectiles(dt) {
     projectile.x += projectile.vx * dt;
     projectile.y += projectile.vy * dt;
     projectile.life -= dt;
+    for (const blocker of state.enemies) {
+      if (blocker.type !== "blocker" || blocker.hp <= 0) continue;
+      if (distance(projectile, blocker) < blocker.radius + 65) {
+        projectile.vx *= (1 - 2.5 * dt);
+        projectile.vy *= (1 - 2.5 * dt);
+      }
+    }
   }
 
   for (const bullet of state.enemyBullets) {
@@ -836,6 +966,26 @@ function updateKills(dt) {
   const maxHp = Math.max(1, state.stats?.maxHp || 100);
   for (const enemy of state.enemies) {
     if (enemy.hp <= 0) {
+      if (enemy.type === "bomber" && !enemy.exploded) {
+        bomberExplode(enemy);
+      }
+      if (enemy.type === "splitter" && !enemy.isMini) {
+        const toPlayer = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
+        const miniHp = Math.max(8, enemy.maxHp * 0.28);
+        for (let i = 0; i < 2; i += 1) {
+          const a = toPlayer + (i === 0 ? -0.6 : 0.6);
+          state.enemies.push({
+            x: enemy.x + Math.cos(a) * 20,
+            y: enemy.y + Math.sin(a) * 20,
+            radius: 9, hp: miniHp, maxHp: miniHp,
+            speed: (145 + state.wave * 3.8) * Math.min(1.45, Math.pow(1.08, enemy.tier || 0)),
+            damage: enemy.damage * 0.55,
+            type: "splitter", isMini: true, exploded: false, sniperCharging: 0,
+            shootTimer: 999, value: 0, tier: enemy.tier || 0,
+            seed: random(0, Math.PI * 2), dashCooldown: 0, dashWindup: 0, dashTime: 0, dashAngle: 0,
+          });
+        }
+      }
       if (state.player.hp / maxHp <= 0.25) {
         state.lowHpKills = (state.lowHpKills || 0) + 1;
       }

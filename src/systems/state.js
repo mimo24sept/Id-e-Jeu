@@ -1,5 +1,15 @@
-﻿function createState(options = {}) {
+﻿function characterDominantSuit(character) {
+  if (!character?.cardEffectMultipliers) return null;
+  const entries = Object.entries(character.cardEffectMultipliers);
+  if (entries.length === 0) return null;
+  const maxMult = Math.max(...entries.map(([, v]) => v));
+  const dominant = entries.filter(([, v]) => v === maxMult).map(([k]) => k);
+  return dominant[Math.floor(Math.random() * dominant.length)];
+}
+
+function createState(options = {}) {
   const hand = [];
+  const startingSuit = characterDominantSuit(options.character);
   const initial = {
     playerName: options.playerName || connectedPlayerName || "Joueur",
     character: options.character || null,
@@ -34,7 +44,7 @@
     waveGoldEarned: 0,
     crateSpawnTimer: 0,
     pendingCratePacks: 0,
-    weapons: [createWeapon({ archetypeId: "rifle", gradeId: "green" })],
+    weapons: [createWeapon({ archetypeId: "rifle", gradeId: "green", ...(startingSuit && { suit: startingSuit }) })],
     waveTimeLeft: 0,
     spawnTimer: 0,
     godMode: false,

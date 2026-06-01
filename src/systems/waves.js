@@ -184,7 +184,7 @@ function createWaveObjective() {
     title: "MASSACRE",
     desc: "Tue les monstres requis",
     killed: 0,
-    target: Math.round(6 + state.wave * 2.0),
+    target: Math.round(240 + state.wave * 45),
     completed: false,
   };
 }
@@ -324,36 +324,64 @@ function spawnEnemy() {
   const spawnDistance = Math.max(window.innerWidth, window.innerHeight) * 0.52 + 45;
   const wave = state.wave;
   const chances = {
-    sprayer: wave >= 6 ? Math.min(0.06 + wave * 0.008, 0.22) : 0,
-    dasher: wave >= 4 ? Math.min(0.08 + wave * 0.01, 0.26) : 0,
-    brute: wave >= 3 ? Math.min(0.11 + wave * 0.014, 0.34) : 0,
-    shooter: wave >= 2 ? Math.min(0.14 + wave * 0.014, 0.36) : 0,
+    sprayer:  wave >= 6 ? Math.min(0.06 + wave * 0.008, 0.22) : 0,
+    dasher:   wave >= 4 ? Math.min(0.08 + wave * 0.01,  0.26) : 0,
+    brute:    wave >= 3 ? Math.min(0.11 + wave * 0.014, 0.34) : 0,
+    shooter:  wave >= 2 ? Math.min(0.14 + wave * 0.014, 0.36) : 0,
+    sniper:   wave >= 5 ? Math.min(0.03 + wave * 0.005, 0.11) : 0,
+    healer:   wave >= 7 ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
+    bomber:   wave >= 4 ? Math.min(0.04 + wave * 0.005, 0.11) : 0,
+    splitter: wave >= 5 ? Math.min(0.03 + wave * 0.005, 0.10) : 0,
+    blocker:  wave >= 8 ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
   };
+  let cum = 0;
   const roll = Math.random();
   let type = "chaser";
-  if (roll < chances.sprayer) type = "sprayer";
-  else if (roll < chances.sprayer + chances.dasher) type = "dasher";
-  else if (roll < chances.sprayer + chances.dasher + chances.brute) type = "brute";
-  else if (roll < chances.sprayer + chances.dasher + chances.brute + chances.shooter) type = "shooter";
+  for (const [t, c] of Object.entries(chances)) {
+    cum += c;
+    if (roll < cum) { type = t; break; }
+  }
 
   const chaserHp = wave === 1 ? 11 : 16 + wave * 4.5;
   const presets = {
-    chaser: { hp: chaserHp, radius: 15, speed: 118 + wave * 3.4, damage: 13, value: 0.95 },
-    shooter: { hp: 24 + wave * 6, radius: 16, speed: 92 + wave * 2.4, damage: 11, value: 1.55 },
-    brute: { hp: 42 + wave * 10, radius: 21, speed: 78 + wave * 2.4, damage: 19, value: 2.35 },
-    dasher: { hp: 30 + wave * 7, radius: 16, speed: 112 + wave * 3, damage: 17, value: 1.75 },
-    sprayer: { hp: 22 + wave * 5.5, radius: 14, speed: 146 + wave * 4.2, damage: 10, value: 1.9 },
+    chaser:   { hp: chaserHp,        radius: 15, speed: 118 + wave * 3.4, damage: 13, value: 0.95 },
+    shooter:  { hp: 24 + wave * 6,   radius: 16, speed:  92 + wave * 2.4, damage: 11, value: 1.55 },
+    brute:    { hp: 42 + wave * 10,  radius: 21, speed:  78 + wave * 2.4, damage: 19, value: 2.35 },
+    dasher:   { hp: 30 + wave * 7,   radius: 16, speed: 112 + wave * 3,   damage: 17, value: 1.75 },
+    sprayer:  { hp: 22 + wave * 5.5, radius: 14, speed: 146 + wave * 4.2, damage: 10, value: 1.90 },
+    sniper:   { hp: 18 + wave * 4,   radius: 14, speed:  68 + wave * 1.6, damage: 18, value: 2.10 },
+    healer:   { hp: 24 + wave * 5,   radius: 15, speed:  82 + wave * 2,   damage:  0, value: 1.80 },
+    bomber:   { hp: 22 + wave * 5,   radius: 17, speed: 110 + wave * 3,   damage: 32, value: 1.60 },
+    splitter: { hp: 28 + wave * 6,   radius: 17, speed:  95 + wave * 2.5, damage: 12, value: 1.65 },
+    blocker:  { hp: 62 + wave * 14,  radius: 28, speed:  40 + wave * 1,   damage: 20, value: 2.20 },
   };
   const preset = presets[type];
   const tierMult = enemyTierMultiplier(wave);
   const earlyPressure = 1 + Math.min(wave, 10) * 0.035;
   const hp = preset.hp * tierMult * earlyPressure;
   const radius = preset.radius;
-  const spawnPoint = clampToWorld(
+  const MIN_SPAWN_DIST = 200;
+  let spawnPoint = clampToWorld(
     state.player.x + Math.cos(angle) * spawnDistance,
     state.player.y + Math.sin(angle) * spawnDistance,
     radius,
   );
+  if (distance(spawnPoint, state.player) < MIN_SPAWN_DIST) {
+    let bestPoint = spawnPoint;
+    let bestDist = distance(spawnPoint, state.player);
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const tryAngle = random(0, Math.PI * 2);
+      const candidate = clampToWorld(
+        state.player.x + Math.cos(tryAngle) * spawnDistance,
+        state.player.y + Math.sin(tryAngle) * spawnDistance,
+        radius,
+      );
+      const d = distance(candidate, state.player);
+      if (d >= MIN_SPAWN_DIST) { spawnPoint = candidate; break; }
+      if (d > bestDist) { bestDist = d; bestPoint = candidate; }
+    }
+    if (distance(spawnPoint, state.player) < MIN_SPAWN_DIST) spawnPoint = bestPoint;
+  }
 
   state.enemies.push({
     x: spawnPoint.x,
@@ -364,7 +392,9 @@ function spawnEnemy() {
     speed: preset.speed * Math.min(1.45, Math.pow(1.08, enemyTier(wave))),
     damage: preset.damage * Math.pow(1.35, enemyTier(wave)),
     type,
-    shootTimer: random(0.5, 1.6),
+    shootTimer: type === "sniper" ? random(1.2, 2.4) : random(0.5, 1.6),
+    sniperCharging: 0,
+    exploded: false,
     value: preset.value * Math.pow(1.35, enemyTier(wave)) * enemyGoldPressureMultiplier(wave),
     tier: enemyTier(wave),
     seed: random(0, Math.PI * 2),

@@ -417,7 +417,7 @@ function renderGame() {
                         : enemy.type === "splitter"
                           ? "#e87fac"
                           : enemy.type === "blocker"
-                            ? "#7b8fa1"
+                            ? "#3d4a5c"
                             : "#e46363";
     drawCircle(p.x, p.y, enemy.radius, fill, "rgba(0,0,0,0.35)");
 
@@ -541,17 +541,35 @@ function renderGame() {
       ctx.restore();
     }
 
-    // Blocker: thick border ring showing its slow field
+    // Blocker: visuel imposant
     if (enemy.type === "blocker") {
       ctx.save();
-      ctx.globalAlpha = 0.18;
-      ctx.strokeStyle = "#7b8fa1";
+      // Anneau extérieur épais qui pulse lentement
+      const pulse = Math.sin(state.worldTime * 1.6 + (enemy.seed || 0)) * 0.5 + 0.5;
+      ctx.strokeStyle = "#7ba0c0";
+      ctx.lineWidth = 4 + pulse * 3;
+      ctx.globalAlpha = 0.55 + pulse * 0.25;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, enemy.radius + 5, 0, Math.PI * 2);
+      ctx.stroke();
+      // Champ de ralentissement — cercle pointillé bien visible
+      ctx.globalAlpha = 0.38;
+      ctx.strokeStyle = "#8ab0cc";
       ctx.lineWidth = 2;
-      ctx.setLineDash([3, 6]);
+      ctx.setLineDash([5, 7]);
       ctx.beginPath();
       ctx.arc(p.x, p.y, enemy.radius + 65, 0, Math.PI * 2);
       ctx.stroke();
       ctx.setLineDash([]);
+      // Symbole "mur" à l'intérieur
+      ctx.globalAlpha = 0.7;
+      ctx.strokeStyle = "#8ab0cc";
+      ctx.lineWidth = 2.5;
+      const s = enemy.radius * 0.45;
+      ctx.beginPath();
+      ctx.moveTo(p.x - s, p.y - s * 0.4); ctx.lineTo(p.x + s, p.y - s * 0.4);
+      ctx.moveTo(p.x - s, p.y + s * 0.4); ctx.lineTo(p.x + s, p.y + s * 0.4);
+      ctx.stroke();
       ctx.restore();
     }
 

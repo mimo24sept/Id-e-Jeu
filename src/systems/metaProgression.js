@@ -287,7 +287,14 @@ function cardMetaEffectBadge(card) {
   return cardMetaEffectDef(card)?.badge || "M";
 }
 
+function allCardsCollected(meta = playerMeta()) {
+  return metaDeckKeys().every((key) => cardUpgradeLevel(key, meta) >= 1);
+}
+
 function upgradeableMetaCards(meta = playerMeta()) {
+  if (!allCardsCollected(meta)) {
+    return metaDeckKeys().filter((key) => cardUpgradeLevel(key, meta) < 1);
+  }
   return metaDeckKeys().filter((key) => cardUpgradeLevel(key, meta) < MAX_CARD_UPGRADE_LEVEL);
 }
 
@@ -349,7 +356,12 @@ function renderMetaProgression(lastPack = []) {
   ui.metaFragments.textContent = meta.fragments;
   ui.metaPackCost.textContent = cost;
   ui.buyMetaPack.disabled = meta.fragments < cost || upgradeableMetaCards(meta).length === 0;
-  ui.metaUpgradeSummary.textContent = `${upgradedCount}/52 cartes améliorées · ${totalLevels} niveaux · ${unlockedCharacters}/${CHARACTER_DEFS.length} persos · best vague ${meta.bestWave || 0}`;
+  const collected = metaDeckKeys().filter((key) => cardUpgradeLevel(key, meta) >= 1).length;
+  const collectionDone = collected >= 52;
+  const collectionText = collectionDone
+    ? `${upgradedCount}/52 cartes · ${totalLevels} niveaux`
+    : `${collected}/52 cartes collectées — améliore toutes les cartes avant de les monter au niveau 2`;
+  ui.metaUpgradeSummary.textContent = `${collectionText} · ${unlockedCharacters}/${CHARACTER_DEFS.length} persos · best vague ${meta.bestWave || 0}`;
 
   const unlockedTalents = meta.unlockedTalents || [];
   const unlockedSet = new Set([...unlockedTalents, "origin"]);

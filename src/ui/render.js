@@ -13,18 +13,28 @@
   const crateHudCount = state.pendingCratePacks + state.crates.length;
   if (state.betweenWaves) {
     ui.enemyCount.textContent = cratePacksWaiting() > 0 ? `Shop | ${cratePacksWaiting()} caisse` : "Shop";
+    ui.objectivePanel.classList.add("is-hidden");
   } else if (state.objective) {
     const objective = state.objective;
     let progress = "";
-    if (objective.type === "capture") progress = `${Math.floor((objective.progress / objective.target) * 100)}%`;
-    if (objective.type === "turrets") progress = `${objective.killed}/${objective.target}`;
-    if (objective.type === "runners") progress = `${objective.collected}/${objective.target}`;
-    if (objective.type === "kills") progress = `${objective.killed}/${objective.target}`;
+    let progressFull = "";
+    if (objective.type === "capture") {
+      progress = `${Math.floor((objective.progress / objective.target) * 100)}%`;
+      progressFull = `${Math.floor((objective.progress / objective.target) * 100)} / 100%`;
+    }
+    if (objective.type === "turrets") { progress = `${objective.killed}/${objective.target}`; progressFull = progress; }
+    if (objective.type === "runners") { progress = `${objective.collected}/${objective.target}`; progressFull = progress; }
+    if (objective.type === "kills")   { progress = `${objective.killed}/${objective.target}`;   progressFull = progress; }
     const crateStr = crateHudCount > 0 ? ` | C${crateHudCount}` : "";
     ui.enemyCount.textContent = `${objective.title} ${progress} | ${state.enemies.length}${crateStr}`;
+    ui.objectivePanelTitle.textContent = objective.title;
+    ui.objectivePanelProgress.textContent = progressFull;
+    ui.objectivePanelDesc.textContent = objective.desc;
+    ui.objectivePanel.classList.remove("is-hidden");
   } else {
     const crateStr = crateHudCount > 0 ? ` | C${crateHudCount}` : "";
     ui.enemyCount.textContent = `${Math.ceil(state.waveTimeLeft)}s · ${state.enemies.length}${crateStr}`;
+    ui.objectivePanel.classList.add("is-hidden");
   }
   ui.rerollShop.textContent = `Relancer - $${rerollCost()}`;
   ui.rerollShop.disabled = !state.betweenWaves || state.money < rerollCost() || state.pendingCurse || state.pendingWeapon || state.packOffer.length > 0;

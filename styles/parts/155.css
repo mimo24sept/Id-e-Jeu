@@ -1,0 +1,87 @@
+/* Wave Announcement Overlay */
+.wave-announcement {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: rgba(9, 9, 9, 0.82);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+  pointer-events: none;
+}
+
+.wave-announcement.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.wave-announcement-label {
+  font: 700 13px / 1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.wave-announcement-title {
+  font: 400 100px / 1 'Bebas Neue', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.wave-announcement-desc {
+  font: 700 16px / 1.5 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 14px;
+  max-width: 520px;
+  text-align: center;
+}
+
+/* Objective panel — HUD in-game */
+.objective-panel {
+  position: fixed;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: rgba(9, 9, 9, 0.75);
+  border: 2px solid rgba(244, 244, 244, 0.22);
+  padding: 8px 24px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  pointer-events: none;
+  min-width: 190px;
+}
+
+.objective-panel.is-hidden {
+  display: none;
+}
+
+.objective-panel-title {
+  font: 400 13px / 1 'Bebas Neue', sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.objective-panel-progress {
+  font: 700 28px / 1 'Space Mono', monospace;
+  color: var(--text);
+}
+
+.objective-panel-desc {
+  font: 400 11px / 1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

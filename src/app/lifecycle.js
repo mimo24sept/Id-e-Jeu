@@ -158,6 +158,20 @@ function showTutorial() {
   replayTutorial();
 }
 
+let waveAnnouncementTimeout = null;
+
+function showWaveAnnouncement({ label, title, desc, color }) {
+  ui.waveAnnouncementLabel.textContent = label || "";
+  ui.waveAnnouncementTitle.textContent = title || "";
+  ui.waveAnnouncementTitle.style.color = color || "var(--text)";
+  ui.waveAnnouncementDesc.textContent = desc || "";
+  ui.waveAnnouncement.classList.add("is-visible");
+  clearTimeout(waveAnnouncementTimeout);
+  waveAnnouncementTimeout = setTimeout(() => {
+    ui.waveAnnouncement.classList.remove("is-visible");
+  }, 2000);
+}
+
 function exportSave() {
   const save = {
     version: 1,

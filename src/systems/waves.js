@@ -280,26 +280,46 @@ function beginWave() {
   if (state.objective?.type === "runners") spawnObjectiveRunner();
   if (state.wave % 10 === 0) spawnBoss();
 
+  // Labels et couleurs communs aux annonces et aux vagues monotype
+  const monoLabels = {
+    chaser: "CHASSEURS", shooter: "TIREURS", brute: "BRUTES",
+    dasher: "DASHERS", sprayer: "ARROSEURS", sniper: "SNIPERS",
+    healer: "GUÉRISSEURS", bomber: "BOMBARDIERS", splitter: "DIVISEURS", blocker: "BLOQUEURS",
+  };
+  const monoColors = {
+    chaser: "#e46363", shooter: "#e08d4f", brute: "#9f5ec7",
+    dasher: "#55b8ff", sprayer: "#66e08f", sniper: "#c03050",
+    healer: "#4dcc7a", bomber: "#ffe020", splitter: "#e87fac", blocker: "#3d4a5c",
+  };
+
   // Vague monotype (~12% de chance, pas sur les vagues boss)
   state.monoTypeWave = null;
   if (state.wave % 10 !== 0 && Math.random() < 0.12) {
     const pool = ["chaser", "shooter", "brute", "dasher", "sprayer", "sniper", "healer", "bomber", "splitter", "blocker"];
     state.monoTypeWave = pool[Math.floor(Math.random() * pool.length)];
-    const monoLabels = {
-      chaser: "CHASSEURS", shooter: "TIREURS", brute: "BRUTES",
-      dasher: "DASHERS", sprayer: "ARROSEURS", sniper: "SNIPERS",
-      healer: "GUÉRISSEURS", bomber: "BOMBARDIERS", splitter: "DIVISEURS", blocker: "BLOQUEURS",
-    };
-    const monoColors = {
-      chaser: "#e46363", shooter: "#e08d4f", brute: "#9f5ec7",
-      dasher: "#55b8ff", sprayer: "#66e08f", sniper: "#c03050",
-      healer: "#4dcc7a", bomber: "#ffe020", splitter: "#e87fac", blocker: "#7b8fa1",
-    };
-    state.floatingText.push({
-      x: state.player.x, y: state.player.y - 80,
-      text: `VAGUE ${monoLabels[state.monoTypeWave] || state.monoTypeWave.toUpperCase()} !`,
-      life: 2.8,
+  }
+
+  // Annonce plein écran
+  if (state.wave % 10 === 0) {
+    showWaveAnnouncement({
+      label: `Vague ${state.wave}`,
+      title: "BOSS",
+      desc: "Un ennemi majeur apparaît",
+      color: "#ff9a2e",
+    });
+  } else if (state.monoTypeWave) {
+    showWaveAnnouncement({
+      label: `Vague ${state.wave} · Spéciale`,
+      title: `Vague ${monoLabels[state.monoTypeWave] || state.monoTypeWave} !`,
+      desc: "",
       color: monoColors[state.monoTypeWave] || "#ffffff",
+    });
+  } else if (isEvent && state.objective) {
+    showWaveAnnouncement({
+      label: `Vague ${state.wave} · Défi`,
+      title: state.objective.title,
+      desc: state.objective.desc,
+      color: "#f4f4f4",
     });
   }
 

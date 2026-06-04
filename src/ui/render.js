@@ -7,6 +7,8 @@
   ui.wave.textContent = state.wave;
   ui.hp.textContent = `${Math.ceil(state.player.hp)} / ${state.stats.maxHp}`;
   ui.money.textContent = `$${state.money}`;
+  const capRatio = state.waveGoldCap > 0 ? Math.min(1, (state.waveGoldEarned || 0) / state.waveGoldCap) : 0;
+  ui.goldCapFill.style.width = `${Math.round(capRatio * 100)}%`;
   ui.goldMultiplier.textContent = `x${state.stats.moneyMultiplier.toFixed(2)}`;
   ui.shopGold.textContent = `$${state.money}`;
   ui.shopGoldMultiplier.textContent = `OR x${state.stats.moneyMultiplier.toFixed(2)}`;

@@ -43,6 +43,7 @@ const ui = {
   wave: document.querySelector("#wave"),
   hp: document.querySelector("#hp"),
   money: document.querySelector("#money"),
+  goldCapFill: document.querySelector("#goldCapFill"),
   goldMultiplier: document.querySelector("#goldMultiplier"),
   enemyCount: document.querySelector("#enemyCount"),
   hand: document.querySelector("#hand"),

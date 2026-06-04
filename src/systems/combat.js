@@ -166,7 +166,8 @@ function updatePlayer(dt) {
   state.player.x = nextPosition.x;
   state.player.y = nextPosition.y;
   state.player.invuln = Math.max(0, state.player.invuln - dt);
-  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + state.stats.regen * (state.character?.healingMultiplier || 1) * (state.stats.healingMultiplier || 1) * dt);
+  state.player.healPenalty = Math.min(9, (state.player.healPenalty || 0) + dt);
+  state.player.hp = Math.min(state.stats.maxHp, state.player.hp + state.stats.regen * healPenaltyMult() * (state.character?.healingMultiplier || 1) * (state.stats.healingMultiplier || 1) * dt);
 }
 
 function updateWeapons(dt) {
@@ -326,6 +327,11 @@ function updateCrates(dt) {
   state.crates = remainingCrates;
 }
 
+function healPenaltyMult() {
+  const p = state.player.healPenalty || 0;
+  return 1 / Math.max(1, 10 - Math.floor(p));
+}
+
 function damagePlayer(amount) {
   if (state.godMode) return;
   if (state.gameOver) return;
@@ -339,6 +345,7 @@ function damagePlayer(amount) {
   const reducedAmount = sanctuary && distance(state.player, sanctuary) < sanctuary.radius
     ? amount * (1 - sanctuary.damageReduction) : amount;
   state.player.hp -= reducedAmount;
+  state.player.healPenalty = 0;
   state.player.invuln = 0.42;
   cameraShake = 0.18;
   if (state.player.hp <= 0) {
@@ -359,6 +366,7 @@ function damagePlayerContinuous(amount) {
   const reduced = sanctuary && distance(state.player, sanctuary) < sanctuary.radius
     ? amount * (1 - sanctuary.damageReduction) : amount;
   state.player.hp -= reduced;
+  state.player.healPenalty = 0;
   cameraShake = Math.max(cameraShake, 0.06);
   if (state.player.hp <= 0) {
     state.player.hp = 0;
@@ -386,7 +394,7 @@ function applyHeartAuras(enemy, dt, bonuses) {
   if (bonuses.heartDrainRadius > 0 && distance(enemy, state.player) <= bonuses.heartDrainRadius) {
     const drain = maxHp * bonuses.heartDrainDpsRatio * dt;
     enemy.hp -= drain;
-    state.player.hp = Math.min(state.stats.maxHp, state.player.hp + drain * 0.75);
+    state.player.hp = Math.min(state.stats.maxHp, state.player.hp + drain * 0.75 * healPenaltyMult());
     enemy.heartChained = true;
   }
 }

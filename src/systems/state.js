@@ -33,7 +33,7 @@ function createState(options = {}) {
     pendingCurse: null,
     pendingWeapon: null,
     previewWeaponId: null,
-    player: { x: 0, y: 0, vx: 0, vy: 0, radius: 17, hp: 100, invuln: 0, stationaryTime: 0 },
+    player: { x: 0, y: 0, vx: 0, vy: 0, radius: 17, hp: 100, invuln: 0, stationaryTime: 0, healPenalty: 0 },
     enemies: [],
     enemyBullets: [],
     projectiles: [],

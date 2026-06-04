@@ -431,33 +431,29 @@ function updateSprayer(enemy, angle, d, speedMultiplier, dt) {
 }
 
 function updateObjectiveRunner(enemy, speedMultiplier, dt) {
-  const bounds = worldBounds();
-  const margin = 250;
+  // Direction de fuite normalisée (s'éloigne du joueur)
+  const pdx = enemy.x - state.player.x;
+  const pdy = enemy.y - state.player.y;
+  const plen = Math.hypot(pdx, pdy) || 1;
+  let fx = pdx / plen;
+  let fy = pdy / plen;
 
-  // Direction de fuite de base normalisée
-  let fx = enemy.x - state.player.x;
-  let fy = enemy.y - state.player.y;
-  const fleeDist = Math.hypot(fx, fy) || 1;
-  fx /= fleeDist;
-  fy /= fleeDist;
+  // Répulsion de bord : gradient numérique via isInsideMap.
+  // Fonctionne pour TOUTES les formes de map (carré, cercle, croix, triangle).
+  const eps = 48;
+  const wallX = (isInsideMap(enemy.x + eps, enemy.y, 0) ? 1 : 0) - (isInsideMap(enemy.x - eps, enemy.y, 0) ? 1 : 0);
+  const wallY = (isInsideMap(enemy.x, enemy.y + eps, 0) ? 1 : 0) - (isInsideMap(enemy.x, enemy.y - eps, 0) ? 1 : 0);
 
-  // Répulsion des bords quadratique (beaucoup plus forte près du bord)
-  const dLeft   = enemy.x - bounds.left;
-  const dRight  = bounds.right - enemy.x;
-  const dTop    = enemy.y - bounds.top;
-  const dBottom = bounds.bottom - enemy.y;
-  if (dLeft   < margin) fx += Math.pow(1 - dLeft   / margin, 2) * 3.2;
-  if (dRight  < margin) fx -= Math.pow(1 - dRight  / margin, 2) * 3.2;
-  if (dTop    < margin) fy += Math.pow(1 - dTop    / margin, 2) * 3.2;
-  if (dBottom < margin) fy -= Math.pow(1 - dBottom / margin, 2) * 3.2;
+  if (!isInsideMap(enemy.x, enemy.y, 140)) {
+    fx += wallX * 3.8;
+    fy += wallY * 3.8;
+  }
 
-  const len = Math.hypot(fx, fy) || 1;
-
-  // Angle d'orbite lent et unique par runner (arrondit la trajectoire,
-  // évite les équilibres stables contre les bords)
+  const flen = Math.hypot(fx, fy) || 1;
+  // Orbite lente + wobble : empêche tout équilibre stable contre un bord
   const orbit = Math.sin(state.worldTime * 1.1 + (enemy.seed || 0) * 1.618) * 0.55;
   const wobble = Math.sin(state.worldTime * 4.4 + (enemy.seed || 0)) * 0.22;
-  moveEnemy(enemy, Math.atan2(fy / len, fx / len) + orbit + wobble, speedMultiplier, dt, 1);
+  moveEnemy(enemy, Math.atan2(fy / flen, fx / flen) + orbit + wobble, speedMultiplier, dt, 1);
 }
 
 function bossColor(enemy) {

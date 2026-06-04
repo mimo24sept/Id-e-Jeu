@@ -26,7 +26,7 @@
     if (objective.type === "runners") { progress = `${objective.collected}/${objective.target}`; progressFull = progress; }
     if (objective.type === "kills")   { progress = `${objective.killed}/${objective.target}`;   progressFull = progress; }
     const crateStr = crateHudCount > 0 ? ` | C${crateHudCount}` : "";
-    ui.enemyCount.textContent = `${state.enemies.length}${crateStr}`;
+    ui.enemyCount.textContent = `${progress} · ${state.enemies.length}${crateStr}`;
     ui.objectivePanelTitle.textContent = objective.title;
     ui.objectivePanelProgress.textContent = progressFull;
     ui.objectivePanelDesc.textContent = objective.desc;

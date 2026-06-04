@@ -131,11 +131,21 @@ function applyDiamondCourtStartOfWave() {
 }
 
 function randomWorldPoint(margin = 120) {
-  const bounds = worldBounds();
-  return {
-    x: random(bounds.left + margin, bounds.right - margin),
-    y: random(bounds.top + margin, bounds.bottom - margin),
-  };
+  const shape = state?.mapShape || "square";
+  if (shape === "square") {
+    const bounds = worldBounds();
+    return {
+      x: random(bounds.left + margin, bounds.right - margin),
+      y: random(bounds.top + margin, bounds.bottom - margin),
+    };
+  }
+  // Rejet : tirage dans la boite englobante jusqu'à trouver un point valide
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const x = random(-1600, 1600);
+    const y = random(-1050, 1050);
+    if (isInsideMap(x, y, margin)) return { x, y };
+  }
+  return { x: 0, y: 0 };
 }
 
 function rollEventWave() {
@@ -479,22 +489,27 @@ function spawnBoss() {
   const bossPool = bossKinds.filter((kind) => kind !== state.lastBossKind);
   const bossKind = bossPool[Math.floor(random(0, bossPool.length))] || bossKinds[0];
   state.lastBossKind = bossKind;
-  const side = Math.floor(random(0, 4));
   const bounds = worldBounds();
-  let x = state.player.x;
-  let y = state.player.y;
-  if (side === 0) {
-    x = random(bounds.left + radius, bounds.right - radius);
-    y = bounds.top + radius;
-  } else if (side === 1) {
-    x = random(bounds.left + radius, bounds.right - radius);
-    y = bounds.bottom - radius;
-  } else if (side === 2) {
-    x = bounds.left + radius;
-    y = random(bounds.top + radius, bounds.bottom - radius);
+  let x, y;
+  const shape = state.mapShape || "square";
+  if (shape === "square") {
+    const side = Math.floor(random(0, 4));
+    if (side === 0) { x = random(bounds.left + radius, bounds.right - radius); y = bounds.top + radius; }
+    else if (side === 1) { x = random(bounds.left + radius, bounds.right - radius); y = bounds.bottom - radius; }
+    else if (side === 2) { x = bounds.left + radius; y = random(bounds.top + radius, bounds.bottom - radius); }
+    else { x = bounds.right - radius; y = random(bounds.top + radius, bounds.bottom - radius); }
   } else {
-    x = bounds.right - radius;
-    y = random(bounds.top + radius, bounds.bottom - radius);
+    // Pour les autres formes : trouver un point sur la bordure dans une direction aléatoire
+    const angle = random(0, Math.PI * 2);
+    let lo = 100, hi = 1800;
+    for (let i = 0; i < 14; i++) {
+      const mid = (lo + hi) / 2;
+      if (isInsideMap(Math.cos(angle) * mid, Math.sin(angle) * mid, radius)) lo = mid;
+      else hi = mid;
+    }
+    const r = (lo + hi) / 2;
+    x = Math.cos(angle) * r;
+    y = Math.sin(angle) * r;
   }
 
   state.enemies.push({

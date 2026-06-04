@@ -52,7 +52,9 @@ function startRun(character = null) {
   cancelAnimationFrame(animationId);
   clearTimeout(godCloseTimeout);
   clearInterval(godCountdownInterval);
-  createState({ playerName: connectedPlayerName, character });
+  const mapShapes = ["square", "circle", "cross", "triangle"];
+  const mapShape = mapShapes[Math.floor(Math.random() * mapShapes.length)];
+  createState({ playerName: connectedPlayerName, character, mapShape });
   ui.mainMenu.classList.add("is-hidden");
   ui.characterSelect.classList.add("is-hidden");
   ui.gameOver.classList.add("is-hidden");

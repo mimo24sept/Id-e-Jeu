@@ -36,13 +36,7 @@ function drawGrid() {
     ctx.stroke();
   }
 
-  ctx.strokeStyle = "rgba(255,255,255,0.82)";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
-
-  ctx.strokeStyle = "rgba(13,103,255,0.86)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(topLeft.x + 8, topLeft.y + 8, bottomRight.x - topLeft.x - 16, bottomRight.y - topLeft.y - 16);
+  // La bordure est dessinée par drawMapBorder() après le masque
 }
 
 function drawGridBackdrop() {
@@ -596,6 +590,73 @@ function renderGame() {
     ctx.globalAlpha = 1;
   }
 
+  // Overlay sombre hors de la zone de jeu + bordure de la forme
+  drawMapMask();
+  drawMapBorder();
+
+  ctx.restore();
+}
+
+function addMapShapeToPath() {
+  const shape = state?.mapShape || "square";
+  if (shape === "square") {
+    const b = worldBounds();
+    const tl = screenPoint(b.left, b.top);
+    const br = screenPoint(b.right, b.bottom);
+    ctx.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+  } else if (shape === "circle") {
+    const c = screenPoint(0, 0);
+    ctx.arc(c.x, c.y, MAP_CIRCLE_R, 0, Math.PI * 2);
+  } else if (shape === "cross") {
+    const pts = [
+      screenPoint(-MAP_CROSS_AW, -MAP_CROSS_AVL), screenPoint(MAP_CROSS_AW, -MAP_CROSS_AVL),
+      screenPoint(MAP_CROSS_AW, -MAP_CROSS_AW),   screenPoint(MAP_CROSS_AHL, -MAP_CROSS_AW),
+      screenPoint(MAP_CROSS_AHL, MAP_CROSS_AW),   screenPoint(MAP_CROSS_AW, MAP_CROSS_AW),
+      screenPoint(MAP_CROSS_AW, MAP_CROSS_AVL),   screenPoint(-MAP_CROSS_AW, MAP_CROSS_AVL),
+      screenPoint(-MAP_CROSS_AW, MAP_CROSS_AW),   screenPoint(-MAP_CROSS_AHL, MAP_CROSS_AW),
+      screenPoint(-MAP_CROSS_AHL, -MAP_CROSS_AW), screenPoint(-MAP_CROSS_AW, -MAP_CROSS_AW),
+    ];
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.closePath();
+  } else if (shape === "triangle") {
+    const [a, b, c] = MAP_TRI.map(([wx, wy]) => screenPoint(wx, wy));
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.lineTo(c.x, c.y);
+    ctx.closePath();
+  }
+}
+
+function drawMapMask() {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(-200, -200, window.innerWidth + 400, window.innerHeight + 400);
+  addMapShapeToPath();
+  ctx.fillStyle = "rgba(9,9,9,0.88)";
+  ctx.fill("evenodd");
+  ctx.restore();
+}
+
+function drawMapBorder() {
+  const shape = state?.mapShape || "square";
+  ctx.save();
+  ctx.beginPath();
+  addMapShapeToPath();
+  ctx.strokeStyle = "rgba(244,244,244,0.82)";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+  if (shape === "square") {
+    // Accent bleu intérieur (style actuel)
+    const b = worldBounds();
+    const tl = screenPoint(b.left + 8, b.top + 8);
+    const br = screenPoint(b.right - 8, b.bottom - 8);
+    ctx.beginPath();
+    ctx.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+    ctx.strokeStyle = "rgba(13,103,255,0.86)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
   ctx.restore();
 }
 

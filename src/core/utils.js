@@ -29,12 +29,60 @@ function worldBounds() {
   };
 }
 
+// MAP_SHAPES : carré, cercle, croix, triangle — coordonnées monde
+const MAP_CROSS_AW = 430;   // demi-largeur des bras
+const MAP_CROSS_AHL = 1050; // demi-longueur horizontale (= WORLD.width/2)
+const MAP_CROSS_AVL = 650;  // demi-longueur verticale (= WORLD.height/2)
+const MAP_CIRCLE_R = 930;
+// Triangle : sommet (0,-980), bas-gauche (-1500,860), bas-droit (1500,860)
+const MAP_TRI = [[0, -980], [-1500, 860], [1500, 860]];
+
+function isInsideMap(x, y, margin = 0) {
+  const shape = state?.mapShape || "square";
+  if (shape === "square") {
+    const b = worldBounds();
+    return x >= b.left + margin && x <= b.right - margin &&
+           y >= b.top + margin && y <= b.bottom - margin;
+  }
+  if (shape === "circle") {
+    return Math.hypot(x, y) <= MAP_CIRCLE_R - margin;
+  }
+  if (shape === "cross") {
+    const aw = MAP_CROSS_AW - margin;
+    const ahl = MAP_CROSS_AHL - margin;
+    const avl = MAP_CROSS_AVL - margin;
+    return (Math.abs(x) <= ahl && Math.abs(y) <= aw) ||
+           (Math.abs(x) <= aw  && Math.abs(y) <= avl);
+  }
+  if (shape === "triangle") {
+    const [[ax, ay], [bx, by], [cx, cy]] = MAP_TRI;
+    const d1 = (x - bx) * (ay - by) - (ax - bx) * (y - by);
+    const d2 = (x - cx) * (by - cy) - (bx - cx) * (y - cy);
+    const d3 = (x - ax) * (cy - ay) - (cx - ax) * (y - ay);
+    return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+  }
+  return true;
+}
+
 function clampToWorld(x, y, radius = 0) {
-  const bounds = worldBounds();
-  return {
-    x: clamp(x, bounds.left + radius, bounds.right - radius),
-    y: clamp(y, bounds.top + radius, bounds.bottom - radius),
-  };
+  const shape = state?.mapShape || "square";
+  if (shape === "square") {
+    const bounds = worldBounds();
+    return {
+      x: clamp(x, bounds.left + radius, bounds.right - radius),
+      y: clamp(y, bounds.top + radius, bounds.bottom - radius),
+    };
+  }
+  if (isInsideMap(x, y, radius)) return { x, y };
+  // Recherche binaire vers (0,0) pour trouver le point limite
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 14; i++) {
+    const mid = (lo + hi) / 2;
+    if (isInsideMap(x * (1 - mid), y * (1 - mid), radius)) hi = mid;
+    else lo = mid;
+  }
+  const t = (lo + hi) / 2;
+  return { x: x * (1 - t), y: y * (1 - t) };
 }
 
 function controlLabel() {

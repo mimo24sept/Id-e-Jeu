@@ -48,19 +48,20 @@
 /* Objective panel — HUD in-game */
 .objective-panel {
   position: fixed;
-  top: 56px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
-  background: rgba(9, 9, 9, 0.75);
-  border: 2px solid rgba(244, 244, 244, 0.22);
-  padding: 8px 24px 10px;
+  background: var(--surface-2);
+  border: 2px solid var(--line);
+  box-shadow: 4px 4px 0 var(--line);
+  padding: 7px 18px 9px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   pointer-events: none;
-  min-width: 190px;
+  min-width: 160px;
 }
 
 .objective-panel.is-hidden {
@@ -68,19 +69,19 @@
 }
 
 .objective-panel-title {
-  font: 400 13px / 1 'Bebas Neue', sans-serif;
-  letter-spacing: 0.18em;
+  font: 400 11px / 1 'Bebas Neue', sans-serif;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
 .objective-panel-progress {
-  font: 700 28px / 1 'Space Mono', monospace;
+  font: 700 26px / 1 'Space Mono', monospace;
   color: var(--text);
 }
 
 .objective-panel-desc {
-  font: 400 11px / 1 'Inter', system-ui, sans-serif;
+  font: 400 10px / 1 'Inter', system-ui, sans-serif;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);

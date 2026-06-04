@@ -44,6 +44,7 @@ function createState(options = {}) {
     waveGoldEarned: 0,
     crateSpawnTimer: 0,
     pendingCratePacks: 0,
+    mapShape: options.mapShape || "square",
     weapons: [createWeapon({ archetypeId: "rifle", gradeId: "green", ...(startingSuit && { suit: startingSuit }) })],
     waveTimeLeft: 0,
     spawnTimer: 0,

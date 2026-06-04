@@ -427,28 +427,32 @@ function updateSprayer(enemy, angle, d, speedMultiplier, dt) {
 
 function updateObjectiveRunner(enemy, speedMultiplier, dt) {
   const bounds = worldBounds();
-  const margin = 240;
+  const margin = 250;
 
-  // Direction de fuite de base
+  // Direction de fuite de base normalisée
   let fx = enemy.x - state.player.x;
   let fy = enemy.y - state.player.y;
   const fleeDist = Math.hypot(fx, fy) || 1;
   fx /= fleeDist;
   fy /= fleeDist;
 
-  // Répulsion des bords : plus on est proche, plus la force est grande
+  // Répulsion des bords quadratique (beaucoup plus forte près du bord)
   const dLeft   = enemy.x - bounds.left;
   const dRight  = bounds.right - enemy.x;
   const dTop    = enemy.y - bounds.top;
   const dBottom = bounds.bottom - enemy.y;
-  if (dLeft   < margin) fx += (1 - dLeft   / margin) * 2.2;
-  if (dRight  < margin) fx -= (1 - dRight  / margin) * 2.2;
-  if (dTop    < margin) fy += (1 - dTop    / margin) * 2.2;
-  if (dBottom < margin) fy -= (1 - dBottom / margin) * 2.2;
+  if (dLeft   < margin) fx += Math.pow(1 - dLeft   / margin, 2) * 3.2;
+  if (dRight  < margin) fx -= Math.pow(1 - dRight  / margin, 2) * 3.2;
+  if (dTop    < margin) fy += Math.pow(1 - dTop    / margin, 2) * 3.2;
+  if (dBottom < margin) fy -= Math.pow(1 - dBottom / margin, 2) * 3.2;
 
   const len = Math.hypot(fx, fy) || 1;
-  const wobble = Math.sin(state.worldTime * 4.4 + (enemy.seed || 0)) * 0.38;
-  moveEnemy(enemy, Math.atan2(fy / len, fx / len) + wobble, speedMultiplier, dt, 1);
+
+  // Angle d'orbite lent et unique par runner (arrondit la trajectoire,
+  // évite les équilibres stables contre les bords)
+  const orbit = Math.sin(state.worldTime * 1.1 + (enemy.seed || 0) * 1.618) * 0.55;
+  const wobble = Math.sin(state.worldTime * 4.4 + (enemy.seed || 0)) * 0.22;
+  moveEnemy(enemy, Math.atan2(fy / len, fx / len) + orbit + wobble, speedMultiplier, dt, 1);
 }
 
 function bossColor(enemy) {
@@ -668,7 +672,7 @@ function updateEnemies(dt) {
         if (enemy.type === "boss") {
           fireBossPattern(enemy, target, angle);
         } else {
-          const shots = enemy.type === "sprayer" ? 4 : 1;
+          const shots = enemy.type === "sprayer" ? 3 : 1;
           const spread = enemy.type === "sprayer" ? random(1.4, 3.1) : 0;
           const bulletSpeed = enemy.type === "sprayer" ? 235 : enemy.type === "objective-turret" ? 265 : 310;
           const baseAngle = enemy.type === "shooter"
@@ -692,7 +696,7 @@ function updateEnemies(dt) {
               color: enemy.type === "objective-turret" ? "#f0d24b" : undefined,
             });
           }
-          enemy.shootTimer = enemy.type === "sprayer" ? random(0.8, 1.25) : enemy.type === "objective-turret" ? random(1.0, 1.45) : random(1.25, 1.9);
+          enemy.shootTimer = enemy.type === "sprayer" ? random(1.8, 2.8) : enemy.type === "objective-turret" ? random(1.0, 1.45) : random(1.25, 1.9);
         }
       }
     }

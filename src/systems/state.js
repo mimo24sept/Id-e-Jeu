@@ -1,4 +1,8 @@
-﻿function characterDominantSuit(character) {
+﻿function hasRelic(id) {
+  return (state?.relics || []).includes(id);
+}
+
+function characterDominantSuit(character) {
   if (!character?.cardEffectMultipliers) return null;
   const entries = Object.entries(character.cardEffectMultipliers);
   if (entries.length === 0) return null;
@@ -45,6 +49,7 @@ function createState(options = {}) {
     crateSpawnTimer: 0,
     pendingCratePacks: 0,
     mapShape: options.mapShape || "square",
+    relics: [],
     weapons: [createWeapon({ archetypeId: "rifle", gradeId: "green", ...(startingSuit && { suit: startingSuit }) })],
     waveTimeLeft: 0,
     spawnTimer: 0,

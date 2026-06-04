@@ -283,6 +283,10 @@ function beginWave() {
   state.player.stationaryTime = 0;
   applyDiamondCourtStartOfWave();
   state.stats = calculateStats();
+  if (hasRelic("fontaine")) {
+    state.player.hp = state.stats.maxHp;
+    state.floatingText.push({ x: state.player.x, y: state.player.y - 55, text: "PV RESTAURÉS ♥", life: 1.4, color: "#e8526d" });
+  }
   const fixedWaveGold = 18 + state.wave * 6 + metaRunBonuses().waveGold;
   state.waveGoldCap = Math.max(0, Math.round((expectedWaveIncome(state.wave) - fixedWaveGold) * state.stats.moneyMultiplier));
   state.objective = isEvent ? createWaveObjective() : null;
@@ -339,10 +343,28 @@ function beginWave() {
   if (isEvent) queueTutorialSteps(["eventWave"]);
 }
 
+function tryAwardRelic() {
+  if (!state.objective || Math.random() >= 0.30) return;
+  const available = RELICS.filter((r) => !state.relics.includes(r.id));
+  if (available.length === 0) return;
+  const relic = available[Math.floor(Math.random() * available.length)];
+  state.relics.push(relic.id);
+  if (relic.id === "forge") state.runMaxWeapons += 1;
+  showWaveAnnouncement({
+    label: "✦ Relique obtenue",
+    title: `${relic.symbol} ${relic.name}`,
+    desc: relic.desc,
+    color: relic.color,
+  });
+}
+
 function completeWave() {
   const completedWave = state.wave;
+  tryAwardRelic();
   state.betweenWaves = true;
-  state.money += 18 + state.wave * 6 + metaRunBonuses().waveGold;
+  const fixedGold = 18 + state.wave * 6 + metaRunBonuses().waveGold;
+  state.money += fixedGold;
+  if (hasRelic("avarice")) state.money += fixedGold;
   const totalInterestRate = (state.character?.endWaveInterest || 0) + (talentBonuses().interestBonus || 0);
   if (totalInterestRate > 0) {
     const interest = Math.floor(state.money * totalInterestRate);

@@ -326,6 +326,11 @@ function damagePlayer(amount) {
   if (state.godMode) return;
   if (state.gameOver) return;
   if (state.player.invuln > 0) return;
+  if (hasRelic("aegis") && Math.random() < 0.25) {
+    state.floatingText.push({ x: state.player.x, y: state.player.y - 38, text: "ESQUIVÉ", life: 0.55, color: "#d7dbe4" });
+    state.player.invuln = 0.15;
+    return;
+  }
   const sanctuary = state.diamondKingSanctuary;
   const reducedAmount = sanctuary && distance(state.player, sanctuary) < sanctuary.radius
     ? amount * (1 - sanctuary.damageReduction) : amount;
@@ -899,7 +904,11 @@ function updateProjectiles(dt) {
           life: 0.55,
           color: projectile.color,
         });
-        bounceProjectile(projectile, enemy);
+        if (hasRelic("lame")) {
+          (projectile.bouncedTargets ||= new Set()).add(enemy);
+        } else {
+          bounceProjectile(projectile, enemy);
+        }
       }
     }
   }
@@ -993,6 +1002,38 @@ function updateKills(dt) {
     if (enemy.hp <= 0) {
       if (enemy.type === "bomber" && !enemy.exploded) {
         bomberExplode(enemy);
+      }
+      // Reliques au moment du kill
+      if (hasRelic("vampire")) {
+        state.player.hp = Math.min(state.stats?.maxHp || 100, state.player.hp + 3);
+      }
+      if (hasRelic("colere")) {
+        for (const other of state.enemies) {
+          if (other === enemy || other.hp <= 0) continue;
+          if (distance(enemy, other) < 130) other.hp -= enemy.maxHp * 0.20;
+        }
+      }
+      if (hasRelic("echo")) {
+        const targets = state.enemies
+          .filter((e) => e.hp > 0 && e !== enemy)
+          .sort((a, b) => distance(enemy, a) - distance(enemy, b))
+          .slice(0, 2);
+        for (const t of targets) {
+          const ang = Math.atan2(t.y - enemy.y, t.x - enemy.x);
+          state.projectiles.push({
+            x: enemy.x, y: enemy.y,
+            vx: Math.cos(ang) * 500, vy: Math.sin(ang) * 500,
+            radius: 5,
+            damage: 12 + state.wave * 0.6,
+            hp: 9999,
+            life: 2.5,
+            color: "#b278ff",
+            effects: {}, crit: false,
+            bouncesRemaining: 0,
+            bouncedTargets: new Set([enemy]),
+            bounceIndex: 0,
+          });
+        }
       }
       if (enemy.type === "splitter" && !enemy.isMini) {
         const toPlayer = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);

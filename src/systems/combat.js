@@ -226,15 +226,19 @@ function updateSpawns(dt) {
     const reducedBurst = spawnBurst * (1 - metaRunBonuses().enemyReduction);
     spawnBurst = Math.max(1, Math.floor(reducedBurst) + (Math.random() < reducedBurst % 1 ? 1 : 0));
     const isBossWave = state.wave % 10 === 0;
-    if (isBossWave || state.objective) {
+    if (state.wave < 30) {
       const regularCount = state.enemies.filter((e) => !e.boss && !e.objectiveTarget).length;
-      const cap = isBossWave ? 60 : 100;
-      spawnBurst = Math.min(spawnBurst, Math.max(0, cap - regularCount));
+      const enemyCap = isBossWave
+        ? 40 + Math.floor(state.wave * 2)
+        : objectiveActive
+          ? 60 + Math.floor(state.wave * 2)
+          : 15 + Math.floor(state.wave * 3);
+      spawnBurst = Math.min(spawnBurst, Math.max(0, enemyCap - regularCount));
     }
     for (let i = 0; i < spawnBurst; i += 1) {
       spawnEnemy();
     }
-    state.spawnTimer = Math.max(0.14, 0.72 - state.wave * 0.022);
+    state.spawnTimer = Math.max(0.06, 0.75 - state.wave * 0.024);
   }
 }
 
@@ -471,7 +475,7 @@ function updateBossAura(enemy, dt) {
   const inner = enemy.radius + 95;
   if (d > outer) return;
   const pressure = d < inner ? 1.9 : 1;
-  damagePlayerContinuous((12 + state.wave * 0.65) * pressure * Math.pow(1.18, enemy.tier || 0) * dt);
+  damagePlayerContinuous((12 + state.wave * 0.65) * pressure * Math.pow(1.18, enemy.tier || 0) * waveExpDmg(state.wave) * dt);
 }
 
 function pushEnemyBullet(enemy, angle, speed, radius, damage, life, target, color) {
@@ -494,7 +498,7 @@ function fireBossPattern(enemy, target, angle) {
   const age = enemy.bossAge || 0;
   if (enemy.bossKind === "spades") {
     const baseAngle = predictiveAimAngle(enemy, target, 390, 0.015);
-    const damage = (24 + state.wave * 1.35) * tierMult;
+    const damage = (24 + state.wave * 1.35) * tierMult * waveExpDmg(state.wave);
     for (let i = -1; i <= 1; i += 1) {
       pushEnemyBullet(enemy, baseAngle + i * 0.13, 390, 8, damage, 3.2, target, bossColor(enemy));
     }
@@ -507,7 +511,7 @@ function fireBossPattern(enemy, target, angle) {
     const spin = state.worldTime * 0.9 + (enemy.seed || 0);
     for (let i = 0; i < shots; i += 1) {
       const bulletAngle = spin + (i / shots) * Math.PI * 2 + random(-0.24, 0.24);
-      pushEnemyBullet(enemy, bulletAngle, random(175, 270), 5, (7 + state.wave * 0.35) * tierMult, 3.4, target, bossColor(enemy));
+      pushEnemyBullet(enemy, bulletAngle, random(175, 270), 5, (7 + state.wave * 0.35) * tierMult * waveExpDmg(state.wave), 3.4, target, bossColor(enemy));
     }
     enemy.shootTimer = random(0.55, 0.85);
     return;
@@ -520,7 +524,7 @@ function fireBossPattern(enemy, target, angle) {
     const baseAngle = predictiveAimAngle(enemy, target, 285 + rage * 18, 0.04);
     for (let i = 0; i < shots; i += 1) {
       const offset = shots > 1 ? ((i / (shots - 1)) - 0.5) * spread : 0;
-      pushEnemyBullet(enemy, baseAngle + offset, 285 + rage * 18, 7, (10 + state.wave * 0.7) * tierMult * rage, 3.5, target, bossColor(enemy));
+      pushEnemyBullet(enemy, baseAngle + offset, 285 + rage * 18, 7, (10 + state.wave * 0.7) * tierMult * rage * waveExpDmg(state.wave), 3.5, target, bossColor(enemy));
     }
     enemy.shootTimer = Math.max(0.42, random(1.1, 1.55) / rage);
     return;
@@ -530,7 +534,7 @@ function fireBossPattern(enemy, target, angle) {
   const spread = 1.1;
   for (let i = 0; i < shots; i += 1) {
     const offset = ((i / (shots - 1)) - 0.5) * spread;
-    pushEnemyBullet(enemy, angle + offset, 215, 9, (10 + state.wave * 0.6) * tierMult, 4, target, bossColor(enemy));
+    pushEnemyBullet(enemy, angle + offset, 215, 9, (10 + state.wave * 0.6) * tierMult * waveExpDmg(state.wave), 4, target, bossColor(enemy));
   }
   enemy.shootTimer = random(1.25, 1.75);
 }
@@ -691,7 +695,7 @@ function updateEnemies(dt) {
               : angle + (enemy.type === "sprayer" ? random(-1.25, 1.25) : 0);
           for (let i = 0; i < shots; i += 1) {
             const offset = shots > 1 ? ((i / (shots - 1)) - 0.5) * spread : 0;
-            const bulletDamage = (enemy.type === "sprayer" ? 6 + state.wave * 0.38 : enemy.type === "objective-turret" ? 8 + state.wave * 0.42 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0);
+            const bulletDamage = (enemy.type === "sprayer" ? 6 + state.wave * 0.38 : enemy.type === "objective-turret" ? 8 + state.wave * 0.42 : 9 + state.wave * 0.55) * Math.pow(1.25, enemy.tier || 0) * waveExpDmg(state.wave);
             state.enemyBullets.push({
               x: enemy.x,
               y: enemy.y,
@@ -718,7 +722,7 @@ function updateEnemies(dt) {
           enemy.sniperCharging = 0;
           if (d < 950) {
             const sniperAngle = predictiveAimAngle(enemy, target, 760, 0.008);
-            const bulletDamage = (22 + state.wave * 0.85) * Math.pow(1.25, enemy.tier || 0);
+            const bulletDamage = (22 + state.wave * 0.85) * Math.pow(1.25, enemy.tier || 0) * waveExpDmg(state.wave);
             state.enemyBullets.push({
               x: enemy.x, y: enemy.y,
               vx: Math.cos(sniperAngle) * 760,

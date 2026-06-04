@@ -470,7 +470,7 @@ function calculateStats() {
     regen: Math.max(0, suits.hearts * 0.18 + hand.power * 0.05 + effects.regen + runBonuses.spadeRegen),
     weaponRangeMultiplier: 1,
     stationaryPower: runBonuses.stationaryPower,
-    extraCardSlots: (effects.cardSlots || 0) + (hasRelic("grimoire") ? Math.floor((state?.wave || 1) / 3) : 0),
+    extraCardSlots: (effects.cardSlots || 0) + (hasRelic("grimoire") ? Math.floor(Math.max(0, ((state?.wave || 1) - (state.grimoireAcquiredWave ?? (state?.wave || 1))) / 3)) : 0),
     critChance: Math.min(0.75, effects.critChance),
     healingMultiplier: 1 + (tb.healingBonus || 0),
     mapWidth: WORLD.width,

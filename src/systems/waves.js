@@ -10,6 +10,14 @@ function enemyGoldPressureMultiplier(wave = state.wave) {
   return Math.max(0.58, 1 - Math.min(16, wave) * 0.025);
 }
 
+function waveExpHp(wave) {
+  return Math.pow(1.04, wave);
+}
+
+function waveExpDmg(wave) {
+  return Math.pow(1.035, wave);
+}
+
 function spendCourtMoneyAmount(amount) {
   const spent = Math.min(state.money, Math.max(0, Math.floor(amount)));
   state.money -= spent;
@@ -214,7 +222,7 @@ function spawnObjectiveTurrets() {
   if (!objective || objective.type !== "turrets") return;
   const bounds = worldBounds();
   const tier = enemyTier(state.wave);
-  const hp = (50 + state.wave * 18) * enemyTierMultiplier(state.wave);
+  const hp = (50 + state.wave * 18) * enemyTierMultiplier(state.wave) * waveExpHp(state.wave);
   const points = [
     { x: bounds.left + 135, y: bounds.top + 135 },
     { x: bounds.right - 135, y: bounds.top + 135 },
@@ -228,7 +236,7 @@ function spawnObjectiveTurrets() {
       hp,
       maxHp: hp,
       speed: 0,
-      damage: (10 + state.wave * 0.7) * Math.pow(1.25, tier),
+      damage: (10 + state.wave * 0.7) * Math.pow(1.25, tier) * waveExpDmg(state.wave),
       type: "objective-turret",
       shootTimer: random(0.2, 1),
       value: 0,
@@ -243,7 +251,7 @@ function spawnObjectiveRunner() {
   if (!objective || objective.type !== "runners") return;
   if (state.enemies.some((enemy) => enemy.type === "objective-runner" && enemy.hp > 0)) return;
   const tier = enemyTier(state.wave);
-  const hp = (45 + state.wave * 9) * enemyTierMultiplier(state.wave);
+  const hp = (45 + state.wave * 9) * enemyTierMultiplier(state.wave) * waveExpHp(state.wave);
   const point = randomWorldPoint(170);
   state.enemies.push({
     x: point.x,
@@ -350,6 +358,7 @@ function tryAwardRelic() {
   const relic = available[Math.floor(Math.random() * available.length)];
   state.relics.push(relic.id);
   if (relic.id === "forge") state.runMaxWeapons += 1;
+  if (relic.id === "grimoire") state.grimoireAcquiredWave = state.wave;
   showWaveAnnouncement({
     label: "✦ Relique obtenue",
     title: `${relic.symbol} ${relic.name}`,
@@ -434,7 +443,7 @@ function spawnEnemy() {
   if (state.monoTypeWave) type = state.monoTypeWave;
 
   const typeCaps = { sniper: 3, healer: 20, blocker: 30, bomber: 5 };
-  if (!state.monoTypeWave && typeCaps[type] !== undefined) {
+  if (wave < 30 && !state.monoTypeWave && typeCaps[type] !== undefined) {
     const count = state.enemies.filter((e) => e.type === type).length;
     if (count >= typeCaps[type]) type = "chaser";
   }
@@ -455,7 +464,7 @@ function spawnEnemy() {
   const preset = presets[type];
   const tierMult = enemyTierMultiplier(wave);
   const earlyPressure = 1 + Math.min(wave, 10) * 0.035;
-  const hp = preset.hp * tierMult * earlyPressure;
+  const hp = preset.hp * tierMult * earlyPressure * waveExpHp(wave);
   const radius = preset.radius;
   const MIN_SPAWN_DIST = 200;
   let spawnPoint = clampToWorld(
@@ -481,7 +490,7 @@ function spawnEnemy() {
   }
 
   const baseSpeed = preset.speed * Math.min(1.45, Math.pow(1.08, enemyTier(wave)));
-  const baseDamage = preset.damage * Math.pow(1.35, enemyTier(wave));
+  const baseDamage = preset.damage * Math.pow(1.35, enemyTier(wave)) * waveExpDmg(wave);
   state.enemies.push({
     x: spawnPoint.x,
     y: spawnPoint.y,
@@ -519,7 +528,7 @@ function spawnBoss() {
   const wave = state.wave;
   const tierMult = enemyTierMultiplier(wave);
   const bossTier = Math.max(1, enemyTier(wave));
-  const bossHp = (1400 + wave * 180) * tierMult * (1 + bossTier * 0.35);
+  const bossHp = (1400 + wave * 180) * tierMult * (1 + bossTier * 0.35) * waveExpHp(wave);
   const radius = 46 + enemyTier(wave) * 5;
   const bossKinds = ["hearts", "spades", "clubs", "diamonds"];
   const bossPool = bossKinds.filter((kind) => kind !== state.lastBossKind);
@@ -555,7 +564,7 @@ function spawnBoss() {
     hp: bossHp,
     maxHp: bossHp,
     speed: 62 + wave * 1.6,
-    damage: (28 + wave * 1.8) * Math.pow(1.35, enemyTier(wave)),
+    damage: (28 + wave * 1.8) * Math.pow(1.35, enemyTier(wave)) * waveExpDmg(wave),
     type: "boss",
     bossKind,
     bossAge: 0,

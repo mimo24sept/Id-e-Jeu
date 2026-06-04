@@ -63,7 +63,7 @@
       (weapon, index) => weaponCardHTML(weapon, state.pendingWeapon ? { replaceIndex: index } : {}),
     )
     .join("") +
-    Array.from({ length: Math.max(0, (state.character?.maxWeapons || MAX_WEAPONS) - state.weapons.length) }, () => `
+    Array.from({ length: Math.max(0, (state.character?.maxWeapons || MAX_WEAPONS) + (hasRelic("forge") ? 1 : 0) - state.weapons.length) }, () => `
       <article class="weapon empty-weapon">
         <div class="weapon-top">
           <span class="grade">Vide</span>

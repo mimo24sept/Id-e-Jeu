@@ -121,7 +121,7 @@ function toggleShopLock(id) {
 
 function equipWeapon(weapon) {
   const equipped = { ...weapon, cooldown: 0.2 };
-  const maxWeapons = state.character?.maxWeapons || MAX_WEAPONS;
+  const maxWeapons = (state.character?.maxWeapons || MAX_WEAPONS) + (hasRelic("forge") ? 1 : 0);
   if (state.weapons.length < maxWeapons) {
     state.weapons.push(equipped);
     state.runMaxWeapons = Math.max(state.runMaxWeapons || 1, state.weapons.length);

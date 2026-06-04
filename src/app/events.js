@@ -3,6 +3,9 @@
   if (activeTutorialStep) showActiveTutorialStep();
 });
 ui.connectPlayer.addEventListener("click", connectPlayer);
+ui.exportSave.addEventListener("click", exportSave);
+ui.importSave.addEventListener("click", importSave);
+ui.importSaveInput.addEventListener("change", onImportSaveFile);
 ui.disconnectPlayer.addEventListener("click", disconnectPlayer);
 ui.launchGame.addEventListener("click", launchGame);
 ui.openTutorial.addEventListener("click", showTutorial);

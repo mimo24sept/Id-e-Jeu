@@ -158,6 +158,51 @@ function showTutorial() {
   replayTutorial();
 }
 
+function exportSave() {
+  const save = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    playerName: connectedPlayerName || localStorage.getItem("pokerSurvivorName") || "",
+    metaProgression: localStorage.getItem("pokerSurvivorMetaProgression"),
+  };
+  const blob = new Blob([JSON.stringify(save, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const date = new Date().toISOString().slice(0, 10);
+  a.download = `poker-survivor-${save.playerName || "save"}-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importSave() {
+  ui.importSaveInput.value = "";
+  ui.importSaveInput.click();
+}
+
+function onImportSaveFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const save = JSON.parse(e.target.result);
+      if (!save.metaProgression) throw new Error("Fichier invalide");
+      localStorage.setItem("pokerSurvivorMetaProgression", save.metaProgression);
+      if (save.playerName) {
+        localStorage.setItem("pokerSurvivorName", save.playerName);
+        connectedPlayerName = save.playerName;
+      }
+      metaProgression = loadMetaProgression();
+      showMainMenu();
+      if (connectedPlayerName) setConnectedPlayer(connectedPlayerName);
+    } catch {
+      alert("Fichier de sauvegarde invalide ou corrompu.");
+    }
+  };
+  reader.readAsText(file);
+}
+
 function closeTutorial() {
   completeTutorialStep();
 }

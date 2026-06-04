@@ -355,6 +355,7 @@ function tryAwardRelic() {
     title: `${relic.symbol} ${relic.name}`,
     desc: relic.desc,
     color: relic.color,
+    waitForClick: true,
   });
 }
 
@@ -479,14 +480,16 @@ function spawnEnemy() {
     if (distance(spawnPoint, state.player) < MIN_SPAWN_DIST) spawnPoint = bestPoint;
   }
 
+  const baseSpeed = preset.speed * Math.min(1.45, Math.pow(1.08, enemyTier(wave)));
+  const baseDamage = preset.damage * Math.pow(1.35, enemyTier(wave));
   state.enemies.push({
     x: spawnPoint.x,
     y: spawnPoint.y,
     radius,
     hp,
     maxHp: hp,
-    speed: preset.speed * Math.min(1.45, Math.pow(1.08, enemyTier(wave))),
-    damage: preset.damage * Math.pow(1.35, enemyTier(wave)),
+    speed: baseSpeed,
+    damage: baseDamage,
     type,
     shootTimer: type === "sniper" ? random(1.2, 2.4) : random(0.5, 1.6),
     sniperCharging: 0,
@@ -499,6 +502,17 @@ function spawnEnemy() {
     dashTime: 0,
     dashAngle: angle + Math.PI,
   });
+
+  if (wave >= 10 && Math.random() < 0.20) {
+    const e = state.enemies[state.enemies.length - 1];
+    e.elite = true;
+    if (e.type === "chaser") {
+      e.speed *= 2;
+    } else if (e.type === "brute") {
+      e.hp *= 2;
+      e.maxHp *= 2;
+    }
+  }
 }
 
 function spawnBoss() {

@@ -13,12 +13,21 @@ function renderShopRunInfo() {
   const characterName = character?.name || "Aucun";
   const characterDesc = character?.desc || "Pas de modificateur de personnage.";
   const runBonuses = metaRunBonuses();
+  const relicEntries = (state.relics || []).map((id) => {
+    const r = RELICS.find((r) => r.id === id);
+    return r ? `<div class="relic-entry">
+      <span class="relic-symbol" style="color:${r.color}">${r.symbol}</span>
+      <div><strong>${r.name}</strong><p>${r.desc}</p></div>
+    </div>` : "";
+  }).join("");
+
   ui.shopRunInfo.innerHTML = `
     <article class="run-character">
       <span class="label">Personnage</span>
       <strong>${characterName}</strong>
       <p>${characterDesc}</p>
     </article>
+    ${relicEntries ? `<div class="run-relics"><span class="label">Reliques</span><div class="relic-list">${relicEntries}</div></div>` : ""}
     <div class="shop-stat-grid">
       ${statBox("PV", `${Math.ceil(state.player.hp)} / ${state.stats.maxHp}`)}
       ${statBox("Regen", state.stats.regen.toFixed(1))}

@@ -45,6 +45,71 @@
   text-align: center;
 }
 
+.wave-announcement-hint {
+  font: 400 12px / 1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 32px;
+  opacity: 0.55;
+  display: none;
+}
+
+.wave-announcement.is-clickable {
+  cursor: pointer;
+}
+
+/* Reliques dans le shop */
+.run-relics {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.run-relics > .label {
+  font: 700 11px / 1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.relic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.relic-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid rgba(244, 244, 244, 0.15);
+  background: var(--surface);
+}
+
+.relic-symbol {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.relic-entry strong {
+  display: block;
+  font: 900 12px / 1 'Inter', system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+
+.relic-entry p {
+  margin: 3px 0 0;
+  font: 400 11px / 1.4 'Inter', system-ui, sans-serif;
+  color: var(--muted);
+}
+
 /* Objective panel — HUD in-game */
 .objective-panel {
   position: fixed;

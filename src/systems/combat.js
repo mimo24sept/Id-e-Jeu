@@ -416,7 +416,7 @@ function updateDasher(enemy, angle, d, speedMultiplier, dt) {
     }
     return;
   }
-  if (d < 270 && enemy.dashCooldown <= 0) {
+  if (d < (enemy.elite ? 540 : 270) && enemy.dashCooldown <= 0) {
     enemy.dashAngle = angle;
     enemy.dashWindup = 0.38;
     return;
@@ -594,6 +594,14 @@ function updateBlocker(enemy, target, speedMultiplier, dt) {
   moveEnemy(enemy, Math.atan2(goalY - enemy.y, goalX - enemy.x), speedMultiplier, dt);
 }
 
+function eliteHealerDamageMultiplier(enemy) {
+  for (const healer of state.enemies) {
+    if (healer === enemy || healer.type !== "healer" || !healer.elite || healer.hp <= 0) continue;
+    if (distance(healer, enemy) < 180) return 0.25;
+  }
+  return 1;
+}
+
 function updateEnemies(dt) {
   const bonuses = metaRunBonuses();
   for (const enemy of state.enemies) {
@@ -673,8 +681,8 @@ function updateEnemies(dt) {
         if (enemy.type === "boss") {
           fireBossPattern(enemy, target, angle);
         } else {
-          const shots = enemy.type === "sprayer" ? 3 : 1;
-          const spread = enemy.type === "sprayer" ? random(1.4, 3.1) : 0;
+          const shots = enemy.type === "sprayer" ? 3 : (enemy.elite ? 2 : 1);
+          const spread = enemy.type === "sprayer" ? random(1.4, 3.1) : (enemy.elite ? 0.25 : 0);
           const bulletSpeed = enemy.type === "sprayer" ? 235 : enemy.type === "objective-turret" ? 265 : 310;
           const baseAngle = enemy.type === "shooter"
             ? predictiveAimAngle(enemy, target, bulletSpeed, 0.14)
@@ -726,7 +734,7 @@ function updateEnemies(dt) {
       } else {
         enemy.shootTimer -= dt;
         if (enemy.shootTimer <= 0 && d < 950) {
-          enemy.sniperCharging = 1.2;
+          enemy.sniperCharging = enemy.elite ? 0.6 : 1.2;
         }
       }
     }
@@ -887,8 +895,10 @@ function updateProjectiles(dt) {
           : state.character?.bossDamageMultiplier && enemy.type === "boss"
             ? state.character.bossDamageMultiplier
             : 1;
+        const healerMult = eliteHealerDamageMultiplier(enemy);
+        const totalMult = characterMultiplier * healerMult;
         const hpBefore = enemy.hp;
-        enemy.hp -= projectile.damage * characterMultiplier;
+        enemy.hp -= projectile.damage * totalMult;
         if ((projectile.bounceIndex || 0) > 0 && hpBefore > 0 && enemy.hp <= 0) {
           state.bounceKills = (state.bounceKills || 0) + 1;
         }
@@ -896,7 +906,7 @@ function updateProjectiles(dt) {
         state.floatingText.push({
           x: enemy.x,
           y: enemy.y - enemy.radius,
-          text: projectile.crit ? `CRIT ${Math.round(projectile.damage * characterMultiplier)}` : Math.round(projectile.damage * characterMultiplier).toString(),
+          text: projectile.crit ? `CRIT ${Math.round(projectile.damage * totalMult)}` : Math.round(projectile.damage * totalMult).toString(),
           life: 0.55,
           color: projectile.color,
         });
@@ -924,7 +934,7 @@ function updateProjectiles(dt) {
           : state.character?.bossDamageMultiplier && enemy.type === "boss"
             ? state.character.bossDamageMultiplier
             : 1;
-        enemy.hp -= pulse.damage * characterMultiplier;
+        enemy.hp -= pulse.damage * characterMultiplier * eliteHealerDamageMultiplier(enemy);
         applyHitEffects(enemy, pulse);
       }
     }
@@ -1042,7 +1052,7 @@ function updateKills(dt) {
             radius: 9, hp: miniHp, maxHp: miniHp,
             speed: (145 + state.wave * 3.8) * Math.min(1.45, Math.pow(1.08, enemy.tier || 0)),
             damage: enemy.damage * 0.55,
-            type: "splitter", isMini: true, exploded: false, sniperCharging: 0,
+            type: "splitter", isMini: enemy.elite ? false : true, exploded: false, sniperCharging: 0,
             shootTimer: 999, value: 0, tier: enemy.tier || 0,
             seed: random(0, Math.PI * 2), dashCooldown: 0, dashWindup: 0, dashTime: 0, dashAngle: 0,
           });

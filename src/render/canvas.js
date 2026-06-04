@@ -415,6 +415,18 @@ function renderGame() {
                             : "#e46363";
     drawCircle(p.x, p.y, enemy.radius, fill, "rgba(0,0,0,0.35)");
 
+    if (enemy.elite) {
+      const pulse = 0.6 + Math.abs(Math.sin(state.worldTime * 3 + (enemy.seed || 0))) * 0.4;
+      ctx.save();
+      ctx.strokeStyle = "#ffd700";
+      ctx.lineWidth = 2.5;
+      ctx.globalAlpha = pulse * 0.9;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, enemy.radius + 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     if (enemy.type === "boss" && enemy.bossKind === "hearts") {
       ctx.save();
       ctx.strokeStyle = "rgba(232,82,109,0.5)";
@@ -479,7 +491,7 @@ function renderGame() {
     // Sniper: laser telegraph during charge
     if (enemy.type === "sniper" && (enemy.sniperCharging || 0) > 0) {
       const pp = screenPoint(state.player.x, state.player.y);
-      const chargeRatio = 1 - enemy.sniperCharging / 1.2;
+      const chargeRatio = 1 - enemy.sniperCharging / (enemy.elite ? 0.6 : 1.2);
       ctx.save();
       ctx.globalAlpha = 0.18 + chargeRatio * 0.62;
       ctx.strokeStyle = "#c03050";
@@ -488,6 +500,20 @@ function renderGame() {
       ctx.beginPath();
       ctx.moveTo(p.x, p.y);
       ctx.lineTo(pp.x, pp.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    if (enemy.type === "healer" && enemy.elite) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(77,204,122,0.45)";
+      ctx.fillStyle = "rgba(77,204,122,0.07)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 180, 0, Math.PI * 2);
+      ctx.fill();
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();

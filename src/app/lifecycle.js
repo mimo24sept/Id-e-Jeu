@@ -161,17 +161,41 @@ function showTutorial() {
 }
 
 let waveAnnouncementTimeout = null;
+let waveAnnouncementClickHandler = null;
 
-function showWaveAnnouncement({ label, title, desc, color }) {
+function showWaveAnnouncement({ label, title, desc, color, waitForClick = false }) {
   ui.waveAnnouncementLabel.textContent = label || "";
   ui.waveAnnouncementTitle.textContent = title || "";
   ui.waveAnnouncementTitle.style.color = color || "var(--text)";
   ui.waveAnnouncementDesc.textContent = desc || "";
-  ui.waveAnnouncement.classList.add("is-visible");
+
+  const hint = ui.waveAnnouncement.querySelector(".wave-announcement-hint");
+  if (hint) hint.style.display = waitForClick ? "block" : "none";
+
+  // Nettoyer l'ancien handler si présent
   clearTimeout(waveAnnouncementTimeout);
-  waveAnnouncementTimeout = setTimeout(() => {
-    ui.waveAnnouncement.classList.remove("is-visible");
-  }, 2000);
+  if (waveAnnouncementClickHandler) {
+    ui.waveAnnouncement.removeEventListener("click", waveAnnouncementClickHandler);
+    waveAnnouncementClickHandler = null;
+  }
+
+  ui.waveAnnouncement.classList.toggle("is-clickable", waitForClick);
+  ui.waveAnnouncement.style.pointerEvents = waitForClick ? "all" : "none";
+  ui.waveAnnouncement.classList.add("is-visible");
+
+  if (waitForClick) {
+    waveAnnouncementClickHandler = () => {
+      ui.waveAnnouncement.classList.remove("is-visible");
+      ui.waveAnnouncement.style.pointerEvents = "none";
+      ui.waveAnnouncement.classList.remove("is-clickable");
+      waveAnnouncementClickHandler = null;
+    };
+    ui.waveAnnouncement.addEventListener("click", waveAnnouncementClickHandler);
+  } else {
+    waveAnnouncementTimeout = setTimeout(() => {
+      ui.waveAnnouncement.classList.remove("is-visible");
+    }, 2000);
+  }
 }
 
 function exportSave() {

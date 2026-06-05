@@ -163,7 +163,8 @@ function cardPackPrice(pack) {
 
 function rerollCost() {
   if (state.character?.freeFirstReroll && (state.shopRerolls || 0) === 0) return 0;
-  const base = 3 + (state.shopRerolls || 0) * 2 + Math.floor(state.wave / 6);
+  const waveCost = 2 + Math.round(state.wave * state.wave / 10);
+  const base = Math.round(waveCost * Math.pow(1.5, state.shopRerolls || 0));
   const tb = talentBonuses();
   return Math.max(1, Math.round(base * (1 - (tb.rerollDiscount || 0))));
 }

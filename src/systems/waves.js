@@ -11,11 +11,11 @@ function enemyGoldPressureMultiplier(wave = state.wave) {
 }
 
 function waveExpHp(wave) {
-  return Math.pow(1.04, wave);
+  return Math.pow(1.05, wave);
 }
 
 function waveExpDmg(wave) {
-  return Math.pow(1.035, wave);
+  return Math.pow(1.048, wave);
 }
 
 function spendCourtMoneyAmount(amount) {
@@ -515,7 +515,7 @@ function spawnEnemy() {
     dashAngle: angle + Math.PI,
   });
 
-  if (wave >= 10 && Math.random() < 0.20) {
+  if (wave >= 10 && Math.random() < Math.min(0.40, 0.20 + (wave - 10) * 0.012)) {
     const e = state.enemies[state.enemies.length - 1];
     e.elite = true;
     if (e.type === "chaser") {

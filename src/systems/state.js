@@ -33,7 +33,7 @@ function createState(options = {}) {
     pendingCurse: null,
     pendingWeapon: null,
     previewWeaponId: null,
-    player: { x: 0, y: 0, vx: 0, vy: 0, radius: 17, hp: 100, invuln: 0, stationaryTime: 0, healPenalty: 0 },
+    player: { x: 0, y: 0, vx: 0, vy: 0, radius: 17, hp: 100, invuln: 0, stationaryTime: 0, healPenalty: 0, shield: 0, meteorTimer: 8 },
     enemies: [],
     smokeClouds: [],
     enemyBullets: [],
@@ -162,7 +162,7 @@ function cardPackPrice(pack) {
 }
 
 function rerollCost() {
-  if (state.character?.freeFirstReroll && (state.shopRerolls || 0) === 0) return 0;
+  if ((state.character?.freeFirstReroll || hasRelic("trefle")) && (state.shopRerolls || 0) === 0) return 0;
   const waveCost = 2 + Math.round(state.wave * state.wave / 10);
   const base = Math.round(waveCost * Math.pow(1.5, state.shopRerolls || 0));
   const tb = talentBonuses();

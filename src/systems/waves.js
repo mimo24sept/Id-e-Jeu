@@ -292,6 +292,7 @@ function beginWave() {
   state.player.stationaryTime = 0;
   applyDiamondCourtStartOfWave();
   state.stats = calculateStats();
+  if (hasRelic("ecrin")) state.player.shield = Math.round(state.stats.maxHp * 0.50);
   if (hasRelic("fontaine")) {
     state.player.hp = state.stats.maxHp;
     state.floatingText.push({ x: state.player.x, y: state.player.y - 55, text: "PV RESTAURÉS ♥", life: 1.4, color: "#e8526d" });
@@ -353,13 +354,14 @@ function beginWave() {
 }
 
 function tryAwardRelic() {
-  if (!state.objective || Math.random() >= 0.30) return;
+  if (!state.objective || Math.random() >= 0.20) return;
   const available = RELICS.filter((r) => !state.relics.includes(r.id));
   if (available.length === 0) return;
   const relic = available[Math.floor(Math.random() * available.length)];
   state.relics.push(relic.id);
   if (relic.id === "forge") state.runMaxWeapons += 1;
   if (relic.id === "grimoire") state.grimoireAcquiredWave = state.wave;
+  if (relic.id === "tempo") state.tempoAcquiredWave = state.wave;
   showWaveAnnouncement({
     label: "✦ Relique obtenue",
     title: `${relic.symbol} ${relic.name}`,

@@ -465,7 +465,7 @@ function calculateStats() {
     flatDamage: effects.flatDamage,
     attackSpeedMultiplier: Math.max(0.25, 1 + suits.clubs * 0.07 + effects.attackSpeed + runBonuses.spadeAttackSpeed),
     moneyMultiplier: Math.max(0.25, logarithmicMoneyMultiplier(suits, effects)),
-    moveSpeed: Math.max(120, 225 + suits.clubs * 4 + effects.moveSpeed + (hasRelic("adren") ? 40 : 0)),
+    moveSpeed: Math.max(120, (225 + suits.clubs * 4 + effects.moveSpeed) * (hasRelic("adren") ? 1.20 : 1)),
     maxHp: Math.round(maxHp + runBonuses.spadeMaxHp),
     regen: Math.max(0, suits.hearts * 0.18 + hand.power * 0.05 + effects.regen + runBonuses.spadeRegen),
     weaponRangeMultiplier: 1,
@@ -476,6 +476,15 @@ function calculateStats() {
     mapWidth: WORLD.width,
     mapHeight: WORLD.height,
   };
+
+  if (hasRelic("pacte")) {
+    stats.damageMultiplier = Math.max(0.25, stats.damageMultiplier + 0.50);
+    stats.maxHp = Math.max(10, Math.round(stats.maxHp * 0.65));
+  }
+  if (hasRelic("tempo")) {
+    const wavesSince = Math.max(0, (state?.wave || 1) - (state.tempoAcquiredWave ?? (state?.wave || 1)));
+    stats.attackSpeedMultiplier = Math.max(0.25, stats.attackSpeedMultiplier * (1 + wavesSince * 0.03));
+  }
 
   if (state?.godMode) {
     return {

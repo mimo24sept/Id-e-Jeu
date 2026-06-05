@@ -50,6 +50,8 @@ function weaponDamage(weapon) {
   const critChance = Math.min(0.9, state.stats.critChance + (scalingType.id === "crit" ? 0.03 * suitCount : 0));
   const crit = Math.random() < critChance;
   if (crit) damage *= 2;
+  if (hasRelic("ancre") && (state.player?.stationaryTime || 0) >= 1.5) damage *= 2;
+  if (hasRelic("furie") && state.player?.hp <= (state.stats?.maxHp || 100) * 0.25) damage *= 2.5;
   return { damage, crit };
 }
 
@@ -168,6 +170,21 @@ function updatePlayer(dt) {
   state.player.invuln = Math.max(0, state.player.invuln - dt);
   state.player.healPenalty = Math.min(9, (state.player.healPenalty || 0) + dt);
   state.player.hp = Math.min(state.stats.maxHp, state.player.hp + state.stats.regen * healPenaltyMult() * (state.character?.healingMultiplier || 1) * (state.stats.healingMultiplier || 1) * dt);
+  if (hasRelic("meteore")) {
+    state.player.meteorTimer = (state.player.meteorTimer ?? 8) - dt;
+    if (state.player.meteorTimer <= 0) {
+      state.player.meteorTimer = 8;
+      const target = findNearestEnemy();
+      if (target) {
+        const dmg = target.maxHp * 0.30;
+        target.hp -= dmg;
+        for (const e of state.enemies) {
+          if (e !== target && e.hp > 0 && distance(target, e) < 110) e.hp -= dmg * 0.45;
+        }
+        state.floatingText.push({ x: target.x, y: target.y - target.radius - 12, text: `☄ ${Math.round(dmg)}`, life: 0.9, color: "#ff6622" });
+      }
+    }
+  }
 }
 
 function updateWeapons(dt) {
@@ -342,10 +359,26 @@ function damagePlayer(amount) {
     return;
   }
   const sanctuary = state.diamondKingSanctuary;
-  const reducedAmount = sanctuary && distance(state.player, sanctuary) < sanctuary.radius
+  let finalDamage = sanctuary && distance(state.player, sanctuary) < sanctuary.radius
     ? amount * (1 - sanctuary.damageReduction) : amount;
-  state.player.hp -= reducedAmount;
+  if ((state.player.shield || 0) > 0) {
+    const absorbed = Math.min(state.player.shield, finalDamage);
+    state.player.shield -= absorbed;
+    finalDamage -= absorbed;
+    if (finalDamage <= 0) {
+      state.player.invuln = 0.42;
+      cameraShake = 0.18;
+      return;
+    }
+  }
+  state.player.hp -= finalDamage;
   state.player.healPenalty = 0;
+  if (hasRelic("miroir")) {
+    const reflectDmg = finalDamage * 0.25;
+    for (const e of state.enemies) {
+      if (e.hp > 0 && distance(state.player, e) < 150) e.hp -= reflectDmg;
+    }
+  }
   state.player.invuln = 0.42;
   cameraShake = 0.18;
   if (state.player.hp <= 0) {
@@ -1065,7 +1098,13 @@ function updateKills(dt) {
       }
       // Reliques au moment du kill
       if (hasRelic("vampire")) {
-        state.player.hp = Math.min(state.stats?.maxHp || 100, state.player.hp + 3);
+        state.player.hp = Math.min(state.stats?.maxHp || 100, state.player.hp + Math.max(1, Math.round((state.stats?.maxHp || 100) * 0.03)));
+      }
+      if (hasRelic("frenzy")) {
+        state.player.hp = Math.min(state.stats?.maxHp || 100, state.player.hp + Math.max(1, Math.round((state.stats?.maxHp || 100) * 0.01)));
+      }
+      if (hasRelic("chainor")) {
+        state.money += Math.max(1, Math.round(enemy.value * 0.25));
       }
       if (hasRelic("colere")) {
         for (const other of state.enemies) {
@@ -1084,7 +1123,7 @@ function updateKills(dt) {
             x: enemy.x, y: enemy.y,
             vx: Math.cos(ang) * 500, vy: Math.sin(ang) * 500,
             radius: 5,
-            damage: 12 + state.wave * 0.6,
+            damage: enemy.maxHp * 0.15,
             hp: 9999,
             life: 2.5,
             color: "#b278ff",

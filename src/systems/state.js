@@ -35,6 +35,7 @@ function createState(options = {}) {
     previewWeaponId: null,
     player: { x: 0, y: 0, vx: 0, vy: 0, radius: 17, hp: 100, invuln: 0, stationaryTime: 0, healPenalty: 0 },
     enemies: [],
+    smokeClouds: [],
     enemyBullets: [],
     projectiles: [],
     pulses: [],

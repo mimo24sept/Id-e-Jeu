@@ -606,6 +606,46 @@ function updateBlocker(enemy, target, speedMultiplier, dt) {
   moveEnemy(enemy, Math.atan2(goalY - enemy.y, goalX - enemy.x), speedMultiplier, dt);
 }
 
+function smokeDamageMult(enemy) {
+  for (const cloud of state.smokeClouds || []) {
+    const age = cloud.maxLife - cloud.life;
+    const r = cloud.maxRadius * Math.min(1, age / 1.5);
+    if (distance(cloud, enemy) < r + enemy.radius) return 0.45;
+  }
+  return 1;
+}
+
+function emitSmoke(enemy) {
+  (state.smokeClouds ||= []).push({
+    x: enemy.x,
+    y: enemy.y,
+    life: 5.0,
+    maxLife: 5.0,
+    maxRadius: 85 + Math.random() * 25,
+    puffs: Array.from({ length: 4 }, () => ({
+      dx: (Math.random() - 0.5) * 36,
+      dy: (Math.random() - 0.5) * 36,
+      scale: 0.62 + Math.random() * 0.44,
+    })),
+  });
+}
+
+function updateSmoker(enemy, angle, speedMultiplier, dt) {
+  moveEnemy(enemy, angle, speedMultiplier * 0.6, dt);
+  enemy.smokeTimer = Math.max(0, (enemy.smokeTimer || 0) - dt);
+  if (enemy.smokeTimer <= 0) {
+    emitSmoke(enemy);
+    enemy.smokeTimer = 2.0 + Math.random() * 0.8;
+  }
+}
+
+function updateSmokeClouds(dt) {
+  state.smokeClouds = (state.smokeClouds || []).filter((c) => c.life > 0);
+  for (const cloud of state.smokeClouds) {
+    cloud.life -= dt;
+  }
+}
+
 function eliteHealerDamageMultiplier(enemy) {
   for (const healer of state.enemies) {
     if (healer === enemy || healer.type !== "healer" || !healer.elite || healer.hp <= 0) continue;
@@ -664,6 +704,8 @@ function updateEnemies(dt) {
       // locked during charge — don't move
     } else if (enemy.type === "healer") {
       updateHealer(enemy, target, speedMultiplier, dt);
+    } else if (enemy.type === "smoker") {
+      updateSmoker(enemy, angle, speedMultiplier, dt);
     } else if (enemy.type === "blocker") {
       updateBlocker(enemy, target, speedMultiplier, dt);
     } else if ((enemy.type !== "shooter" && enemy.type !== "boss" && enemy.type !== "sniper") || d > desiredRange) {
@@ -908,7 +950,7 @@ function updateProjectiles(dt) {
             ? state.character.bossDamageMultiplier
             : 1;
         const healerMult = eliteHealerDamageMultiplier(enemy);
-        const totalMult = characterMultiplier * healerMult;
+        const totalMult = characterMultiplier * healerMult * smokeDamageMult(enemy);
         const hpBefore = enemy.hp;
         enemy.hp -= projectile.damage * totalMult;
         if ((projectile.bounceIndex || 0) > 0 && hpBefore > 0 && enemy.hp <= 0) {
@@ -946,7 +988,7 @@ function updateProjectiles(dt) {
           : state.character?.bossDamageMultiplier && enemy.type === "boss"
             ? state.character.bossDamageMultiplier
             : 1;
-        enemy.hp -= pulse.damage * characterMultiplier * eliteHealerDamageMultiplier(enemy);
+        enemy.hp -= pulse.damage * characterMultiplier * eliteHealerDamageMultiplier(enemy) * smokeDamageMult(enemy);
         applyHitEffects(enemy, pulse);
       }
     }
@@ -1150,6 +1192,7 @@ function update(dt) {
   updateSpawns(dt);
   updateCrates(dt);
   updateObjective(dt);
+  updateSmokeClouds(dt);
   updateEnemies(dt);
   updateWeapons(dt);
   updateBodyguards(dt);

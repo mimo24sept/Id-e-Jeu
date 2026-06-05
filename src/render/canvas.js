@@ -378,6 +378,29 @@ function renderGame() {
     ctx.fillRect(p.x - hpWidth / 2, p.y - guard.radius - 10, hpWidth * Math.max(0, guard.hp / guard.maxHp), 3);
   }
 
+  for (const cloud of state.smokeClouds || []) {
+    const cp = screenPoint(cloud.x, cloud.y);
+    const age = cloud.maxLife - cloud.life;
+    const r = cloud.maxRadius * Math.min(1, age / 1.5);
+    const fadeIn = Math.min(1, age / 0.8);
+    const fadeOut = Math.min(1, cloud.life / 1.2);
+    const alpha = 0.28 * fadeIn * fadeOut;
+    if (alpha <= 0 || r <= 0) continue;
+    ctx.save();
+    for (const puff of cloud.puffs) {
+      const pr = r * puff.scale;
+      const gradient = ctx.createRadialGradient(cp.x + puff.dx, cp.y + puff.dy, 0, cp.x + puff.dx, cp.y + puff.dy, pr);
+      gradient.addColorStop(0, `rgba(55, 70, 88, ${alpha})`);
+      gradient.addColorStop(0.6, `rgba(38, 50, 62, ${alpha * 0.7})`);
+      gradient.addColorStop(1, `rgba(30, 40, 52, 0)`);
+      ctx.beginPath();
+      ctx.arc(cp.x + puff.dx, cp.y + puff.dy, pr, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   for (const enemy of state.enemies) {
     const p = screenPoint(enemy.x, enemy.y);
     const fill = enemy.type === "boss"
@@ -412,7 +435,9 @@ function renderGame() {
                           ? "#e87fac"
                           : enemy.type === "blocker"
                             ? "#3d4a5c"
-                            : "#e46363";
+                            : enemy.type === "smoker"
+                              ? "#4a5f72"
+                              : "#e46363";
     drawCircle(p.x, p.y, enemy.radius, fill, "rgba(0,0,0,0.35)");
 
     if (enemy.elite) {
@@ -590,6 +615,22 @@ function renderGame() {
       ctx.moveTo(p.x - s, p.y - s * 0.4); ctx.lineTo(p.x + s, p.y - s * 0.4);
       ctx.moveTo(p.x - s, p.y + s * 0.4); ctx.lineTo(p.x + s, p.y + s * 0.4);
       ctx.stroke();
+      ctx.restore();
+    }
+
+    if (enemy.type === "smoker") {
+      ctx.save();
+      const t = state.worldTime * 1.4 + (enemy.seed || 0);
+      ctx.strokeStyle = "rgba(180,200,220,0.6)";
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 3; i += 1) {
+        const a = t + (i / 3) * Math.PI * 2;
+        const rx = Math.cos(a) * enemy.radius * 0.38;
+        const ry = Math.sin(a) * enemy.radius * 0.22;
+        ctx.beginPath();
+        ctx.arc(p.x + rx, p.y + ry, enemy.radius * 0.22, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       ctx.restore();
     }
 

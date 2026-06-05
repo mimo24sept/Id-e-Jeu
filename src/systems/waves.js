@@ -278,6 +278,7 @@ function beginWave() {
   state.pendingWeapon = null;
   state.previewWeaponId = null;
   state.crates = [];
+  state.smokeClouds = [];
   state.objectiveItems = [];
   state.bodyguards = [];
   state.crateSpawnTimer = random(2.5, 4.5);
@@ -422,15 +423,16 @@ function spawnEnemy() {
   const spawnDistance = Math.max(window.innerWidth, window.innerHeight) * 0.52 + 45;
   const wave = state.wave;
   const chances = {
-    sprayer:  wave >= 6 ? Math.min(0.06 + wave * 0.008, 0.22) : 0,
-    dasher:   wave >= 4 ? Math.min(0.08 + wave * 0.01,  0.26) : 0,
-    brute:    wave >= 3 ? Math.min(0.11 + wave * 0.014, 0.34) : 0,
-    shooter:  wave >= 2 ? Math.min(0.14 + wave * 0.014, 0.36) : 0,
-    sniper:   wave >= 5 ? Math.min(0.03 + wave * 0.005, 0.11) : 0,
-    healer:   wave >= 7 ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
-    bomber:   wave >= 4 ? Math.min(0.04 + wave * 0.005, 0.11) : 0,
-    splitter: wave >= 5 ? Math.min(0.03 + wave * 0.005, 0.10) : 0,
-    blocker:  wave >= 8 ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
+    sprayer:  wave >= 6  ? Math.min(0.06 + wave * 0.008, 0.22) : 0,
+    dasher:   wave >= 4  ? Math.min(0.08 + wave * 0.01,  0.26) : 0,
+    brute:    wave >= 3  ? Math.min(0.11 + wave * 0.014, 0.34) : 0,
+    shooter:  wave >= 2  ? Math.min(0.14 + wave * 0.014, 0.36) : 0,
+    sniper:   wave >= 5  ? Math.min(0.03 + wave * 0.005, 0.11) : 0,
+    healer:   wave >= 7  ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
+    bomber:   wave >= 4  ? Math.min(0.04 + wave * 0.005, 0.11) : 0,
+    splitter: wave >= 5  ? Math.min(0.03 + wave * 0.005, 0.10) : 0,
+    blocker:  wave >= 8  ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
+    smoker:   wave >= 12 ? Math.min(0.02 + wave * 0.003, 0.09) : 0,
   };
   let cum = 0;
   const roll = Math.random();
@@ -460,6 +462,7 @@ function spawnEnemy() {
     bomber:   { hp: 22 + wave * 5,   radius: 17, speed: 110 + wave * 3,   damage: 32, value: 1.60 },
     splitter: { hp: 28 + wave * 6,   radius: 17, speed:  95 + wave * 2.5, damage: 12, value: 1.65 },
     blocker:  { hp: 62 + wave * 14,  radius: 28, speed:  40 + wave * 1,   damage: 20, value: 2.20 },
+    smoker:   { hp: 35 + wave * 8,   radius: 18, speed:  52 + wave * 1.2, damage:  9, value: 2.00 },
   };
   const preset = presets[type];
   const tierMult = enemyTierMultiplier(wave);
@@ -524,11 +527,27 @@ function spawnEnemy() {
   }
 }
 
+function buildStrengthMultiplier() {
+  const s = state.stats || calculateStats();
+  const avgGradeMult = state.weapons.reduce((sum, w) => sum + (w.grade?.statMult || 1), 0) / Math.max(1, state.weapons.length);
+  const relicBonus = 1 + state.relics.length * 0.08;
+  const handBonus = 1 + (s.handPower || 0) * 0.025;
+  const rawDps = s.damageMultiplier
+    * s.attackSpeedMultiplier
+    * (1 + (s.critChance || 0))
+    * state.weapons.length
+    * avgGradeMult
+    * relicBonus
+    * handBonus;
+  const expectedDps = 1.0 + state.wave * 0.18;
+  return Math.max(0.45, Math.min(3.0, Math.pow(rawDps / expectedDps, 0.4)));
+}
+
 function spawnBoss() {
   const wave = state.wave;
   const tierMult = enemyTierMultiplier(wave);
   const bossTier = Math.max(1, enemyTier(wave));
-  const bossHp = (1400 + wave * 180) * tierMult * (1 + bossTier * 0.35) * waveExpHp(wave);
+  const bossHp = (1400 + wave * 180) * tierMult * (1 + bossTier * 0.35) * waveExpHp(wave) * buildStrengthMultiplier();
   const radius = 46 + enemyTier(wave) * 5;
   const bossKinds = ["hearts", "spades", "clubs", "diamonds"];
   const bossPool = bossKinds.filter((kind) => kind !== state.lastBossKind);

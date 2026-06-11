@@ -436,11 +436,13 @@ function spawnEnemy() {
     blocker:  wave >= 8  ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
     smoker:   wave >= 12 ? Math.min(0.02 + wave * 0.003, 0.09) : 0,
   };
+  const total = Object.values(chances).reduce((sum, c) => sum + c, 0);
+  const normFactor = total > 1 ? total : 1;
   let cum = 0;
   const roll = Math.random();
   let type = "chaser";
   for (const [t, c] of Object.entries(chances)) {
-    cum += c;
+    cum += c / normFactor;
     if (roll < cum) { type = t; break; }
   }
 

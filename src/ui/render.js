@@ -6,6 +6,11 @@
   ui.playerNameHud.textContent = state.playerName;
   ui.wave.textContent = state.wave;
   ui.hp.textContent = `${Math.ceil(state.player.hp)} / ${state.stats.maxHp}`;
+  const hpRatio = state.stats.maxHp > 0 ? Math.max(0, Math.min(1, state.player.hp / state.stats.maxHp)) : 1;
+  if (ui.hpBarFill) {
+    ui.hpBarFill.style.width = `${Math.round(hpRatio * 100)}%`;
+    ui.hpBarFill.style.background = hpRatio > 0.6 ? "var(--club)" : hpRatio > 0.25 ? "var(--gold)" : "var(--danger)";
+  }
   ui.money.textContent = `$${state.money}`;
   const capRatio = state.waveGoldCap > 0 ? Math.min(1, (state.waveGoldEarned || 0) / state.waveGoldCap) : 0;
   ui.goldCapFill.style.width = `${Math.round(capRatio * 100)}%`;

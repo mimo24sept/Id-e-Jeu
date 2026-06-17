@@ -1,0 +1,593 @@
+/* ================================================
+   157.css — UI Readability & Polish Pass
+   ================================================ */
+
+/* ────────────────────────────────────────────────
+   VARIABLES — richer token set
+   ──────────────────────────────────────────────── */
+:root {
+  --surface-alt: #1a1a1a;
+  --border-subtle: rgba(244, 244, 244, 0.10);
+  --border-mid: rgba(244, 244, 244, 0.22);
+  --panel-w: 294px;
+}
+
+/* ────────────────────────────────────────────────
+   GLOBAL LABELS — bump from 0.68rem to 0.74rem
+   ──────────────────────────────────────────────── */
+.label {
+  font-size: 0.74rem;
+  letter-spacing: 0.09em;
+  opacity: 0.85;
+}
+
+/* ────────────────────────────────────────────────
+   HUD TOP — cleaner, more readable bar
+   ──────────────────────────────────────────────── */
+.hud-top {
+  top: 12px;
+  gap: 5px;
+  padding: 5px;
+  width: min(880px, calc(100vw - 32px));
+}
+
+.hud-top > div {
+  padding: 7px 11px 6px;
+  border-width: 2px;
+  border-color: var(--border-mid);
+  background: rgba(20, 20, 20, 0.96);
+}
+
+/* Each cell label stays tiny but gains tracking */
+.hud-top .label {
+  font-size: 0.66rem;
+  letter-spacing: 0.10em;
+  opacity: 0.68;
+}
+
+/* Value text: bolder, mono, slightly larger */
+.hud-top strong {
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-top: 1px;
+}
+
+/* Gold cap bar: slightly taller */
+.gold-cap-track {
+  height: 3px;
+  margin-top: 5px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gold-cap-fill {
+  background: linear-gradient(90deg, var(--gold), #ffd000);
+}
+
+/* HP bar — inside the Vie HUD cell */
+.hp-bar-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 1px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--club);
+  border-radius: 1px;
+  transition: width 0.2s ease, background 0.3s ease;
+}
+
+/* ────────────────────────────────────────────────
+   PANELS — shared layout improvements
+   ──────────────────────────────────────────────── */
+.panel {
+  padding: 14px 13px;
+  top: 90px;
+  max-height: calc(100vh - 106px);
+  border-width: 2px;
+  border-color: var(--border-mid);
+}
+
+/* Panel header: tighter, stronger separator */
+.panel-header {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Game title in left panel: shrink to make room for content */
+.panel-header h1 {
+  font-size: 0.96rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  line-height: 1.2;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Hand rank = primary info in left panel */
+.panel-header p {
+  font-size: 0.88rem;
+  color: var(--text);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-top: 3px;
+}
+
+/* Right panel: weapon count hint */
+.panel-right .panel-header h2 {
+  font-size: 1.5rem;
+}
+
+.panel-right #dpsHint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  white-space: normal;
+  overflow: visible;
+}
+
+/* Controls tip: hide by default to save space, show on hover */
+.tip {
+  font-size: 0.65rem;
+  opacity: 0.5;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 6px;
+}
+
+/* ────────────────────────────────────────────────
+   CARDS IN HAND
+   ──────────────────────────────────────────────── */
+.card-row {
+  gap: 5px;
+}
+
+.card {
+  min-height: 72px;
+  border-width: 2px;
+}
+
+.card .rank {
+  font-size: 1.1rem;
+}
+
+.card .suit {
+  font-size: 1.3rem;
+}
+
+/* ────────────────────────────────────────────────
+   SUIT STATS GRID — bigger labels, cleaner cells
+   ──────────────────────────────────────────────── */
+.suit-grid {
+  gap: 6px;
+  margin: 10px 0 8px;
+}
+
+.suit-stat {
+  padding: 8px 10px;
+  border-width: 2px;
+  border-color: var(--border-mid);
+  background: rgba(20, 20, 20, 0.72);
+}
+
+.suit-stat b {
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 3px;
+}
+
+/* Stat name label: bumped from 0.66rem to 0.74rem */
+.suit-stat span {
+  font-size: 0.74rem;
+  color: var(--muted);
+  letter-spacing: 0.07em;
+  opacity: 0.9;
+}
+
+/* ────────────────────────────────────────────────
+   WEAPON CARDS — right panel
+   ──────────────────────────────────────────────── */
+.weapon {
+  gap: 6px;
+  padding: 10px 11px;
+  border-width: 2px;
+}
+
+/* Grade/level line */
+.weapon-top .grade {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+/* Weapon name: Bebas Neue, a bit smaller to fit */
+.weapon-top strong {
+  font-size: 1.45rem;
+  line-height: 0.92;
+}
+
+/* Scaling type block */
+.weapon-scale span {
+  font-size: 0.74rem;
+}
+
+.weapon-scale strong {
+  font-size: 0.8rem;
+}
+
+/* Scaling bonus: bump from 0.72 to 0.78rem */
+.scaling-bonus {
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  padding: 5px 8px;
+}
+
+/* Stat strip: bump from 0.72 to 0.76rem */
+.stat-strip {
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  padding: 5px 8px;
+}
+
+/* Modifier tags */
+.weapon-tags span {
+  font-size: 0.68rem;
+  padding: 2px 6px;
+}
+
+/* ────────────────────────────────────────────────
+   SHOP LAYOUT — better proportions
+   ──────────────────────────────────────────────── */
+.shop-board {
+  border-width: 2px;
+}
+
+.shop-header {
+  padding: 12px 14px;
+  border-bottom-width: 2px;
+  border-bottom-color: var(--border-mid);
+}
+
+/* Wallet display */
+.shop-wallet .label {
+  font-size: 0.68rem;
+}
+
+.shop-wallet strong {
+  font-size: 2.2rem;
+  line-height: 0.92;
+}
+
+/* ────────────────────────────────────────────────
+   SHOP — MAIN SECTION (hand cards)
+   ──────────────────────────────────────────────── */
+.shop-hand-card strong {
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.shop-hand-card p {
+  font-size: 0.74rem;
+  line-height: 1.25;
+  color: var(--muted);
+}
+
+/* ────────────────────────────────────────────────
+   SHOP — MARKET ITEMS
+   ──────────────────────────────────────────────── */
+.market-item h4 {
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.market-item p {
+  font-size: 0.74rem;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.market-item {
+  border-width: 2px;
+  padding: 9px;
+  min-height: 164px;
+}
+
+.action-pill {
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+}
+
+/* ────────────────────────────────────────────────
+   SHOP — RUN INFO (character + stats)
+   ──────────────────────────────────────────────── */
+.run-character strong {
+  font-size: 1.8rem;
+  line-height: 0.94;
+}
+
+.run-character p {
+  font-size: 0.74rem;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+/* Stat box sizing (default) */
+
+/* Stat box: bigger labels and values */
+.stat-box {
+  padding: 6px 7px;
+  border-width: 1px;
+  border-color: var(--border-mid);
+}
+
+.stat-box span {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  opacity: 0.82;
+}
+
+.stat-box strong {
+  font-size: 0.86rem;
+  margin-top: 2px;
+  line-height: 1.05;
+}
+
+/* ────────────────────────────────────────────────
+   SHOP TOOLTIP — cleaner text
+   ──────────────────────────────────────────────── */
+.shop-tooltip h3 {
+  font-size: 1.35rem;
+  margin-bottom: 5px;
+}
+
+.shop-tooltip p {
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.shop-tooltip .label {
+  font-size: 0.68rem;
+}
+
+/* ────────────────────────────────────────────────
+   CHARACTER SELECT — better card layout
+   ──────────────────────────────────────────────── */
+.character-card {
+  min-height: 230px;
+  padding: 14px 16px;
+  gap: 10px;
+  border-width: 2px;
+}
+
+.character-card strong {
+  font-size: 2.3rem;
+  line-height: 0.92;
+}
+
+.character-card p {
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+/* ────────────────────────────────────────────────
+   BUTTONS — sharper, slightly bigger text
+   ──────────────────────────────────────────────── */
+.primary-button,
+.secondary-button {
+  font-size: 0.84rem;
+  letter-spacing: 0.07em;
+  min-height: 40px;
+}
+
+/* ────────────────────────────────────────────────
+   OBJECTIVE PANEL — more visible in-game
+   ──────────────────────────────────────────────── */
+.objective-panel {
+  top: 80px;
+  padding: 7px 20px 9px;
+  border-width: 2px;
+  border-color: var(--border-mid);
+}
+
+.objective-panel-progress {
+  font-size: 1.55rem;
+  line-height: 1.1;
+}
+
+/* ────────────────────────────────────────────────
+   GAME OVER / RUN DECISION — cleaner overlay
+   ──────────────────────────────────────────────── */
+.game-over > div {
+  width: min(380px, calc(100vw - 32px));
+  padding: 24px 26px;
+  border-width: 2px;
+}
+
+.game-over h2 {
+  font-size: 3.2rem;
+  margin: 6px 0 16px;
+  color: var(--accent);
+}
+
+#fragmentReward {
+  font-size: 0.84rem;
+  letter-spacing: 0.07em;
+}
+
+/* ────────────────────────────────────────────────
+   RELIC ENTRIES — better readability
+   ──────────────────────────────────────────────── */
+.relic-entry {
+  padding: 7px 11px;
+}
+
+.relic-entry strong {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.relic-entry p {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+/* ────────────────────────────────────────────────
+   DESKTOP ≥ 901px — large screen specific
+   ──────────────────────────────────────────────── */
+@media (min-width: 901px) {
+  .panel {
+    width: var(--panel-w);
+    top: 90px;
+    max-height: calc(100vh - 106px);
+  }
+
+  /* Show character description in run info */
+  .run-character p {
+    display: block;
+  }
+
+  /* Show more info in market weapon offers */
+  .market-grid .weapon-offer .scaling-bonus {
+    display: block;
+    font-size: 0.62rem;
+    padding: 4px 6px;
+  }
+
+  /* 3-column stat grid on desktop: better use of space */
+  .shop-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  /* Stat boxes: fine-tuned for desktop */
+  .stat-box span {
+    font-size: 0.62rem;
+  }
+
+  .stat-box strong {
+    font-size: 0.8rem;
+  }
+
+  /* Market items slightly bigger on desktop */
+  .market-item {
+    min-height: 140px;
+  }
+
+  .market-item h4 {
+    font-size: 1.1rem;
+  }
+
+  .market-item p {
+    font-size: 0.68rem;
+  }
+
+  /* Shop hand: show card label on desktop */
+  .shop-hand-card p {
+    display: block;
+    font-size: 0.68rem;
+  }
+
+  /* Shop run info scrollable */
+  .shop-run-info {
+    overflow-y: auto;
+    max-height: calc(100vh - 160px);
+  }
+
+  /* Tighter shop hand cards */
+  .shop-hand-card {
+    gap: 6px;
+    padding: 6px;
+  }
+}
+
+/* ────────────────────────────────────────────────
+   MOBILE ≤ 900px — adjustments for small screens
+   ──────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .suit-stat span {
+    font-size: 0.68rem;
+  }
+
+  .hud-top strong {
+    font-size: 0.92rem;
+  }
+}
+
+/* ────────────────────────────────────────────────
+   WEAPON COMPARE — cleaner popup
+   ──────────────────────────────────────────────── */
+.weapon-compare h3 {
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.compare-deltas span {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+/* ────────────────────────────────────────────────
+   META COLLECTION — better grid
+   ──────────────────────────────────────────────── */
+.meta-card-entry h3 {
+  font-size: 1.35rem;
+}
+
+.meta-card-entry p {
+  font-size: 0.74rem;
+}
+
+/* ────────────────────────────────────────────────
+   PACK OFFER — bigger cards in pack choice
+   ──────────────────────────────────────────────── */
+.offer-row .card {
+  cursor: pointer;
+}
+
+.curse-choice strong {
+  font-size: 1.25rem;
+}
+
+.curse-choice p {
+  font-size: 0.74rem;
+  line-height: 1.3;
+}
+
+/* ────────────────────────────────────────────────
+   WAVE ANNOUNCEMENT — cleaner & bigger
+   ──────────────────────────────────────────────── */
+.wave-announcement-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.24em;
+  font-family: "Space Mono", monospace;
+}
+
+.wave-announcement-title {
+  font-size: clamp(64px, 10vw, 112px);
+  color: var(--text);
+}
+
+.wave-announcement-desc {
+  font-size: 0.88rem;
+  letter-spacing: 0.09em;
+  max-width: 560px;
+  font-family: "Space Mono", monospace;
+  font-weight: 700;
+}

@@ -44,6 +44,7 @@ const ui = {
   hp: document.querySelector("#hp"),
   money: document.querySelector("#money"),
   goldCapFill: document.querySelector("#goldCapFill"),
+  hpBarFill: document.querySelector("#hpBarFill"),
   goldMultiplier: document.querySelector("#goldMultiplier"),
   enemyCount: document.querySelector("#enemyCount"),
   hand: document.querySelector("#hand"),

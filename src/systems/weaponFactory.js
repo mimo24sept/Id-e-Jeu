@@ -1,6 +1,6 @@
-﻿function rollWeaponModifiers(count) {
+﻿function rollWeaponModifiers(count, exclude = new Set()) {
   const mods = [];
-  const available = WEAPON_MODIFIERS.slice();
+  const available = WEAPON_MODIFIERS.filter((m) => !exclude.has(m.id));
   while (mods.length < count && available.length > 0) {
     const mod = pickWeighted(available);
     mods.push(rollWeaponModifier(mod));
@@ -62,7 +62,15 @@ function createWeapon(options = {}) {
   const suitKey = options.suit || Object.keys(SUITS)[Math.floor(Math.random() * Object.keys(SUITS).length)];
   const suit = SUITS[suitKey];
   const scalingType = options.scalingType || (options.scalingTypeId ? getWeaponScalingType(options.scalingTypeId) : WEAPON_SCALING_TYPES[Math.floor(Math.random() * WEAPON_SCALING_TYPES.length)]);
-  const modifiers = options.modifiers || rollWeaponModifiers(grade.modCount);
+  let modifiers;
+  if (options.modifiers) {
+    modifiers = options.modifiers;
+  } else if (archetype.forceExplosive) {
+    const explosiveDef = WEAPON_MODIFIERS.find((m) => m.id === "explosive");
+    modifiers = [rollWeaponModifier(explosiveDef), ...rollWeaponModifiers(grade.modCount, new Set(["explosive"]))];
+  } else {
+    modifiers = rollWeaponModifiers(grade.modCount);
+  }
   const level = options.level || Math.max(1, state?.wave || 1);
   const itemPower = weaponItemPower(level);
   const rolls = options.rolls || {
@@ -100,7 +108,7 @@ function createWeapon(options = {}) {
     range,
     projectileSpeed: archetype.projectileSpeed,
     accuracy: archetype.accuracy * rolls.accuracy,
-    healthBonus: Math.round(archetype.healthBonus * grade.statMult * statPower),
+    healthBonusMultiplier: (archetype.healthBonusMultiplier || 0) * grade.statMult * statPower,
     moveSpeedBonus: Math.round(archetype.moveSpeedBonus * grade.statMult * Math.pow(itemPower, 0.35) * rolls.stats),
     pellets: archetype.pellets || 1,
     spread: archetype.spread || 0,
@@ -127,7 +135,7 @@ function weaponScore(weapon) {
     if (mod.id === "gold") return sum + mod.gold * 0.85;
     return sum;
   }, 0);
-  return weapon.damage * cadence * Math.sqrt(pellets) * (1 + modPower) + weapon.level * 0.35 + weapon.healthBonus * 0.03;
+  return weapon.damage * cadence * Math.sqrt(pellets) * (1 + modPower) + weapon.level * 0.35 + (weapon.healthBonusMultiplier || 0) * 100;
 }
 
 

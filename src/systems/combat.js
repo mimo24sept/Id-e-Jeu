@@ -128,7 +128,7 @@ function fireWeapon(weapon) {
       y: state.player.y,
       vx: Math.cos(angle) * weapon.projectileSpeed,
       vy: Math.sin(angle) * weapon.projectileSpeed,
-      radius: pellets > 1 ? 5 : weapon.archetypeId === "sniper" ? 8 : 6,
+      radius: pellets > 1 ? 5 : weapon.archetypeId === "sniper" ? 8 : weapon.archetypeId === "lance-grenades" ? 10 : weapon.archetypeId === "magnum" ? 7 : 6,
       damage: hit.damage,
       hp: hit.damage,
       life: weaponRange / weapon.projectileSpeed,
@@ -663,6 +663,26 @@ function emitSmoke(enemy) {
   });
 }
 
+function updateFantome(enemy, angle, speedMultiplier, dt) {
+  enemy.fantomeCooldown = Math.max(0, (enemy.fantomeCooldown ?? random(2, 4)) - dt);
+  if (enemy.fantomeCooldown <= 0) {
+    const teleportAngle = random(0, Math.PI * 2);
+    const teleportDist = 140 + Math.random() * 70;
+    const clamped = clampToWorld(
+      state.player.x + Math.cos(teleportAngle) * teleportDist,
+      state.player.y + Math.sin(teleportAngle) * teleportDist,
+      enemy.radius,
+    );
+    enemy.x = clamped.x;
+    enemy.y = clamped.y;
+    enemy.fantomeCooldown = random(5, 7);
+    enemy.fantomeFlash = 0.35;
+    return;
+  }
+  enemy.fantomeFlash = Math.max(0, (enemy.fantomeFlash || 0) - dt);
+  moveEnemy(enemy, angle, speedMultiplier * 1.3, dt);
+}
+
 function updateSmoker(enemy, angle, speedMultiplier, dt) {
   moveEnemy(enemy, angle, speedMultiplier * 0.6, dt);
   enemy.smokeTimer = Math.max(0, (enemy.smokeTimer || 0) - dt);
@@ -741,6 +761,10 @@ function updateEnemies(dt) {
       updateSmoker(enemy, angle, speedMultiplier, dt);
     } else if (enemy.type === "blocker") {
       updateBlocker(enemy, target, speedMultiplier, dt);
+    } else if (enemy.type === "fantome") {
+      updateFantome(enemy, angle, speedMultiplier, dt);
+    } else if (enemy.type === "titan") {
+      moveEnemy(enemy, angle, speedMultiplier * 0.85, dt);
     } else if ((enemy.type !== "shooter" && enemy.type !== "boss" && enemy.type !== "sniper") || d > desiredRange) {
       moveEnemy(enemy, angle, speedMultiplier, dt);
     } else {
@@ -1096,6 +1120,9 @@ function updateKills(dt) {
       if (enemy.type === "bomber" && !enemy.exploded) {
         bomberExplode(enemy);
       }
+      if (!enemy.objectiveTarget && enemy.type !== "boss") {
+        state.waveKillCount = (state.waveKillCount || 0) + 1;
+      }
       // Reliques au moment du kill
       if (hasRelic("vampire")) {
         state.player.hp = Math.min(state.stats?.maxHp || 100, state.player.hp + Math.max(1, Math.round((state.stats?.maxHp || 100) * 0.03)));
@@ -1150,6 +1177,24 @@ function updateKills(dt) {
             seed: random(0, Math.PI * 2), dashCooldown: 0, dashWindup: 0, dashTime: 0, dashAngle: 0,
           });
         }
+      }
+      if (enemy.type === "titan") {
+        const toPlayer = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x);
+        const bruteHp = Math.max(20, enemy.maxHp * 0.38);
+        for (let i = 0; i < 2; i += 1) {
+          const a = toPlayer + (i === 0 ? -0.55 : 0.55);
+          state.enemies.push({
+            x: enemy.x + Math.cos(a) * 30,
+            y: enemy.y + Math.sin(a) * 30,
+            radius: 21, hp: bruteHp, maxHp: bruteHp,
+            speed: (78 + state.wave * 2.4) * Math.min(1.45, Math.pow(1.08, enemy.tier || 0)),
+            damage: enemy.damage * 0.65,
+            type: "brute", exploded: false, sniperCharging: 0,
+            shootTimer: 999, value: 0, tier: enemy.tier || 0,
+            seed: random(0, Math.PI * 2), dashCooldown: 0, dashWindup: 0, dashTime: 0, dashAngle: 0,
+          });
+        }
+        state.floatingText.push({ x: enemy.x, y: enemy.y - enemy.radius - 14, text: "DIVISION !", life: 1.1, color: "#ff6060" });
       }
       if (state.player.hp / maxHp <= 0.25) {
         state.lowHpKills = (state.lowHpKills || 0) + 1;

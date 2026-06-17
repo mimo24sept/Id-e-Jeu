@@ -11,7 +11,7 @@ function enemyGoldPressureMultiplier(wave = state.wave) {
 }
 
 function waveExpHp(wave) {
-  return Math.pow(1.05, wave);
+  return Math.pow(1.055, wave);
 }
 
 function waveExpDmg(wave) {
@@ -378,7 +378,7 @@ function completeWave() {
   const fixedGold = 18 + state.wave * 6 + metaRunBonuses().waveGold;
   state.money += fixedGold;
   if (hasRelic("avarice")) state.money += fixedGold;
-  const totalInterestRate = (state.character?.endWaveInterest || 0) + (talentBonuses().interestBonus || 0);
+  const totalInterestRate = Math.min(0.12, (state.character?.endWaveInterest || 0) + (talentBonuses().interestBonus || 0));
   if (totalInterestRate > 0) {
     const interest = Math.floor(state.money * totalInterestRate);
     if (interest > 0) {
@@ -425,16 +425,18 @@ function spawnEnemy() {
   const spawnDistance = Math.max(window.innerWidth, window.innerHeight) * 0.52 + 45;
   const wave = state.wave;
   const chances = {
-    sprayer:  wave >= 6  ? Math.min(0.06 + wave * 0.008, 0.22) : 0,
-    dasher:   wave >= 4  ? Math.min(0.08 + wave * 0.01,  0.26) : 0,
-    brute:    wave >= 3  ? Math.min(0.11 + wave * 0.014, 0.34) : 0,
-    shooter:  wave >= 2  ? Math.min(0.14 + wave * 0.014, 0.36) : 0,
-    sniper:   wave >= 5  ? Math.min(0.03 + wave * 0.005, 0.11) : 0,
-    healer:   wave >= 7  ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
-    bomber:   wave >= 4  ? Math.min(0.04 + wave * 0.005, 0.11) : 0,
-    splitter: wave >= 5  ? Math.min(0.03 + wave * 0.005, 0.10) : 0,
-    blocker:  wave >= 8  ? Math.min(0.02 + wave * 0.004, 0.08) : 0,
-    smoker:   wave >= 12 ? Math.min(0.02 + wave * 0.003, 0.09) : 0,
+    sprayer:  wave >= 6  ? Math.min(0.04 + wave * 0.006, 0.12) : 0,
+    dasher:   wave >= 4  ? Math.min(0.05 + wave * 0.007, 0.12) : 0,
+    brute:    wave >= 3  ? Math.min(0.06 + wave * 0.008, 0.13) : 0,
+    shooter:  wave >= 2  ? Math.min(0.07 + wave * 0.008, 0.13) : 0,
+    sniper:   wave >= 5  ? Math.min(0.02 + wave * 0.007, 0.12) : 0,
+    healer:   wave >= 7  ? Math.min(0.02 + wave * 0.006, 0.10) : 0,
+    bomber:   wave >= 4  ? Math.min(0.03 + wave * 0.007, 0.11) : 0,
+    splitter: wave >= 5  ? Math.min(0.02 + wave * 0.007, 0.11) : 0,
+    blocker:  wave >= 8  ? Math.min(0.02 + wave * 0.006, 0.10) : 0,
+    smoker:   wave >= 12 ? Math.min(0.02 + wave * 0.006, 0.10) : 0,
+    fantome:  wave >= 18 ? Math.min(0.02 + wave * 0.005, 0.09) : 0,
+    titan:    wave >= 22 ? Math.min(0.01 + wave * 0.004, 0.07) : 0,
   };
   const total = Object.values(chances).reduce((sum, c) => sum + c, 0);
   const normFactor = total > 1 ? total : 1;
@@ -448,7 +450,7 @@ function spawnEnemy() {
 
   if (state.monoTypeWave) type = state.monoTypeWave;
 
-  const typeCaps = { sniper: 3, healer: 20, blocker: 30, bomber: 5 };
+  const typeCaps = { sniper: 3, healer: 20, blocker: 30, bomber: 5, fantome: 4, titan: 2 };
   if (wave < 30 && !state.monoTypeWave && typeCaps[type] !== undefined) {
     const count = state.enemies.filter((e) => e.type === type).length;
     if (count >= typeCaps[type]) type = "chaser";
@@ -467,6 +469,8 @@ function spawnEnemy() {
     splitter: { hp: 28 + wave * 6,   radius: 17, speed:  95 + wave * 2.5, damage: 12, value: 1.65 },
     blocker:  { hp: 62 + wave * 14,  radius: 28, speed:  40 + wave * 1,   damage: 20, value: 2.20 },
     smoker:   { hp: 35 + wave * 8,   radius: 18, speed:  52 + wave * 1.2, damage:  9, value: 2.00 },
+    fantome:  { hp: 14 + wave * 3.5, radius: 14, speed: 155 + wave * 4.5, damage: 22, value: 2.15 },
+    titan:    { hp: 90 + wave * 22,  radius: 28, speed:  42 + wave * 1.0, damage: 35, value: 3.50 },
   };
   const preset = presets[type];
   const tierMult = enemyTierMultiplier(wave);
@@ -543,8 +547,8 @@ function buildStrengthMultiplier() {
     * avgGradeMult
     * relicBonus
     * handBonus;
-  const expectedDps = 1.0 + state.wave * 0.18;
-  return Math.max(0.45, Math.min(3.0, Math.pow(rawDps / expectedDps, 0.4)));
+  const expectedDps = 1.0 + state.wave * 0.22;
+  return Math.max(0.45, Math.min(4.5, Math.pow(rawDps / expectedDps, 0.4)));
 }
 
 function spawnBoss() {

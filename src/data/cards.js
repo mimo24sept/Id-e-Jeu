@@ -219,41 +219,44 @@ const CHARACTER_DEFS = [
     id: "gigachad",
     name: "GigaCHAD",
     title: "Late bloomer",
-    desc: "Toutes les couleurs x0.5 jusqu'à la vague 10, puis x4.",
+    desc: "Toutes les couleurs x0.5 jusqu'à la vague 10, puis x3.",
     getCardEffectMultiplier(state) {
-      return state.wave >= 10 ? 4 : 0.5;
+      return state.wave >= 10 ? 3 : 0.5;
     },
   },
   {
     id: "time-breaker",
     name: "Time Breaker",
     title: "Scaling pur",
-    desc: "Toutes les couleurs commencent à x0.1 et gagnent +0.1 par vague.",
+    desc: "Toutes les couleurs commencent à x0.1 et gagnent +0.1 par vague (max x3.5).",
     getCardEffectMultiplier(state) {
-      return Math.max(0.1, state.wave * 0.1);
+      return Math.min(3.5, Math.max(0.1, state.wave * 0.1));
     },
   },
   {
     id: "banquier",
     name: "Le Banquier",
     title: "Intérêts sales",
-    desc: "Carreau x1.75. Gagne 8% d'intérêts en fin de vague. Armes +25%.",
+    desc: "Carreau x1.75. Gagne 5% d'intérêts en fin de vague. Armes +25%.",
     cardEffectMultipliers: {
       diamonds: 1.75,
     },
     weaponPriceMultiplier: 1.25,
-    endWaveInterest: 0.08,
+    endWaveInterest: 0.05,
   },
   {
     id: "moine",
     name: "Le Moine",
     title: "Sanctuaire",
-    desc: "Coeur x2. Une seule arme. +35 PV, +1 regen.",
+    desc: "Coeur x3. Une seule arme. +30% PV max. Regen = 1.2% des PV max/s.",
     cardEffectMultipliers: {
-      hearts: 2,
+      hearts: 3,
     },
-    effects: { maxHp: 35, regen: 1 },
+    effects: { maxHpMultiplier: 0.30 },
     maxWeapons: 1,
+    dynamicEffects(state) {
+      return { regen: (state.stats?.maxHp || 100) * 0.012 };
+    },
   },
   {
     id: "tempete",
@@ -270,23 +273,24 @@ const CHARACTER_DEFS = [
     id: "cartomancien",
     name: "Le Cartomancien",
     title: "Main longue",
-    desc: "+1 slot carte. Packs -12%. Cartes simples +15%.",
+    desc: "+1 slot carte. Packs -12%. Cartes simples -10%.",
     effects: { cardSlots: 1 },
     packPriceMultiplier: 0.88,
-    cardPriceMultiplier: 1.15,
+    cardPriceMultiplier: 0.90,
   },
   {
     id: "deserteur",
     name: "Le Déserteur",
     title: "Bord de map",
-    desc: "Plus loin du centre = dégâts. Près du centre = regen.",
+    desc: "Au bord : +75% dégâts, +22% cadence. Au centre : regen = 1.5% des PV max/s.",
     dynamicEffects(state) {
       const d = Math.hypot(state.player.x, state.player.y);
       const max = Math.hypot(WORLD.width / 2, WORLD.height / 2);
       const ratio = Math.min(1, d / max);
       return {
-        damage: ratio * 0.42,
-        regen: (1 - ratio) * 1.4,
+        damage: ratio * 0.75,
+        attackSpeed: ratio * 0.22,
+        regen: (1 - ratio) * (state.stats?.maxHp || 100) * 0.015,
       };
     },
   },
@@ -319,10 +323,10 @@ const CHARACTER_DEFS = [
     dynamicEffects(state) {
       const uniqueRanks = new Set(state.hand.map((card) => card.value)).size;
       return {
-        damage: uniqueRanks * 0.018,
-        attackSpeed: uniqueRanks * 0.012,
-        money: uniqueRanks * 0.01,
-        maxHp: uniqueRanks * 3,
+        damage: uniqueRanks * 0.028,
+        attackSpeed: uniqueRanks * 0.018,
+        money: uniqueRanks * 0.015,
+        maxHpMultiplier: uniqueRanks * 0.06,
       };
     },
   },
@@ -339,7 +343,13 @@ const CHARACTER_DEFS = [
     id: "alchimiste",
     name: "L'Alchimiste",
     title: "Malédictions fortes",
-    desc: "Malédictions sur cartes x1.35. Packs de malédictions -20%.",
+    desc: "Toutes couleurs x1.1. Malédictions sur cartes x1.35. Packs de malédictions -20%.",
+    cardEffectMultipliers: {
+      spades: 1.1,
+      diamonds: 1.1,
+      clubs: 1.1,
+      hearts: 1.1,
+    },
     curseEffectMultiplier: 1.35,
     cursePackPriceMultiplier: 0.8,
   },
@@ -347,18 +357,55 @@ const CHARACTER_DEFS = [
     id: "stratege",
     name: "Le Stratège",
     title: "Plan froid",
-    desc: "+15% dégâts aux objectifs et boss. +10% fragments.",
-    objectiveDamageMultiplier: 1.15,
-    bossDamageMultiplier: 1.15,
-    fragmentMultiplier: 1.1,
+    desc: "+25% dégâts aux objectifs et boss. +15% fragments. Chaque boss tué = +5% dégâts pour le reste de la run.",
+    objectiveDamageMultiplier: 1.25,
+    bossDamageMultiplier: 1.25,
+    fragmentMultiplier: 1.15,
+    dynamicEffects(state) {
+      return { damage: (state.bossKills || 0) * 0.05 };
+    },
   },
   {
     id: "parieur",
     name: "Le Parieur",
     title: "Prix instables",
-    desc: "Prix du shop très variables. Vendre rapporte -20%.",
+    desc: "Prix du shop très variables. Vendre au prix normal. +6% or.",
     gamblingPrices: true,
-    sellMultiplier: 0.8,
+    sellMultiplier: 1.0,
+    effects: { money: 0.06 },
+  },
+  {
+    id: "mercenaire",
+    name: "Le Mercenaire",
+    title: "Richesse = puissance",
+    desc: "Toutes couleurs ×0.55. Chaque gold en caisse booste tes dégâts (log progressif).",
+    cardEffectMultipliers: { spades: 0.55, diamonds: 0.55, clubs: 0.55, hearts: 0.55 },
+    dynamicEffects(state) {
+      return { damage: Math.log1p((state.money || 0) / 60) * 0.14 };
+    },
+  },
+  {
+    id: "arsenal",
+    name: "L'Arsenal",
+    title: "Triple armement",
+    desc: "Jusqu'à 3 armes équipées. Toutes couleurs ×0.72. Armes -22%.",
+    cardEffectMultipliers: { spades: 0.72, diamonds: 0.72, clubs: 0.72, hearts: 0.72 },
+    maxWeapons: 3,
+    weaponPriceMultiplier: 0.78,
+  },
+  {
+    id: "chasseur",
+    name: "Le Chasseur",
+    title: "Momentum de vague",
+    desc: "Toutes couleurs ×1.5. Chaque kill cette vague = +2.2% dégâts, +1.2% cadence (max +100%/+60%).",
+    cardEffectMultipliers: { spades: 1.5, diamonds: 1.5, clubs: 1.5, hearts: 1.5 },
+    dynamicEffects(state) {
+      const kills = state.waveKillCount || 0;
+      return {
+        damage: Math.min(1.0, kills * 0.022),
+        attackSpeed: Math.min(0.6, kills * 0.012),
+      };
+    },
   },
 ];
 
@@ -378,8 +425,8 @@ const CURSES = [
   {
     id: "curse-health",
     name: "Malédiction de vie",
-    desc: "+42 PV max.",
-    effects: { maxHp: 42 },
+    desc: "+18% PV max.",
+    effects: { maxHpMultiplier: 0.18 },
   },
   {
     id: "curse-gold",
@@ -420,7 +467,7 @@ const CARD_CURSE_DEFS = [
   {
     id: "curse-health-apply",
     name: "Marque de vie",
-    desc: "Ajoute +42 PV max à une carte de ton choix.",
+    desc: "Ajoute +18% PV max à une carte de ton choix.",
     curse: CURSES[2],
   },
   {

@@ -146,6 +146,9 @@ function characterUnlockInfo(character, meta = playerMeta()) {
     alchimiste: { text: "Applique 10 malédictions en une partie", done: (meta.bestCursesInRun || 0) >= 10 },
     stratege: { text: "Tue 10 boss", done: (meta.bossKills || 0) >= 10 },
     parieur: { text: "Débloque un skin secret", done: unlockedSkins.some((id) => id !== "classic" && skinDef(id).secret) },
+    mercenaire: { text: "Achète 25 packs de cartes", done: (meta.packsBought || 0) >= 25 },
+    arsenal: { text: "Atteins la vague 25", done: (meta.bestWave || 0) >= 25 },
+    chasseur: { text: "Tue 30 boss", done: (meta.bossKills || 0) >= 30 },
   };
   return rules[character.id] || { text: "Challenge à définir", done: false };
 }

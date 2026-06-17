@@ -105,7 +105,7 @@ function metaRunBonuses() {
     stationaryPower,
     spadeAceMultiplier,
     spadeAttackSpeed: levels.spadeJack * 0.08 * spadeStanceMultiplier,
-    spadeMaxHp: levels.spadeQueen * 16 * spadeStanceMultiplier,
+    spadeMaxHpMultiplier: levels.spadeQueen * 0.10 * spadeStanceMultiplier,
     spadeRegen: levels.spadeQueen * 0.18 * spadeStanceMultiplier,
     spadeShieldCount: levels.spadeKing > 0 ? Math.round(levels.spadeKing * 2 * stationaryPower) : 0,
     heartAuraSizeMultiplier,
@@ -388,9 +388,11 @@ function addEffects(total, effects = {}) {
   total.maxHp += effects.maxHp || 0;
   total.maxHpMultiplier += effects.maxHpMultiplier || 0;
   total.regen += effects.regen || 0;
+  total.regenPercent = (total.regenPercent || 0) + (effects.regenPercent || 0);
   total.cardSlots += effects.cardSlots || 0;
   total.critChance += effects.critChance || 0;
   total.moveSpeed += effects.moveSpeed || 0;
+  total.moveSpeedMultiplier = (total.moveSpeedMultiplier || 0) + (effects.moveSpeedMultiplier || 0);
 }
 
 function logarithmicMoneyMultiplier(suits, effects) {
@@ -402,7 +404,7 @@ function logarithmicMoneyMultiplier(suits, effects) {
 function applyWeaponSuitIdentityEffects(effects, weapon, suitCount) {
   const gradeMult = weapon.grade.statMult;
   if (weapon.suit === "hearts") {
-    effects.maxHp += suitCount * 5 * gradeMult;
+    effects.maxHpMultiplier += suitCount * 0.04 * gradeMult;
     effects.regen += suitCount * 0.12 * gradeMult;
   }
   if (weapon.suit === "diamonds") {
@@ -412,7 +414,7 @@ function applyWeaponSuitIdentityEffects(effects, weapon, suitCount) {
 
 function calculateStats() {
   const suits = { spades: 0, diamonds: 0, clubs: 0, hearts: 0 };
-  const effects = { damage: 0, flatDamage: 0, money: 0, attackSpeed: 0, maxHp: 0, maxHpMultiplier: 0, regen: 0, cardSlots: 0, critChance: 0, moveSpeed: 0 };
+  const effects = { damage: 0, flatDamage: 0, money: 0, attackSpeed: 0, maxHp: 0, maxHpMultiplier: 0, regen: 0, regenPercent: 0, cardSlots: 0, critChance: 0, moveSpeed: 0, moveSpeedMultiplier: 0 };
   const runBonuses = metaRunBonuses();
   const tb = talentBonuses();
   state.hand.forEach((card) => {
@@ -432,7 +434,7 @@ function calculateStats() {
     const suitCount = suits[weapon.suit] || 0;
     const gradeMult = weapon.grade.statMult;
     const scalingType = getWeaponScalingType(weapon.scalingTypeId);
-    effects.maxHp += weapon.healthBonus;
+    effects.maxHpMultiplier += weapon.healthBonusMultiplier || 0;
     effects.moveSpeed += weapon.moveSpeedBonus;
     scalingType.apply(effects, suitCount, gradeMult);
     applyWeaponSuitIdentityEffects(effects, weapon, suitCount);
@@ -448,12 +450,15 @@ function calculateStats() {
   effects.maxHp += tb.maxHp;
   effects.maxHpMultiplier += tb.maxHpMultiplier;
   effects.regen += tb.regen;
+  effects.regenPercent += tb.regenPercent || 0;
   effects.critChance += tb.critChance;
   effects.moveSpeed += tb.moveSpeed;
+  effects.moveSpeedMultiplier += tb.moveSpeedMultiplier || 0;
 
   const hand = evaluateHand(state.hand);
   const baseMaxHp = 100 + suits.hearts * 10 + hand.power * 3 + effects.maxHp;
   const maxHp = Math.max(40, Math.round(baseMaxHp * Math.max(0.1, 1 + effects.maxHpMultiplier)));
+  effects.regen += effects.regenPercent * maxHp;
 
   const stats = {
     ...suits,
@@ -465,8 +470,8 @@ function calculateStats() {
     flatDamage: effects.flatDamage,
     attackSpeedMultiplier: Math.max(0.25, 1 + suits.clubs * 0.07 + effects.attackSpeed + runBonuses.spadeAttackSpeed),
     moneyMultiplier: Math.max(0.25, logarithmicMoneyMultiplier(suits, effects)),
-    moveSpeed: Math.max(120, (225 + suits.clubs * 4 + effects.moveSpeed) * (hasRelic("adren") ? 1.20 : 1)),
-    maxHp: Math.round(maxHp + runBonuses.spadeMaxHp),
+    moveSpeed: Math.max(120, (225 + suits.clubs * 4 + effects.moveSpeed) * Math.max(0.1, 1 + effects.moveSpeedMultiplier) * (hasRelic("adren") ? 1.20 : 1)),
+    maxHp: Math.max(40, Math.round(baseMaxHp * Math.max(0.1, 1 + effects.maxHpMultiplier + (runBonuses.spadeMaxHpMultiplier || 0)))),
     regen: Math.max(0, suits.hearts * 0.18 + hand.power * 0.05 + effects.regen + runBonuses.spadeRegen),
     weaponRangeMultiplier: 1,
     stationaryPower: runBonuses.stationaryPower,

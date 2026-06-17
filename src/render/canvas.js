@@ -437,8 +437,14 @@ function renderGame() {
                             ? "#3d4a5c"
                             : enemy.type === "smoker"
                               ? "#4a5f72"
-                              : "#e46363";
+                              : enemy.type === "fantome"
+                                ? "#c8b4ff"
+                                : enemy.type === "titan"
+                                  ? "#7c3535"
+                                  : "#e46363";
+    if (enemy.type === "fantome") ctx.globalAlpha = (enemy.fantomeFlash || 0) > 0 ? 0.35 : 0.68;
     drawCircle(p.x, p.y, enemy.radius, fill, "rgba(0,0,0,0.35)");
+    ctx.globalAlpha = 1;
 
     if (enemy.elite) {
       const pulse = 0.6 + Math.abs(Math.sin(state.worldTime * 3 + (enemy.seed || 0))) * 0.4;
@@ -631,6 +637,43 @@ function renderGame() {
         ctx.arc(p.x + rx, p.y + ry, enemy.radius * 0.22, 0, Math.PI * 2);
         ctx.stroke();
       }
+      ctx.restore();
+    }
+
+    // Fantôme: anneaux fantomatiques pulsants + transparence flash téléport
+    if (enemy.type === "fantome") {
+      const phase = state.worldTime * 2.4 + (enemy.seed || 0);
+      ctx.save();
+      for (let ring = 0; ring < 2; ring += 1) {
+        const r = enemy.radius + 6 + ring * 10 + Math.sin(phase + ring * 1.4) * 4;
+        ctx.globalAlpha = 0.32 - ring * 0.1;
+        ctx.strokeStyle = "#c8b4ff";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Titan: anneau de danger épais + symbole de division
+    if (enemy.type === "titan") {
+      ctx.save();
+      const pulse = Math.sin(state.worldTime * 1.2 + (enemy.seed || 0)) * 0.5 + 0.5;
+      ctx.strokeStyle = "#c05050";
+      ctx.lineWidth = 5 + pulse * 3;
+      ctx.globalAlpha = 0.6 + pulse * 0.25;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, enemy.radius + 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 0.8;
+      ctx.strokeStyle = "#ff8080";
+      ctx.lineWidth = 2;
+      const s = enemy.radius * 0.42;
+      ctx.beginPath();
+      ctx.moveTo(p.x - s, p.y - s); ctx.lineTo(p.x + s, p.y + s);
+      ctx.moveTo(p.x + s, p.y - s); ctx.lineTo(p.x - s, p.y + s);
+      ctx.stroke();
       ctx.restore();
     }
 

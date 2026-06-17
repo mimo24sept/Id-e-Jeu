@@ -84,7 +84,8 @@ function cardPrice(card) {
 
 function sellValue(card) {
   const tb = talentBonuses();
-  return Math.max(2, Math.floor(cardPrice(card) * 0.45 * (state.character?.sellMultiplier || 1) * (1 + (tb.sellBonus || 0))));
+  const cappedSellBonus = Math.min(0.55, tb.sellBonus || 0);
+  return Math.max(2, Math.floor(cardPrice(card) * 0.38 * (state.character?.sellMultiplier || 1) * (1 + cappedSellBonus)));
 }
 
 function characterShopPrice(basePrice, type) {
@@ -93,7 +94,7 @@ function characterShopPrice(basePrice, type) {
   if (type === "weapon") multiplier *= state.character?.weaponPriceMultiplier || 1;
   if (type === "pack") multiplier *= state.character?.packPriceMultiplier || 1;
   if (type === "cursePack") multiplier *= state.character?.cursePackPriceMultiplier || 1;
-  if (state.character?.gamblingPrices) multiplier *= random(0.4, 1.8);
+  if (state.character?.gamblingPrices) multiplier *= random(0.5, 1.55);
   return Math.max(1, Math.round(basePrice * multiplier));
 }
 
@@ -157,7 +158,10 @@ function cursePackPrice(pack) {
 
 function cardPackPrice(pack) {
   const tb = talentBonuses();
-  const discounted = Math.max(1, Math.round(equivalentPrice(pack.cardEquivalent || (pack.size >= 6 ? 2.75 : 2)) * (1 - metaRunBonuses().packDiscount) * (1 - (tb.packDiscount || 0))));
+  const basePrice = equivalentPrice(pack.cardEquivalent || (pack.size >= 6 ? 2.75 : 2));
+  const totalDiscount = Math.min(0.60, metaRunBonuses().packDiscount + (tb.packDiscount || 0));
+  const minPrice = equivalentPrice(0.75);
+  const discounted = Math.max(minPrice, Math.round(basePrice * (1 - totalDiscount)));
   return characterShopPrice(discounted, "pack");
 }
 

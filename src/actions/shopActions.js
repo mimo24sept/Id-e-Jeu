@@ -130,7 +130,7 @@ function equipWeapon(weapon) {
 
   state.pendingWeapon = {
     weapon: equipped,
-    heal: weapon.healthBonus,
+    heal: Math.round((weapon.healthBonusMultiplier || 0) * (state.stats?.maxHp || 100)),
   };
   return false;
 }
@@ -187,7 +187,7 @@ function buyShopSlot(id) {
     state.handSlots += 1;
   }
 
-  refreshStatsKeepingMaxHpGain(slot.type === "slot" ? 8 : slot.type === "weapon" ? slot.healthBonus : 0);
+  refreshStatsKeepingMaxHpGain(slot.type === "slot" ? 8 : 0);
   renderUI();
 }
 
